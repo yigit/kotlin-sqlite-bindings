@@ -67,7 +67,7 @@ kotlin {
             this.kotlin.srcDir("src/nativeMain")
         }
         compilations["test"].defaultSourceSet {
-            this.kotlin.srcDir("src/mativeTest")
+            this.kotlin.srcDir("src/nativeTest")
         }
 
     }
