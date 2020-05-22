@@ -8,14 +8,20 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType.DEBUG
 
 fun KotlinMultiplatformExtension.setupNative(
-    name: String,
-    configure: KotlinNativeTargetWithTests<*>.() -> Unit
-): KotlinNativeTargetWithTests<*> {
+    configure: KotlinNativeTarget.() -> Unit
+) {
     val os = getCurrentOperatingSystem()
-    return when {
-        os.isLinux -> linuxX64(name, configure)
-        os.isWindows -> mingwX64(name, configure)
-        os.isMacOsX -> macosX64(name, configure)
+    when {
+        os.isLinux -> {
+            linuxX64(configure = configure)
+            linuxArm32Hfp(configure = configure)
+        }
+        os.isWindows -> {
+            mingwX64(configure = configure)
+        }
+        os.isMacOsX -> {
+            macosX64(configure = configure)
+        }
         else -> error("OS $os is not supported")
     }
 }
@@ -32,10 +38,11 @@ repositories {
 }
 
 kotlin {
-    val native = setupNative("native") {
+    setupNative {
         binaries {
             sharedLib(namePrefix = "myjni")
         }
+
         compilations["main"].cinterops.create("jni") {
             // JDK is required here, JRE is not enough
             val javaHome = File(System.getenv("JAVA_HOME") ?: System.getProperty("java.home"))
@@ -56,33 +63,14 @@ kotlin {
                 Callable { File(include, "win32") }
             )
         }
+        compilations["main"].defaultSourceSet {
+            this.kotlin.srcDir("src/nativeMain")
+        }
+        compilations["test"].defaultSourceSet {
+            this.kotlin.srcDir("src/nativeTest")
+        }
+
     }
-//
-//    targets.withType<KotlinNativeTarget> {
-//        println("have native target $this")
-//        val nativeTarget = this
-//
-//        binaries.findSharedLib(namePrefix = "myjni", buildType = NativeBuildType.DEBUG)!!.let { sharedLib ->
-//            println("have shared lib $sharedLib")
-//            val compilation = jvm().compilations["main"]
-//            compilation.defaultSourceSet {
-//                resources.srcDir(sharedLib.outputDirectory)
-//            }
-//            compilation.compileKotlinTask.dependsOn(sharedLib.linkTask)
-//        }
-//    }
-
-    //val nativeLib = native.binaries.findSharedLib(namePrefix = "myjni", buildType = "debug")!!
-//
-//    jvm {
-//        this.compilations.forEach { compilation ->
-//            // TODO get correct build type per compilation
-//            compilation.compileKotlinTask.dependsOn(
-//                nativeLib.linkTask
-//            )
-//        }
-//    }
-
 
     val combinedSharedLibsFolder = project.buildDir.resolve("combinedSharedLibs")
     val combineSharedLibsTask = com.birbit.ksqlite.build.CollectNativeLibrariesTask.Companion.create(project, "myjni", combinedSharedLibsFolder)
@@ -99,21 +87,12 @@ kotlin {
                 implementation(kotlin("test-annotations-common"))
             }
         }
-        native.compilations["main"].defaultSourceSet {
-//            dependencies {
-//                implementation(files(File(project.projectDir, "sqlite/libsqlite3.a")))
-//            }
-        }
         // Default source set for JVM-specific sources and dependencies:
         jvm().compilations["main"].defaultSourceSet {
             dependencies {
                 implementation(kotlin("stdlib-jdk8"))
                 implementation(Dependencies.NATIVE_LIB_LOADER)
             }
-            // TODO get correct build type, join this w/ task dependency (gradle does not seem to discover via this)
-//            val nativeLib = native.binaries.findSharedLib(namePrefix = "myjni", buildType = "debug")!!
-            //this.resources.srcDir(nativeLib.outputDirectory)
-//            this.resources.srcDir(sharedLibOutput)
             resources.srcDir(combinedSharedLibsFolder)
         }
         // JVM-specific tests and their dependencies:

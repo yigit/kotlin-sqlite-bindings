@@ -41,14 +41,14 @@ jobs:
         key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
     - uses: actions/cache@v1.1.2
       with:
-        path: ~/..konan
-        key: ${{ runner.os }}-konan-${{ hashFiles('**/build.gradle.kts') }}    
+        path: ~/.konan
+        key: ${{ runner.os }}-konan
     # Runs a single command using the runners shell
     - name: build and test
-      run: ./gradlew clean nativeTest jvmTest
-    - name: Upload build dir # this is good to diagnose issues
+      run: ./gradlew clean allTests
+    - name: Upload test results # this is good to diagnose issues
       if: always()
       uses: actions/upload-artifact@v2
       with:
-        name: build-out
-        path: build
+        name: reports
+        path: build/reports
