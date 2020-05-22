@@ -1,0 +1,10 @@
+package=sqlite3
+headers=sqlite3.h
+headerFilter = sqlite3*.h
+noStringConversion = sqlite3_prepare_v2 sqlite3_prepare_v3
+#TODO move this to build per target?
+staticLibraries=libsqlite3.a
+#libraryPaths=sqlite
+#libraryPaths = /home/yboyar/src/kotlin-jni-test/build/sqlite-compilation/output/linuxX64
+linkerOpts.linux_x64 = -lpthread -ldl
+linkerOpts.macos_x64 = -lpthread -ldl

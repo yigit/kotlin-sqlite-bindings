@@ -7,6 +7,7 @@ class NativeTest {
     fun blah() {
         println("blah")
         val native = NativeHost()
-        println(native.callInt(3))
+//        println(native.callInt(3))
+        native.getSqliteVersion()
     }
 }

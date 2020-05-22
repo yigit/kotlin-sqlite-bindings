@@ -25,4 +25,5 @@ class NativeHost {
     }
 
     external fun callInt(input: Int): Int
+    external fun getSqliteVersion() : Int
 }

@@ -1,3 +1,4 @@
+import com.birbit.ksqlite.build.SqliteCompilationConfig
 import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform.getCurrentOperatingSystem
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTargetWithTests
@@ -15,7 +16,7 @@ fun KotlinMultiplatformExtension.setupNative(
     }
 }
 plugins {
-    kotlin("multiplatform") version "1.3.72"
+    kotlin("multiplatform") //version "1.3.72"
 }
 
 group = "com.birbit"
@@ -27,15 +28,9 @@ repositories {
 }
 
 kotlin {
-    /* Targets configuration omitted. 
-    *  To find out how to configure the targets, please follow the link:
-    *  https://kotlinlang.org/docs/reference/building-mpp-with-gradle.html#setting-up-targets */
-
     val native = setupNative("native") {
         binaries {
-            //sharedLib()
             sharedLib(namePrefix = "myjni")
-//            staticLib(namePrefix= "myjni")
         }
         compilations["main"].cinterops.create("jni") {
             // JDK is required here, JRE is not enough
@@ -57,10 +52,12 @@ kotlin {
             )
         }
     }
+
+    val nativeLib = native.binaries.findSharedLib(namePrefix = "myjni", buildType = "debug")!!
+
     jvm {
         this.compilations.forEach { compilation ->
             // TODO get correct build type per compilation
-            val nativeLib = native.binaries.findSharedLib(namePrefix = "myjni", buildType = "debug")!!
             compilation.compileKotlinTask.dependsOn(
                 nativeLib.linkTask
             )
@@ -79,14 +76,20 @@ kotlin {
                 implementation(kotlin("test-annotations-common"))
             }
         }
+        native.compilations["main"].defaultSourceSet {
+//            dependencies {
+//                implementation(files(File(project.projectDir, "sqlite/libsqlite3.a")))
+//            }
+        }
         // Default source set for JVM-specific sources and dependencies:
         jvm().compilations["main"].defaultSourceSet {
             dependencies {
                 implementation(kotlin("stdlib-jdk8"))
             }
             // TODO get correct build type, join this w/ task dependency (gradle does not seem to discover via this)
-            val nativeLib = native.binaries.findSharedLib(namePrefix = "myjni", buildType = "debug")!!
+//            val nativeLib = native.binaries.findSharedLib(namePrefix = "myjni", buildType = "debug")!!
             this.resources.srcDir(nativeLib.outputDirectory)
+//            this.resources.srcDir(sharedLibOutput)
         }
         // JVM-specific tests and their dependencies:
         jvm().compilations["test"].defaultSourceSet {
@@ -96,4 +99,7 @@ kotlin {
         }
     }
 }
-
+com.birbit.ksqlite.build.SqliteCompilation.setup(project,
+SqliteCompilationConfig(
+    version = "3.31.1"
+))
