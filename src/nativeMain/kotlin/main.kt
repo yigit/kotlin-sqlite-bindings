@@ -12,9 +12,6 @@ fun callInt(env: CPointer<JNIEnvVar>, clazz: jclass, it: jint): jint {
     Platform.isMemoryLeakCheckerActive = false
 
     println("Native function is executed with: $it")
-    val ptr = nativeHeap.allocPointerTo<sqlite3>()
-    val pointer = platform.posix.malloc(CPointerVar.size.toULong())
-    sqlite3_open(":memory:", cValue())
     return it + 1
 }
 
