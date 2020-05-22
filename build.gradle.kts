@@ -38,12 +38,6 @@ repositories {
 }
 
 kotlin {
-    val nativeMainSrcSet = sourceSets.create("nativeMain") {
-        this.kotlin.srcDir("src/nativeMain")
-    }
-    val nativeTestSrcSet = sourceSets.create("nativeTest") {
-        this.kotlin.srcDir("src/mativeTest")
-    }
     setupNative {
         binaries {
             sharedLib(namePrefix = "myjni")
@@ -70,10 +64,10 @@ kotlin {
             )
         }
         compilations["main"].defaultSourceSet {
-            dependsOn(nativeMainSrcSet)
+            this.kotlin.srcDir("src/nativeMain")
         }
         compilations["test"].defaultSourceSet {
-            dependsOn(nativeTestSrcSet)
+            this.kotlin.srcDir("src/mativeTest")
         }
 
     }
