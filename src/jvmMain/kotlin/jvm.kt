@@ -10,13 +10,14 @@ fun main() {
 
 }
 
-class NativeHost {
-    companion object {
-        init {
-            loadNativeLib()
-        }
+object NativeHost {
+    init {
+
+        loadNativeLib()
+
     }
 
+    external fun openDb(path: String): ULong
     external fun callInt(input: Int): Int
-    external fun getSqliteVersion() : Int
+    external fun getSqliteVersion(): Int
 }
