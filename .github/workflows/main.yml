@@ -26,6 +26,23 @@ jobs:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
 
+    # build cache
+    - name: Cache
+      uses: actions/cache@v1.1.2
+      with:
+        path: ~/.gradle/caches
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
+      # An ordered list of keys to use for restoring the cache if no cache hit occurred for key
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+    - uses: actions/cache@v1.1.2
+      with:
+        path: ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+    - uses: actions/cache@v1.1.2
+      with:
+        path: ~/..konan
+        key: ${{ runner.os }}-konan-${{ hashFiles('**/build.gradle.kts') }}    
     # Runs a single command using the runners shell
     - name: build and test
-      run: ./gradlew nativeTest jvmTest
+      run: ./gradlew clean nativeTest jvmTest
