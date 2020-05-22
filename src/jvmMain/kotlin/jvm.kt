@@ -1,16 +1,9 @@
 package com.birbit.jni
 
-import java.io.File
+import org.scijava.nativelib.NativeLoader
 
 private fun loadNativeLib() {
-    val nativeLib = NativeHost::class.java.getResourceAsStream("/libmyjni.so")
-        ?: throw IllegalStateException("cannot find native library")
-    val tmpDir = System.getProperty("java.io.tmpdir") ?: throw IllegalStateException("cannot find tmp dir")
-    val nativeFile = File(tmpDir, "native.so")
-    nativeFile.writeBytes(
-        nativeLib.readBytes()
-    )
-    Runtime.getRuntime().load(nativeFile.canonicalFile.absolutePath)
+    NativeLoader.loadLibrary("myjni")
 }
 
 fun main() {
