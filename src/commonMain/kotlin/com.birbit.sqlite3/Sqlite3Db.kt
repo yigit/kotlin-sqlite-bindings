@@ -1,7 +1,13 @@
 package com.birbit.sqlite3
 
-expect class SqliteDb {
+expect class SqliteConnection {
     fun version(): String
 }
 
-expect fun openDb(path: String): SqliteDb
+class Sqlite3Db(
+    private val connection: SqliteConnection
+) {
+
+}
+
+expect fun openConnection(path: String): SqliteConnection

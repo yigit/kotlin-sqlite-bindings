@@ -1,5 +1,6 @@
 package com.birbit.jni
 
+import com.birbit.sqlite3.Sqlite3Db
 import org.scijava.nativelib.NativeLoader
 
 private fun loadNativeLib() {
@@ -16,8 +17,8 @@ object NativeHost {
         loadNativeLib()
 
     }
-
-    external fun openDb(path: String): ULong
+    external fun prepareStmt(dbPtr: Long) : Long?
+    external fun openDb(path: String): Long
     external fun callInt(input: Int): Int
-    external fun getSqliteVersion(): Int
+    external fun getSqliteVersion(dbPtr: Long): String?
 }

@@ -14,6 +14,7 @@ fun KotlinMultiplatformExtension.setupNative(
     when {
         os.isLinux -> {
             linuxX64(configure = configure)
+            // TODO optionally enable when not in idea
             linuxArm32Hfp(configure = configure)
         }
         os.isWindows -> {

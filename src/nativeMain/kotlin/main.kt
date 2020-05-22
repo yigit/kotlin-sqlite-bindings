@@ -1,7 +1,12 @@
 package com.birbit.jni
 
+import cnames.structs.sqlite3
+import com.birbit.sqlite3.DbPtr
+import com.birbit.sqlite3.SqliteConnection
+import com.birbit.sqlite3.StmtPtr
+import com.birbit.sqlite3.openConnection
 import kotlinx.cinterop.*
-import sqlite3.*
+
 @CName("Java_com_birbit_jni_NativeHost_callInt")
 fun callInt(env: CPointer<JNIEnvVar>, clazz: jclass, it: jint): jint {
     initRuntimeIfNeeded()
@@ -12,25 +17,66 @@ fun callInt(env: CPointer<JNIEnvVar>, clazz: jclass, it: jint): jint {
 }
 
 @CName("Java_com_birbit_jni_NativeHost_getSqliteVersion")
-fun getSqliteVersion(env: CPointer<JNIEnvVar>, clazz: jclass) : jint {
-    initRuntimeIfNeeded()
+fun getSqliteVersion(env: CPointer<JNIEnvVar>, clazz: jclass, connPtr: jlong): jstring? {
     Platform.isMemoryLeakCheckerActive = false
+    initRuntimeIfNeeded()
+    println("running getSqliteVersion")
+    return env.inScope {
+        Platform.isMemoryLeakCheckerActive = false
+        val conn = SqliteConnection.fromJni(connPtr)
+        val readVersion = checkNotNull(conn.versionViaQuery()) {
+            "empty version"
+        }
+        println("read version in native function and it gave: ${readVersion}")
+        readVersion.toJString()
+    }
 
-    println("Native function is executed with: ${sqlite3_libversion()}")
-
-    return 0
 }
 
 @CName("Java_com_birbit_jni_NativeHost_openDb")
-fun openDb(env: CPointer<JNIEnvVar>, clazz: jclass, path : jstring) : jlong {
+fun openDb(env: CPointer<JNIEnvVar>, clazz: jclass, path: jstring): jlong {
     initRuntimeIfNeeded()
-    val tmp : JNIEnvVar = env.pointed
-    val value : JNIEnv = checkNotNull(tmp.value)
-    val chars = value.pointed.GetStringUTFChars?.invoke(env, path, null)
-    val db = com.birbit.sqlite3.openDb(path = chars!!.toKStringFromUtf8())
-    Platform.isMemoryLeakCheckerActive = false
+    println("start open native db")
+    val db = env.inScope {
+        openConnection(checkNotNull(path.toKString()) {
+            "invalid path: $path"
+        })
+    }
+//    Platform.isMemoryLeakCheckerActive = false
+    println("created db ptr: ${db.ptr}")
+    println("Native openDb is executed")
 
-    println("Native function is executed with: ${sqlite3_libversion()}")
+//    return db.ptr.rawPtr.asStableRef<DbPtr>().asCPointer().rawValue.toLong()
+    // TODO should make this stable reference somehow
+    return db.toJni()
+}
 
-    return db.ptr.rawValue.toLong()
+@CName("Java_com_birbit_jni_NativeHost_prepareStmt")
+fun prepareStmt(env: CPointer<JNIEnvVar>, clazz: jclass, dbPtr: jlong, stmt: jstring): jlong {
+    initRuntimeIfNeeded()
+    val ptr = DbPtr(dbPtr.toCPointer<sqlite3>()!!)
+    val stmt = env.inScope {
+        val stmt = checkNotNull(stmt.toKString()) {
+            "statement cannot be null"
+        }
+        val conn = SqliteConnection(ptr)
+        conn.prepareStmt(stmt)
+    }
+    return stmt.stmtPtr.rawPtr.asStableRef<StmtPtr>().asCPointer().rawValue.toLong()
+}
+
+private fun <T> CPointer<JNIEnvVar>.inScope(
+    block: EnvScope.() -> T
+): T {
+    return EnvScope(this).block()
+}
+
+class EnvScope(
+    private val envPtr: CPointer<JNIEnvVar>
+) {
+    val jni: JNINativeInterface_ = checkNotNull(envPtr.pointed.value).pointed
+    fun jstring.toKString() = jni.GetStringUTFChars!!.invoke(envPtr, this, null)?.toKStringFromUtf8()
+    fun String.toJString(): jstring = memScoped {
+        jni.NewStringUTF!!.invoke(envPtr, this@toJString.cstr.ptr)!!
+    }
 }
