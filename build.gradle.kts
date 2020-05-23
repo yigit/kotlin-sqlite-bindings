@@ -3,9 +3,6 @@ import com.birbit.ksqlite.build.SqliteCompilationConfig
 import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform.getCurrentOperatingSystem
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
-import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTargetWithTests
-import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
-import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType.DEBUG
 
 fun KotlinMultiplatformExtension.setupNative(
     configure: KotlinNativeTarget.() -> Unit
@@ -75,7 +72,8 @@ kotlin {
     }
 
     val combinedSharedLibsFolder = project.buildDir.resolve("combinedSharedLibs")
-    val combineSharedLibsTask = com.birbit.ksqlite.build.CollectNativeLibrariesTask.Companion.create(project, "myjni", combinedSharedLibsFolder)
+    val combineSharedLibsTask =
+        com.birbit.ksqlite.build.CollectNativeLibrariesTask.Companion.create(project, "myjni", combinedSharedLibsFolder)
     jvm().compilations["main"].compileKotlinTask.dependsOn(combineSharedLibsTask)
 
     sourceSets {
@@ -106,7 +104,9 @@ kotlin {
         }
     }
 }
-com.birbit.ksqlite.build.SqliteCompilation.setup(project,
-SqliteCompilationConfig(
-    version = "3.31.1"
-))
+com.birbit.ksqlite.build.SqliteCompilation.setup(
+    project,
+    SqliteCompilationConfig(
+        version = "3.31.1"
+    )
+)
