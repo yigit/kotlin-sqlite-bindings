@@ -41,4 +41,16 @@ actual object SqliteApi {
     }
 
     external fun nativeColumnText(stmtPtr: Long, index: Int): String?
+    actual fun columnInt(stmtRef: StmtRef, index: Int): Int {
+        return nativeColumnInt(stmtRef.dbPtr, index)
+    }
+
+    external fun nativeColumnInt(stmtPtr: Long, index: Int): Int
+
+    actual fun columnIsNull(stmtRef: StmtRef, index: Int): Boolean {
+        return nativeColumnIsNull(stmtRef.dbPtr, index)
+    }
+
+    external fun nativeColumnIsNull(stmtPtr: Long, index: Int): Boolean
+
 }

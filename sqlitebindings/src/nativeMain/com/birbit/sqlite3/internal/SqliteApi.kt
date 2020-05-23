@@ -19,8 +19,11 @@ import kotlinx.cinterop.toKStringFromUtf8
 import kotlinx.cinterop.toLong
 import kotlinx.cinterop.utf8
 import kotlinx.cinterop.value
+import sqlite3.SQLITE_NULL
 import sqlite3.SQLITE_OK
+import sqlite3.sqlite3_column_int
 import sqlite3.sqlite3_column_text
+import sqlite3.sqlite3_column_type
 import sqlite3.sqlite3_open
 import sqlite3.sqlite3_prepare_v2
 import sqlite3.sqlite3_step
@@ -79,5 +82,13 @@ actual object SqliteApi {
     actual fun columnText(stmtRef: StmtRef, index: Int): String? {
         val textPtr: CPointer<UByteVar> = sqlite3_column_text(stmtRef.rawPtr, index) ?: return null
         return textPtr.reinterpret<ByteVar>().toKStringFromUtf8()
+    }
+
+    actual fun columnInt(stmtRef: StmtRef, index: Int): Int {
+        return sqlite3_column_int(stmtRef.rawPtr, index)
+    }
+
+    actual fun columnIsNull(stmtRef: StmtRef, index: Int): Boolean {
+        return sqlite3_column_type(stmtRef.rawPtr, index) == SQLITE_NULL
     }
 }

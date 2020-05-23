@@ -9,4 +9,6 @@ class SqliteStmt(
 ) {
     fun step(): ResultCode = SqliteApi.step(stmtRef)
     fun columnText(index: Int) = SqliteApi.columnText(stmtRef, index)
+    fun columnInt(index: Int): Int? = SqliteApi.columnInt(stmtRef, index)
+    fun columnIsNull(index: Int): Boolean = SqliteApi.columnIsNull(stmtRef, index)
 }
