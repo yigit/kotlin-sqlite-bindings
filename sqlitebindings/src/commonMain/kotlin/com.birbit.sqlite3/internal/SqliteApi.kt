@@ -15,5 +15,7 @@ expect object SqliteApi {
     fun openConnection(path: String): DbRef
     fun prepareStmt(dbRef: DbRef, stmt: String): StmtRef
     fun step(stmtRef: StmtRef): ResultCode
+    fun columnIsNull(stmtRef: StmtRef, index: Int) : Boolean
     fun columnText(stmtRef: StmtRef, index: Int): String?
+    fun columnInt(stmtRef: StmtRef, index: Int): Int
 }

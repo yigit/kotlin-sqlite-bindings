@@ -3,3 +3,7 @@ build
 .gradle
 buildSrc/build
 sqlitebindings/build
+jnigenerator/build
+#ignore core dump files
+sqlitebindings/core
+sqlitebindings/hs_err_pid*
