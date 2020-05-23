@@ -9,6 +9,7 @@ import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.invoke
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+import org.jetbrains.kotlin.konan.target.Family
 import org.jetbrains.kotlin.konan.target.HostManager
 import org.jetbrains.kotlin.konan.target.KonanTarget
 import org.jetbrains.kotlin.konan.target.presetName
@@ -134,8 +135,10 @@ object SqliteCompilation {
                     it.outputs.file(objFile)
 
                     it.executable(llvmBinFolder.resolve("clang").absolutePath)
-                    it.args("-c", "-Wall", "-fPIC")
-
+                    it.args("-c", "-Wall")
+                    if (konanTarget.family != Family.MINGW) {
+                        it.args("-fPIC")
+                    }
                     val targetInfo = targetInfoMap.getValue(konanTarget)
 
                     it.args("--target=${targetInfo.targetName}", "--sysroot=${targetInfo.sysRoot}")

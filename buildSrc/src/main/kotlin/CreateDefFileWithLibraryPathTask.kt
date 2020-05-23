@@ -6,6 +6,7 @@ import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import java.io.File
+import java.nio.file.Paths
 
 abstract class CreateDefFileWithLibraryPathTask : DefaultTask() {
     @InputFile
@@ -19,7 +20,8 @@ abstract class CreateDefFileWithLibraryPathTask : DefaultTask() {
     fun doIt() {
         println("will copy from ${original} to ${target}")
         target.parentFile.mkdirs()
-        val content = original.readText(Charsets.UTF_8) + "\n" + "libraryPaths=${soFilePath.parentFile.absolutePath}"
+        val soLocalPath = Paths.get(soFilePath.parentFile.absolutePath)
+        val content = original.readText(Charsets.UTF_8) + System.lineSeparator() + "libraryPaths=\"${soLocalPath}\""
         println("new content: $content")
         target.writeText(content, Charsets.UTF_8)
     }
