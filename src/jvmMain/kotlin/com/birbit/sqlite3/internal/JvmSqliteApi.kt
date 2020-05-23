@@ -12,7 +12,7 @@ actual class StmtRef(
 
 actual object SqliteApi {
     init {
-        NativeLoader.loadLibrary("myjni")
+        NativeLoader.loadLibrary("sqlite3jni")
     }
 
     actual fun openConnection(path: String): DbRef {

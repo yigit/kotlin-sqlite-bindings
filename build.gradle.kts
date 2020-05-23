@@ -39,7 +39,7 @@ repositories {
 kotlin {
     setupNative {
         binaries {
-            sharedLib(namePrefix = "myjni")
+            sharedLib(namePrefix = "sqlite3jni")
         }
 
         compilations["main"].cinterops.create("jni") {
@@ -73,7 +73,7 @@ kotlin {
 
     val combinedSharedLibsFolder = project.buildDir.resolve("combinedSharedLibs")
     val combineSharedLibsTask =
-        com.birbit.ksqlite.build.CollectNativeLibrariesTask.Companion.create(project, "myjni", combinedSharedLibsFolder)
+        com.birbit.ksqlite.build.CollectNativeLibrariesTask.Companion.create(project, "sqlite3jni", combinedSharedLibsFolder)
     jvm().compilations["main"].compileKotlinTask.dependsOn(combineSharedLibsTask)
 
     sourceSets {

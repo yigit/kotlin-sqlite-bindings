@@ -5,6 +5,12 @@ inline class ResultCode(val value: Int)
 expect class DbRef
 expect class StmtRef
 
+/**
+ * Common API for all calls.
+ *
+ * Native implements this by directly calling SQLite.
+ * JVM implements this via JNI which delegates to the native implementation.
+ */
 expect object SqliteApi {
     fun openConnection(path: String): DbRef
     fun prepareStmt(dbRef: DbRef, stmt: String): StmtRef
