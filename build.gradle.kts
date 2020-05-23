@@ -14,8 +14,9 @@ fun KotlinMultiplatformExtension.setupNative(
     when {
         os.isLinux -> {
             linuxX64(configure = configure)
-            // TODO optionally enable when not in idea
-            linuxArm32Hfp(configure = configure)
+            if (!gradle.startParameter.systemPropertiesArgs.containsKey("idea.active")) {
+                linuxArm32Hfp(configure = configure)
+            }
         }
         os.isWindows -> {
             mingwX64(configure = configure)
@@ -76,6 +77,7 @@ kotlin {
     val combinedSharedLibsFolder = project.buildDir.resolve("combinedSharedLibs")
     val combineSharedLibsTask = com.birbit.ksqlite.build.CollectNativeLibrariesTask.Companion.create(project, "myjni", combinedSharedLibsFolder)
     jvm().compilations["main"].compileKotlinTask.dependsOn(combineSharedLibsTask)
+
     sourceSets {
         val commonMain by getting {
             dependencies {

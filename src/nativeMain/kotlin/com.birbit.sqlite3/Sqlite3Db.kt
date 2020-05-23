@@ -12,7 +12,6 @@ import kotlinx.cinterop.UByteVar
 import kotlinx.cinterop.allocPointerTo
 import kotlinx.cinterop.asStableRef
 import kotlinx.cinterop.nativeHeap
-import kotlinx.cinterop.objcPtr
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.reinterpret
 import kotlinx.cinterop.toCPointer
@@ -30,10 +29,10 @@ import sqlite3.sqlite3_step
 
 inline class StmtPtr(val rawPtr: CPointer<sqlite3_stmt>)
 inline class DbPtr(val rawPtr: CPointer<sqlite3>)
-actual class SqliteConnection(
+actual class DeprecatedSqliteConnection(
     val ptr: DbPtr
 ) {
-    val stableRef : StableRef<SqliteConnection> = StableRef.create(this)
+    val stableRef : StableRef<DeprecatedSqliteConnection> = StableRef.create(this)
     fun toJni() = stableRef.asCPointer().toLong()
 
 
@@ -51,29 +50,29 @@ actual class SqliteConnection(
         return firstColumn
     }
 
-    fun prepareStmt(stmt: String): SqliteStmt {
+    fun prepareStmt(stmt: String): DeprecatedSqliteStmt {
         val stmtPtr = nativeHeap.allocPointerTo<sqlite3_stmt>()
         val resultCode = sqlite3_prepare_v2(ptr.rawPtr, stmt.utf8, -1, stmtPtr.ptr, null)
         check(resultCode == SQLITE_OK) {
             "cannot prepare statement $stmt"
         }
-        return SqliteStmt(
+        return DeprecatedSqliteStmt(
             dbPtr = ptr,
             stmtPtr = StmtPtr(stmtPtr.value!!)
         )
     }
 
     companion object {
-        fun fromOpaquePointer(ptr : COpaquePointer) : SqliteConnection {
-            return ptr.asStableRef<SqliteConnection>().get()
+        fun fromOpaquePointer(ptr : COpaquePointer) : DeprecatedSqliteConnection {
+            return ptr.asStableRef<DeprecatedSqliteConnection>().get()
         }
-        fun fromJni(jlong: jlong): SqliteConnection {
+        fun fromJni(jlong: jlong): DeprecatedSqliteConnection {
             return fromOpaquePointer(jlong.toCPointer<CPointed>()!!)
         }
     }
 }
 
-class SqliteStmt(
+class DeprecatedSqliteStmt(
     private val dbPtr: DbPtr,
     val stmtPtr: StmtPtr
 ) {
@@ -91,11 +90,11 @@ class SqliteStmt(
     }
 }
 
-actual fun openConnection(path: String): SqliteConnection {
+actual fun openConnection(path: String): DeprecatedSqliteConnection {
     val ptr = nativeHeap.allocPointerTo<sqlite3>()
     val openResult = sqlite3_open(":memory:", ptr.ptr)
     check(openResult == SQLITE_OK) {
         "could not open database $openResult"
     }
-    return SqliteConnection(ptr = DbPtr(ptr.value!!))
+    return DeprecatedSqliteConnection(ptr = DbPtr(ptr.value!!))
 }

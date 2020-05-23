@@ -2,7 +2,7 @@ package com.birbit.jni
 
 import cnames.structs.sqlite3
 import com.birbit.sqlite3.DbPtr
-import com.birbit.sqlite3.SqliteConnection
+import com.birbit.sqlite3.DeprecatedSqliteConnection
 import com.birbit.sqlite3.StmtPtr
 import com.birbit.sqlite3.openConnection
 import kotlinx.cinterop.*
@@ -23,7 +23,7 @@ fun getSqliteVersion(env: CPointer<JNIEnvVar>, clazz: jclass, connPtr: jlong): j
     println("running getSqliteVersion")
     return env.inScope {
         Platform.isMemoryLeakCheckerActive = false
-        val conn = SqliteConnection.fromJni(connPtr)
+        val conn = DeprecatedSqliteConnection.fromJni(connPtr)
         val readVersion = checkNotNull(conn.versionViaQuery()) {
             "empty version"
         }
@@ -59,7 +59,7 @@ fun prepareStmt(env: CPointer<JNIEnvVar>, clazz: jclass, dbPtr: jlong, stmt: jst
         val stmt = checkNotNull(stmt.toKString()) {
             "statement cannot be null"
         }
-        val conn = SqliteConnection(ptr)
+        val conn = DeprecatedSqliteConnection(ptr)
         conn.prepareStmt(stmt)
     }
     return stmt.stmtPtr.rawPtr.asStableRef<StmtPtr>().asCPointer().rawValue.toLong()

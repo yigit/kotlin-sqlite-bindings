@@ -2,7 +2,7 @@ package com.birbit.sqlite3
 
 import com.birbit.jni.NativeHost
 
-actual class SqliteConnection(
+actual class DeprecatedSqliteConnection(
     private val ptr: Long
 ) {
     actual fun version(): String {
@@ -10,7 +10,7 @@ actual class SqliteConnection(
     }
 }
 
-actual fun openConnection(path: String): SqliteConnection {
+actual fun openConnection(path: String): DeprecatedSqliteConnection {
     val openDb = NativeHost.openDb(path)
-    return SqliteConnection(openDb)
+    return DeprecatedSqliteConnection(openDb)
 }

@@ -4,6 +4,7 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.TaskProvider
@@ -43,11 +44,16 @@ data class SoInput(
 // TODO
 //  public output of this as a github action output and then have another job that'll merge them into final jar build
 abstract class CollectNativeLibrariesTask : DefaultTask() {
-    @Input
     lateinit var soInputs: List<SoInput>
 
     @OutputDirectory
     lateinit var outputDir: File
+
+    @Input
+    fun getFolderNames() = soInputs.map { it.folderName }
+
+    @InputFiles
+    fun getFilePaths() = soInputs.map { it.soFile }
 
     @TaskAction
     fun doIt() {

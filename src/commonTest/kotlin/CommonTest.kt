@@ -1,4 +1,3 @@
-import com.birbit.sqlite3.SqliteConnection
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
