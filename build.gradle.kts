@@ -3,9 +3,6 @@ import com.birbit.ksqlite.build.SqliteCompilationConfig
 import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform.getCurrentOperatingSystem
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
-import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTargetWithTests
-import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
-import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType.DEBUG
 
 fun KotlinMultiplatformExtension.setupNative(
     configure: KotlinNativeTarget.() -> Unit
@@ -14,7 +11,9 @@ fun KotlinMultiplatformExtension.setupNative(
     when {
         os.isLinux -> {
             linuxX64(configure = configure)
-            linuxArm32Hfp(configure = configure)
+            if (!gradle.startParameter.systemPropertiesArgs.containsKey("idea.active")) {
+                linuxArm32Hfp(configure = configure)
+            }
         }
         os.isWindows -> {
             mingwX64(configure = configure)
@@ -40,7 +39,7 @@ repositories {
 kotlin {
     setupNative {
         binaries {
-            sharedLib(namePrefix = "myjni")
+            sharedLib(namePrefix = "sqlite3jni")
         }
 
         compilations["main"].cinterops.create("jni") {
@@ -73,8 +72,10 @@ kotlin {
     }
 
     val combinedSharedLibsFolder = project.buildDir.resolve("combinedSharedLibs")
-    val combineSharedLibsTask = com.birbit.ksqlite.build.CollectNativeLibrariesTask.Companion.create(project, "myjni", combinedSharedLibsFolder)
+    val combineSharedLibsTask =
+        com.birbit.ksqlite.build.CollectNativeLibrariesTask.Companion.create(project, "sqlite3jni", combinedSharedLibsFolder)
     jvm().compilations["main"].compileKotlinTask.dependsOn(combineSharedLibsTask)
+
     sourceSets {
         val commonMain by getting {
             dependencies {
@@ -103,7 +104,9 @@ kotlin {
         }
     }
 }
-com.birbit.ksqlite.build.SqliteCompilation.setup(project,
-SqliteCompilationConfig(
-    version = "3.31.1"
-))
+com.birbit.ksqlite.build.SqliteCompilation.setup(
+    project,
+    SqliteCompilationConfig(
+        version = "3.31.1"
+    )
+)
