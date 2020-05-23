@@ -5,6 +5,26 @@ import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform.getCurr
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
+fun KotlinMultiplatformExtension.setupNative(
+    configure: KotlinNativeTarget.() -> Unit
+) {
+    val os = getCurrentOperatingSystem()
+    when {
+        os.isLinux -> {
+            linuxX64(configure = configure)
+            if (!gradle.startParameter.systemPropertiesArgs.containsKey("idea.active")) {
+                linuxArm32Hfp(configure = configure)
+            }
+        }
+        os.isWindows -> {
+            mingwX64(configure = configure)
+        }
+        os.isMacOsX -> {
+            macosX64(configure = configure)
+        }
+        else -> error("OS $os is not supported")
+    }
+}
 plugins {
     kotlin("multiplatform") //version "1.3.72"
 }
@@ -19,41 +39,14 @@ repositories {
 
 kotlin {
     setupCommon(gradle) {
-        binaries {
-            sharedLib(namePrefix = "sqlite3jni")
-        }
 
-        compilations["main"].cinterops.create("jni") {
-            // JDK is required here, JRE is not enough
-            val javaHome = File(System.getenv("JAVA_HOME") ?: System.getProperty("java.home"))
-            println("java home:$javaHome")
-            var include = File(javaHome, "include")
-            if (!include.exists()) {
-                // look upper
-                include = File(javaHome, "../include")
-            }
-            if (!include.exists()) {
-                throw GradleException("cannot find include")
-            }
-            packageName = "com.birbit.jni"
-            includeDirs(
-                Callable { include },
-                Callable { File(include, "darwin") },
-                Callable { File(include, "linux") },
-                Callable { File(include, "win32") }
-            )
-        }
     }
-
-    val combinedSharedLibsFolder = project.buildDir.resolve("combinedSharedLibs")
-    val combineSharedLibsTask =
-        com.birbit.ksqlite.build.CollectNativeLibrariesTask.Companion.create(project, "sqlite3jni", combinedSharedLibsFolder)
-    jvm().compilations["main"].compileKotlinTask.dependsOn(combineSharedLibsTask)
 
     sourceSets {
         val commonMain by getting {
             dependencies {
                 implementation(kotlin("stdlib-common"))
+                implementation(project(":sqlitebindings"))
             }
         }
         val commonTest by getting {
@@ -66,9 +59,7 @@ kotlin {
         jvm().compilations["main"].defaultSourceSet {
             dependencies {
                 implementation(kotlin("stdlib-jdk8"))
-                implementation(Dependencies.NATIVE_LIB_LOADER)
             }
-            resources.srcDir(combinedSharedLibsFolder)
         }
         // JVM-specific tests and their dependencies:
         jvm().compilations["test"].defaultSourceSet {
@@ -78,9 +69,3 @@ kotlin {
         }
     }
 }
-com.birbit.ksqlite.build.SqliteCompilation.setup(
-    project,
-    SqliteCompilationConfig(
-        version = "3.31.1"
-    )
-)

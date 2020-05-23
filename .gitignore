@@ -7,3 +7,6 @@ jnigenerator/build
 #ignore core dump files
 sqlitebindings/core
 sqlitebindings/hs_err_pid*
+ksqlite/core
+ksqlite/hs_err_pid*
+ksqlite/build

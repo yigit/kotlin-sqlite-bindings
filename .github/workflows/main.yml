@@ -46,9 +46,15 @@ jobs:
     # Runs a single command using the runners shell
     - name: build and test
       run: ./gradlew clean allTests
-    - name: Upload test results # this is good to diagnose issues
+    - name: Upload test results for sqlitebindings
       if: always()
       uses: actions/upload-artifact@v2
       with:
-        name: reports
+        name: sqlitebindings-test-reports
         path: sqlitebindings/build/reports
+    - name: Upload test results for ksqlite3
+      if: always()
+      uses: actions/upload-artifact@v2
+      with:
+        name: ksqlite3-test-reports
+        path: ksqlite3/build/reports
