@@ -119,6 +119,7 @@ open class Type(
         val DBREF = BridgeType(ClassNames.DB_REF)
         val STMTREF = BridgeType(ClassNames.STMT_REF)
         val LONG = Type(Long::class.asClassName(), ClassNames.JLONG)
+        val DOUBLE = Type(Double::class.asClassName(), ClassNames.JDOUBLE)
         val BOOLEAN = Type(Boolean::class.asClassName(), ClassNames.JBOOLEAN,
             convertFromJni = { type, envParam, inParam, outVar ->
                 buildCodeBlock {

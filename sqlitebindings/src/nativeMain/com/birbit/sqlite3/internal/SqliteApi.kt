@@ -25,12 +25,12 @@ import sqlite3.SQLITE_OK
 import sqlite3.sqlite3_close
 import sqlite3.sqlite3_column_blob
 import sqlite3.sqlite3_column_bytes
+import sqlite3.sqlite3_column_double
 import sqlite3.sqlite3_column_int
 import sqlite3.sqlite3_column_text
 import sqlite3.sqlite3_column_type
 import sqlite3.sqlite3_errmsg
 import sqlite3.sqlite3_finalize
-import sqlite3.sqlite3_free
 import sqlite3.sqlite3_open
 import sqlite3.sqlite3_prepare_v2
 import sqlite3.sqlite3_reset
@@ -43,12 +43,13 @@ private inline fun <reified T : Any> jlong.castFromJni(): T {
 
 private inline fun <reified T : Any> StableRef<T>.toJni() = this.asCPointer().toLong()
 
-private class NativeRef<T:Any>(target:T) : ObjRef {
-    private var _stableRef : StableRef<T>? = StableRef.create(target)
-    val stableRef : StableRef<T>
+private class NativeRef<T : Any>(target: T) : ObjRef {
+    private var _stableRef: StableRef<T>? = StableRef.create(target)
+    val stableRef: StableRef<T>
         get() = checkNotNull(_stableRef) {
             "tried to access stable ref after it is disposed"
         }
+
     override fun dispose() {
         _stableRef?.dispose()
         _stableRef = null
@@ -70,7 +71,7 @@ actual class StmtRef(val rawPtr: CPointer<sqlite3_stmt>) : ObjRef {
         nativeRef.dispose()
     }
 
-    override fun isDisposed() =nativeRef.isDisposed()
+    override fun isDisposed() = nativeRef.isDisposed()
 }
 
 // TODO these two classes are almost idential, should probably commanize as more comes
@@ -86,7 +87,7 @@ actual class DbRef(val rawPtr: CPointer<sqlite3>) : ObjRef {
         nativeRef.dispose()
     }
 
-    override fun isDisposed() =nativeRef.isDisposed()
+    override fun isDisposed() = nativeRef.isDisposed()
 }
 
 actual object SqliteApi {
@@ -152,5 +153,9 @@ actual object SqliteApi {
         }
         // TODO do we need to free this blob, figure out
         return blob.readBytes(size)
+    }
+
+    actual fun columnDouble(stmtRef: StmtRef, index: Int): Double {
+        return sqlite3_column_double(stmtRef.rawPtr, index)
     }
 }

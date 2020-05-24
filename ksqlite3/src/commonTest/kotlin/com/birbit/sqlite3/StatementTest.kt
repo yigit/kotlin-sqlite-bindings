@@ -18,6 +18,7 @@ class StatementTest {
     fun readNulls() {
         oneRowQuery("SELECT NULL") { row ->
             assertEquals(0, row.readInt(0))
+            assertEquals(0.0, row.readDouble(0))
             assertEquals(null, row.readString(0))
             assertEquals(null, row.readByteArray(0))
             assertTrue(row.isNull(0))
@@ -38,6 +39,13 @@ class StatementTest {
         oneRowQuery("SELECT \"Foo bar\"") { row ->
             val bytes = row.readByteArray(0)
             assertEquals("Foo bar", bytes?.decodeToString(), "invalid blob returned")
+        }
+    }
+
+    @Test
+    fun readDouble() {
+        oneRowQuery("SELECT 2.1234") {row ->
+            assertEquals(2.1234, row.readDouble(0))
         }
     }
 

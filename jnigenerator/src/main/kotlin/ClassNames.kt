@@ -9,6 +9,7 @@ object ClassNames {
     val RESULT_CODE = internalType("ResultCode")
     val JINT = jniType("jint")
     val JLONG = jniType("jlong")
+    val JDOUBLE = jniType("jdouble")
     val JBOOLEAN = jniType("jboolean")
     val JSTRING = jniType("jstring")
     val CNAME = ClassName("kotlin.native", "CName")

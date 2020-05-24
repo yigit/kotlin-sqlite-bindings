@@ -7,6 +7,7 @@ import com.birbit.jni.JNIEnvVar
 import com.birbit.jni.jboolean
 import com.birbit.jni.jbyteArray
 import com.birbit.jni.jclass
+import com.birbit.jni.jdouble
 import com.birbit.jni.jint
 import com.birbit.jni.jlong
 import com.birbit.jni.jstring
@@ -143,4 +144,17 @@ fun columnBlob(
   val callResult = SqliteApi.columnBlob(localP0, p1)
   val localCallResult = callResult?.toJByteArray(env)
   return localCallResult
+}
+
+@CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativeColumnDouble")
+fun columnDouble(
+  env: CPointer<JNIEnvVar>,
+  clazz: jclass,
+  p0: jlong,
+  p1: jint
+): jdouble {
+  initPlatform()
+  val localP0 = StmtRef.fromJni(p0)
+  val callResult = SqliteApi.columnDouble(localP0, p1)
+  return callResult
 }

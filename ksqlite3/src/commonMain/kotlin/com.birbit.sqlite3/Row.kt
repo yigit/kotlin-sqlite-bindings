@@ -10,4 +10,5 @@ class Row internal constructor(
     fun readString(index: Int) = SqliteApi.columnText(stmt, index)
     fun readInt(index: Int) = SqliteApi.columnInt(stmt, index)
     fun readByteArray(index: Int): ByteArray? = SqliteApi.columnBlob(stmt, index)
+    fun readDouble(index: Int): Double = SqliteApi.columnDouble(stmt, index)
 }
