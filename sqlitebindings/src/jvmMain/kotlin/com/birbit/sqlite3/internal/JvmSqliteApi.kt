@@ -52,5 +52,9 @@ actual object SqliteApi {
     }
 
     external fun nativeColumnIsNull(stmtPtr: Long, index: Int): Boolean
+    actual fun reset(stmtRef: StmtRef): ResultCode {
+        return nativeReset(stmtRef.dbPtr)
+    }
 
+    external fun nativeReset(stmtPtr: Long): ResultCode
 }

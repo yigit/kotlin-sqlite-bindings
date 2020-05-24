@@ -18,4 +18,5 @@ expect object SqliteApi {
     fun columnIsNull(stmtRef: StmtRef, index: Int) : Boolean
     fun columnText(stmtRef: StmtRef, index: Int): String?
     fun columnInt(stmtRef: StmtRef, index: Int): Int
+    fun reset(stmtRef: StmtRef) : ResultCode
 }

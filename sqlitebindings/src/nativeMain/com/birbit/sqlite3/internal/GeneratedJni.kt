@@ -93,3 +93,15 @@ fun columnIsNull(
   val localCallResult = callResult.toJBoolean()
   return localCallResult
 }
+
+@CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativeReset")
+fun reset(
+  env: CPointer<JNIEnvVar>,
+  clazz: jclass,
+  p0: jlong
+): ResultCode {
+  initPlatform()
+  val localP0 = StmtRef.fromJni(p0)
+  val callResult = SqliteApi.reset(localP0)
+  return callResult
+}

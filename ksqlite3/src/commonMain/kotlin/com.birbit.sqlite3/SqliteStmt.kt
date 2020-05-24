@@ -7,8 +7,14 @@ import com.birbit.sqlite3.internal.StmtRef
 class SqliteStmt(
     private val stmtRef: StmtRef
 ) {
-    fun step(): ResultCode = SqliteApi.step(stmtRef)
-    fun columnText(index: Int) = SqliteApi.columnText(stmtRef, index)
-    fun columnInt(index: Int): Int? = SqliteApi.columnInt(stmtRef, index)
-    fun columnIsNull(index: Int): Boolean = SqliteApi.columnIsNull(stmtRef, index)
+    internal fun step(): ResultCode = SqliteApi.step(stmtRef)
+
+    // TODO provide an API where we can enforce closing
+    fun query(): Sequence<Row> = sequence {
+        SqliteApi.reset(stmtRef)
+        val row = Row(stmtRef)
+        while (SqliteApi.step(stmtRef).value == SqliteResultCodes.SQLITE_ROW) {
+            yield(row)
+        }
+    }
 }

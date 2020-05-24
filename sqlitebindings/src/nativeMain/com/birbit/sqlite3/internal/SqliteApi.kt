@@ -26,6 +26,7 @@ import sqlite3.sqlite3_column_text
 import sqlite3.sqlite3_column_type
 import sqlite3.sqlite3_open
 import sqlite3.sqlite3_prepare_v2
+import sqlite3.sqlite3_reset
 import sqlite3.sqlite3_step
 
 private inline fun <reified T : Any> jlong.castFromJni(): T {
@@ -90,5 +91,9 @@ actual object SqliteApi {
 
     actual fun columnIsNull(stmtRef: StmtRef, index: Int): Boolean {
         return sqlite3_column_type(stmtRef.rawPtr, index) == SQLITE_NULL
+    }
+
+    actual fun reset(stmtRef: StmtRef) : ResultCode {
+        return ResultCode(sqlite3_reset(stmtRef.rawPtr))
     }
 }
