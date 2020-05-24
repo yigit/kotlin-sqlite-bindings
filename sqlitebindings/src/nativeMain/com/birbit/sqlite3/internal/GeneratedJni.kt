@@ -105,3 +105,27 @@ fun reset(
   val callResult = SqliteApi.reset(localP0)
   return callResult
 }
+
+@CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativeClose")
+fun close(
+  env: CPointer<JNIEnvVar>,
+  clazz: jclass,
+  p0: jlong
+): ResultCode {
+  initPlatform()
+  val localP0 = DbRef.fromJni(p0)
+  val callResult = SqliteApi.close(localP0)
+  return callResult
+}
+
+@CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativeFinalize")
+fun finalize(
+  env: CPointer<JNIEnvVar>,
+  clazz: jclass,
+  p0: jlong
+): ResultCode {
+  initPlatform()
+  val localP0 = StmtRef.fromJni(p0)
+  val callResult = SqliteApi.finalize(localP0)
+  return callResult
+}

@@ -1,9 +1,23 @@
 package com.birbit.sqlite3.internal
 
 // commonized sqlite APIs to build the rest in common, or most at least
-inline class ResultCode(val value: Int)
-expect class DbRef
-expect class StmtRef
+inline class ResultCode(val value: Int) {
+    companion object {
+        val OK = ResultCode(0)
+        val ROW = ResultCode(100)
+    }
+}
+
+interface ObjRef {
+    fun dispose()
+    fun isDisposed(): Boolean
+}
+
+expect class DbRef : ObjRef {
+}
+
+expect class StmtRef : ObjRef {
+}
 
 /**
  * Common API for all calls.
@@ -15,8 +29,10 @@ expect object SqliteApi {
     fun openConnection(path: String): DbRef
     fun prepareStmt(dbRef: DbRef, stmt: String): StmtRef
     fun step(stmtRef: StmtRef): ResultCode
-    fun columnIsNull(stmtRef: StmtRef, index: Int) : Boolean
+    fun columnIsNull(stmtRef: StmtRef, index: Int): Boolean
     fun columnText(stmtRef: StmtRef, index: Int): String?
     fun columnInt(stmtRef: StmtRef, index: Int): Int
-    fun reset(stmtRef: StmtRef) : ResultCode
+    fun reset(stmtRef: StmtRef): ResultCode
+    fun close(dbRef: DbRef): ResultCode
+    fun finalize(stmtRef: StmtRef): ResultCode
 }

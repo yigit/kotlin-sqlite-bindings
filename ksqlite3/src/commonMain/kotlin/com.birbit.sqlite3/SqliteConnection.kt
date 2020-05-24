@@ -1,6 +1,7 @@
 package com.birbit.sqlite3
 
 import com.birbit.sqlite3.internal.DbRef
+import com.birbit.sqlite3.internal.ResultCode
 import com.birbit.sqlite3.internal.SqliteApi
 
 class SqliteConnection private constructor(
@@ -9,6 +10,14 @@ class SqliteConnection private constructor(
     fun prepareStmt(stmt:String) : SqliteStmt {
         return SqliteStmt(SqliteApi.prepareStmt(dbRef, stmt))
     }
+
+    fun close() {
+        check(SqliteApi.close(dbRef) == ResultCode.OK) {
+            "failed to close database"
+        }
+        dbRef.dispose()
+    }
+
     companion object {
         fun openConnection(path : String) = SqliteConnection(
             SqliteApi.openConnection(path)

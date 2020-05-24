@@ -8,29 +8,34 @@ import kotlin.test.assertTrue
 class StatementTest {
     @Test
     fun readInt() {
-        val conn = SqliteConnection.openConnection(":memory:")
-        val stmt = conn.prepareStmt("SELECT 7")
-        val row = stmt.query().first()
-        assertEquals(7, row.readInt(0))
-        assertFalse(row.isNull(0))
+        oneRowQuery("SELECT 7") { row ->
+            assertEquals(7, row.readInt(0))
+            assertFalse(row.isNull(0))
+        }
     }
 
     @Test
     fun readNulls() {
-        val conn = SqliteConnection.openConnection(":memory:")
-        val stmt = conn.prepareStmt("SELECT NULL")
-        val row = stmt.query().first()
-        assertEquals(0, row.readInt(0))
-        assertEquals(null, row.readString(0))
-        assertTrue(row.isNull(0))
+        oneRowQuery("SELECT NULL") { row ->
+            assertEquals(0, row.readInt(0))
+            assertEquals(null, row.readString(0))
+            assertTrue(row.isNull(0))
+        }
     }
 
     @Test
     fun readText() {
+        oneRowQuery("SELECT \"hello\"") { row ->
+            assertEquals("hello", row.readString(0))
+            assertFalse(row.isNull(0))
+        }
+    }
+
+    private fun oneRowQuery(query:String, block : (Row) -> Unit) {
         val conn = SqliteConnection.openConnection(":memory:")
-        val stmt = conn.prepareStmt("SELECT \"hello\"")
-        val row = stmt.query().first()
-        assertEquals("hello", row.readString(0))
-        assertFalse(row.isNull(0))
+        val stmt = conn.prepareStmt(query)
+        stmt.use {
+            block(stmt.query().first())
+        }
     }
 }

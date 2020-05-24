@@ -21,9 +21,12 @@ import kotlinx.cinterop.utf8
 import kotlinx.cinterop.value
 import sqlite3.SQLITE_NULL
 import sqlite3.SQLITE_OK
+import sqlite3.sqlite3_close
 import sqlite3.sqlite3_column_int
 import sqlite3.sqlite3_column_text
 import sqlite3.sqlite3_column_type
+import sqlite3.sqlite3_errmsg
+import sqlite3.sqlite3_finalize
 import sqlite3.sqlite3_open
 import sqlite3.sqlite3_prepare_v2
 import sqlite3.sqlite3_reset
@@ -36,30 +39,58 @@ private inline fun <reified T : Any> jlong.castFromJni(): T {
 
 private inline fun <reified T : Any> StableRef<T>.toJni() = this.asCPointer().toLong()
 
-actual class StmtRef(val rawPtr: CPointer<sqlite3_stmt>) {
-    private val stableRef = StableRef.create(this)
-    fun toJni() = stableRef.toJni()
+private class NativeRef<T:Any>(target:T) : ObjRef {
+    private var _stableRef : StableRef<T>? = StableRef.create(target)
+    val stableRef : StableRef<T>
+        get() = checkNotNull(_stableRef) {
+            "tried to access stable ref after it is disposed"
+        }
+    override fun dispose() {
+        _stableRef?.dispose()
+        _stableRef == null
+    }
+
+    override fun isDisposed() = _stableRef == null
+
+}
+
+actual class StmtRef(val rawPtr: CPointer<sqlite3_stmt>) : ObjRef {
+    private val nativeRef = NativeRef(this)
+    fun toJni() = nativeRef.stableRef.toJni()
 
     companion object {
         fun fromJni(jlong: jlong): StmtRef = jlong.castFromJni()
     }
+
+    override fun dispose() {
+        nativeRef.dispose()
+    }
+
+    override fun isDisposed() =nativeRef.isDisposed()
 }
 
-actual class DbRef(val rawPtr: CPointer<sqlite3>) {
-    private val stableRef = StableRef.create(this)
-    fun toJni() = stableRef.toJni()
+// TODO these two classes are almost idential, should probably commanize as more comes
+actual class DbRef(val rawPtr: CPointer<sqlite3>) : ObjRef {
+    private val nativeRef = NativeRef(this)
+    fun toJni() = nativeRef.stableRef.toJni()
 
     companion object {
         fun fromJni(jlong: jlong): DbRef = jlong.castFromJni()
     }
+
+    override fun dispose() {
+        nativeRef.dispose()
+    }
+
+    override fun isDisposed() =nativeRef.isDisposed()
 }
 
 actual object SqliteApi {
     actual fun openConnection(path: String): DbRef {
         val ptr = nativeHeap.allocPointerTo<sqlite3>()
-        val openResult = sqlite3_open(":memory:", ptr.ptr)
+        val openResult = sqlite3_open(path, ptr.ptr)
         check(openResult == SQLITE_OK) {
-            "could not open database $openResult"
+            "could not open database $openResult $path ${sqlite3_errmsg(ptr.value)?.toKStringFromUtf8()}"
         }
         return DbRef(ptr.value!!)
     }
@@ -93,7 +124,15 @@ actual object SqliteApi {
         return sqlite3_column_type(stmtRef.rawPtr, index) == SQLITE_NULL
     }
 
-    actual fun reset(stmtRef: StmtRef) : ResultCode {
+    actual fun reset(stmtRef: StmtRef): ResultCode {
         return ResultCode(sqlite3_reset(stmtRef.rawPtr))
+    }
+
+    actual fun close(dbRef: DbRef): ResultCode {
+        return ResultCode(sqlite3_close(dbRef.rawPtr))
+    }
+
+    actual fun finalize(stmtRef: StmtRef): ResultCode {
+        return ResultCode(sqlite3_finalize(stmtRef.rawPtr))
     }
 }
