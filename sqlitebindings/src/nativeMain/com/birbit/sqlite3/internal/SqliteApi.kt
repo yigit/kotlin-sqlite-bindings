@@ -13,6 +13,7 @@ import kotlinx.cinterop.allocPointerTo
 import kotlinx.cinterop.asStableRef
 import kotlinx.cinterop.nativeHeap
 import kotlinx.cinterop.ptr
+import kotlinx.cinterop.readBytes
 import kotlinx.cinterop.reinterpret
 import kotlinx.cinterop.toCPointer
 import kotlinx.cinterop.toKStringFromUtf8
@@ -22,11 +23,14 @@ import kotlinx.cinterop.value
 import sqlite3.SQLITE_NULL
 import sqlite3.SQLITE_OK
 import sqlite3.sqlite3_close
+import sqlite3.sqlite3_column_blob
+import sqlite3.sqlite3_column_bytes
 import sqlite3.sqlite3_column_int
 import sqlite3.sqlite3_column_text
 import sqlite3.sqlite3_column_type
 import sqlite3.sqlite3_errmsg
 import sqlite3.sqlite3_finalize
+import sqlite3.sqlite3_free
 import sqlite3.sqlite3_open
 import sqlite3.sqlite3_prepare_v2
 import sqlite3.sqlite3_reset
@@ -47,7 +51,7 @@ private class NativeRef<T:Any>(target:T) : ObjRef {
         }
     override fun dispose() {
         _stableRef?.dispose()
-        _stableRef == null
+        _stableRef = null
     }
 
     override fun isDisposed() = _stableRef == null
@@ -113,6 +117,7 @@ actual object SqliteApi {
 
     actual fun columnText(stmtRef: StmtRef, index: Int): String? {
         val textPtr: CPointer<UByteVar> = sqlite3_column_text(stmtRef.rawPtr, index) ?: return null
+        // TODO free C data
         return textPtr.reinterpret<ByteVar>().toKStringFromUtf8()
     }
 
@@ -134,5 +139,18 @@ actual object SqliteApi {
 
     actual fun finalize(stmtRef: StmtRef): ResultCode {
         return ResultCode(sqlite3_finalize(stmtRef.rawPtr))
+    }
+
+    actual fun columnBlob(stmtRef: StmtRef, index: Int): ByteArray? {
+        val size = sqlite3_column_bytes(stmtRef.rawPtr, index)
+        if (size == 0) {
+            return null
+        }
+        val blob = sqlite3_column_blob(stmtRef.rawPtr, index)
+        checkNotNull(blob) {
+            "columnBlob for $index is null"
+        }
+        // TODO do we need to free this blob, figure out
+        return blob.readBytes(size)
     }
 }

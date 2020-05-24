@@ -63,15 +63,20 @@ open class Type(
         }
     )
 
-    class StringType() : Type(
-        kotlinClass = String::class.asClassName(),
-        nativeClass = ClassNames.JSTRING,
+    class BytesBackedType(
+        kotlinClass: ClassName,
+        nativeClass: ClassName,
+        toKMethod : String,
+        toJMethod : String
+    ) : Type(
+        kotlinClass = kotlinClass,
+        nativeClass = nativeClass,
         convertToJni = { type, envParam, inVar, outVar ->
             CodeBlock.builder().apply {
                 if (type.nullable) {
-                    addStatement("val %L = %L?.toJString(%N)", outVar, inVar, envParam)
+                    addStatement("val %L = %L?.$toJMethod(%N)", outVar, inVar, envParam)
                 } else {
-                    addStatement("val %L = checkNotNull(%L.toJString(%N))", outVar, inVar, envParam)
+                    addStatement("val %L = checkNotNull(%L.$toJMethod(%N))", outVar, inVar, envParam)
                 }
 
             }.build()
@@ -79,9 +84,9 @@ open class Type(
         convertFromJni = { type, envParam, inParam, outVar ->
             CodeBlock.builder().apply {
                 if (type.nullable) {
-                    addStatement("val %L = %N.toKString(%N)", outVar, inParam, envParam)
+                    addStatement("val %L = %N.$toKMethod(%N)", outVar, inParam, envParam)
                 } else {
-                    addStatement("val %L = checkNotNull(%N.toKString(%N))", outVar, inParam, envParam)
+                    addStatement("val %L = checkNotNull(%N.$toKMethod(%N))", outVar, inParam, envParam)
                 }
 
             }.build()
@@ -105,7 +110,12 @@ open class Type(
         } ?: error("cannot resolve type $kotlinType")
 
         val INT = Type(Int::class.asClassName(), ClassNames.JINT)
-        val STRING = StringType()
+        val STRING = BytesBackedType(
+            kotlinClass = String::class.asClassName(),
+            nativeClass = ClassNames.JSTRING,
+            toKMethod = "toKString",
+            toJMethod = "toJString"
+        )
         val DBREF = BridgeType(ClassNames.DB_REF)
         val STMTREF = BridgeType(ClassNames.STMT_REF)
         val LONG = Type(Long::class.asClassName(), ClassNames.JLONG)
@@ -121,6 +131,12 @@ open class Type(
                 }
             })
         val RESULT_CODE = Type(ClassNames.RESULT_CODE, ClassNames.RESULT_CODE)
+        val BYTE_ARRAY = BytesBackedType(
+            kotlinClass = ByteArray::class.asClassName(),
+            nativeClass = ClassNames.JBYTEARRAY,
+            toKMethod = "toKByteArray",
+            toJMethod = "toJByteArray"
+        )
     }
 }
 

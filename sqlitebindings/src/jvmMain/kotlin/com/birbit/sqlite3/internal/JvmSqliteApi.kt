@@ -78,4 +78,9 @@ actual object SqliteApi {
     }
 
     external fun nativeFinalize(stmtPtr: Long): ResultCode
+    actual fun columnBlob(stmtRef: StmtRef, index: Int): ByteArray? {
+        return nativeColumnBlob(stmtRef.ptr, index)
+    }
+
+    external fun nativeColumnBlob(stmtPtr: Long, index: Int) : ByteArray?
 }

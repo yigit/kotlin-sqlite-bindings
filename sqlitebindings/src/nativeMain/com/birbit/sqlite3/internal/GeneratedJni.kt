@@ -5,6 +5,7 @@ package com.birbit.sqlite3.internal
 
 import com.birbit.jni.JNIEnvVar
 import com.birbit.jni.jboolean
+import com.birbit.jni.jbyteArray
 import com.birbit.jni.jclass
 import com.birbit.jni.jint
 import com.birbit.jni.jlong
@@ -128,4 +129,18 @@ fun finalize(
   val localP0 = StmtRef.fromJni(p0)
   val callResult = SqliteApi.finalize(localP0)
   return callResult
+}
+
+@CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativeColumnBlob")
+fun columnBlob(
+  env: CPointer<JNIEnvVar>,
+  clazz: jclass,
+  p0: jlong,
+  p1: jint
+): jbyteArray? {
+  initPlatform()
+  val localP0 = StmtRef.fromJni(p0)
+  val callResult = SqliteApi.columnBlob(localP0, p1)
+  val localCallResult = callResult?.toJByteArray(env)
+  return localCallResult
 }

@@ -19,6 +19,7 @@ class StatementTest {
         oneRowQuery("SELECT NULL") { row ->
             assertEquals(0, row.readInt(0))
             assertEquals(null, row.readString(0))
+            assertEquals(null, row.readByteArray(0))
             assertTrue(row.isNull(0))
         }
     }
@@ -28,6 +29,15 @@ class StatementTest {
         oneRowQuery("SELECT \"hello\"") { row ->
             assertEquals("hello", row.readString(0))
             assertFalse(row.isNull(0))
+        }
+    }
+
+    @OptIn(ExperimentalStdlibApi::class)
+    @Test
+    fun readBlob() {
+        oneRowQuery("SELECT \"Foo bar\"") { row ->
+            val bytes = row.readByteArray(0)
+            assertEquals("Foo bar", bytes?.decodeToString(), "invalid blob returned")
         }
     }
 

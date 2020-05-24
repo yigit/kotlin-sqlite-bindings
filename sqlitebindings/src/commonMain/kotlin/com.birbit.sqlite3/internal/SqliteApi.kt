@@ -32,6 +32,7 @@ expect object SqliteApi {
     fun columnIsNull(stmtRef: StmtRef, index: Int): Boolean
     fun columnText(stmtRef: StmtRef, index: Int): String?
     fun columnInt(stmtRef: StmtRef, index: Int): Int
+    fun columnBlob(stmtRef: StmtRef, index: Int): ByteArray?
     fun reset(stmtRef: StmtRef): ResultCode
     fun close(dbRef: DbRef): ResultCode
     fun finalize(stmtRef: StmtRef): ResultCode
