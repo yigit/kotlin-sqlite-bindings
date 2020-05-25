@@ -28,6 +28,7 @@ internal class CachedJniRef<T : Any>(
 }
 
 internal object JvmReferences {
+    // TODO this should actually try to support all kotlin classes and have a fallback for non-kotlin
     private var jniHelperClass = CachedJniRef {
         memScoped {
             it.nativeInterface().FindClass!!(it, "com/birbit/sqlite3/internal/JniHelper".cstr.ptr)  ?: error("cannot find JniHelper class from native")

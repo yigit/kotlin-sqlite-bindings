@@ -82,8 +82,16 @@ actual object SqliteApi {
     actual fun openConnection(path: String): DbRef {
         val ptr = nativeHeap.allocPointerTo<sqlite3>()
         val openResult = sqlite3_open(path, ptr.ptr)
-        check(openResult == SQLITE_OK) {
-            "could not open database $openResult $path ${sqlite3_errmsg(ptr.value)?.toKStringFromUtf8()}"
+        if (openResult != SQLITE_OK) {
+            try {
+                throw SqliteException(ResultCode(openResult),
+                    "could not open database at path  $path")
+            } finally {
+                ptr.value?.let {
+                    close(DbRef(it))
+                }
+            }
+
         }
         return DbRef(ptr.value!!)
     }

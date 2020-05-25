@@ -14,6 +14,17 @@ class OpenDatabaseTest {
     }
 
     @Test
+    fun openInvalidPath() {
+        val result = kotlin.runCatching {
+            SqliteConnection.openConnection("/::")
+        }
+        assertEquals(result.exceptionOrNull(), SqliteException(
+            ResultCode.CANTOPEN,
+            "could not open database at path  /::"
+        ))
+    }
+
+    @Test
     fun openOnDisk() {
         withTmpFolder {
             val dbPath = getFilePath("testdb.db")
