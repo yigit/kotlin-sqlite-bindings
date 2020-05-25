@@ -2,57 +2,56 @@
 
 package com.birbit.sqlite3.internal
 
-import com.birbit.jni.*
-import kotlinx.cinterop.*
+import com.birbit.jni.JNIEnvVar
+import com.birbit.jni.JNI_ABORT
+import com.birbit.jni.jboolean
+import com.birbit.jni.jbyteArray
+import com.birbit.jni.jclass
+import com.birbit.jni.jint
+import com.birbit.jni.jmethodID
+import com.birbit.jni.jobject
+import com.birbit.jni.jstring
+import kotlinx.cinterop.CFunction
+import kotlinx.cinterop.CPointer
+import kotlinx.cinterop.addressOf
+import kotlinx.cinterop.cstr
+import kotlinx.cinterop.getBytes
+import kotlinx.cinterop.invoke
+import kotlinx.cinterop.memScoped
+import kotlinx.cinterop.pointed
+import kotlinx.cinterop.readValues
 import kotlinx.cinterop.reinterpret
-import kotlin.native.concurrent.AtomicReference
-
-internal inline fun log(msg: Any) {
-    println("LOG:$msg")
-}
+import kotlinx.cinterop.toKStringFromUtf8
+import kotlinx.cinterop.usePinned
 
 internal fun initPlatform() {
     initRuntimeIfNeeded()
     Platform.isMemoryLeakCheckerActive = false
 }
 
-internal class CachedJniRef<T : Any>(
-    private val doGet : (CPointer<JNIEnvVar>) -> T
-) {
-    private var value : AtomicReference<T?> = AtomicReference(null)
-    fun get(env: CPointer<JNIEnvVar>) : T {
-        return value.value ?: doGet(env).also {
-            value.compareAndSet(null, it)
-        }
-    }
-}
+typealias SqliteExceptionConstructor = CFunction<(CPointer<JNIEnvVar>, jclass, jmethodID, jint, jstring?) -> jobject>
 
 internal object JvmReferences {
-    // TODO this should actually try to support all kotlin classes and have a fallback for non-kotlin
-    private var jniHelperClass = CachedJniRef {
-        memScoped {
-            it.nativeInterface().FindClass!!(it, "com/birbit/sqlite3/internal/JniHelper".cstr.ptr)  ?: error("cannot find JniHelper class from native")
-        }
-    }
-    private var createSqliteExceptionMethod = CachedJniRef {
-        memScoped {
-            it.nativeInterface().GetStaticMethodID!!(it, jniHelperClass.get(it), "createSqliteException".cstr.ptr,
-                "(ILjava/lang/String;)Ljava/lang/Object;".cstr.ptr) ?: error("cannot find build exception method")
-        }
-    }
-    private var buildExceptionMethod = CachedJniRef {
-        it.nativeInterface()::CallStaticObjectMethod.get()?.reinterpret<BuildExceptionMethod>() ?: error("cannot cast build sqlite exception method")
-    }
     fun throwJvmSqliteException(
         env: CPointer<JNIEnvVar>,
-        sqliteException:SqliteException
+        sqliteException: SqliteException
     ) {
         val nativeInterface = env.nativeInterface()
-        val exception = buildExceptionMethod.get(env).invoke(env,
-            jniHelperClass.get(env),
-            createSqliteExceptionMethod.get(env),
-            sqliteException.resultCode.value,
-            sqliteException.msg.toJString(env))
+        val exception = memScoped {
+            val exceptionClass = nativeInterface.FindClass!!(
+                env, "com/birbit/sqlite3/internal/SqliteException".cstr.ptr)
+                ?: error("cannot find SqliteException class from native")
+            val constructor = nativeInterface.GetMethodID!!(
+                env, exceptionClass, "<init>".cstr.ptr, "(ILjava/lang/String;)V".cstr.ptr
+            ) ?: error("cannot find build exception method")
+            nativeInterface.NewObject!!.reinterpret<SqliteExceptionConstructor>().invoke(
+                env,
+                exceptionClass,
+                constructor,
+                sqliteException.resultCode.value,
+                sqliteException.msg.toJString(env)
+            )
+        }
         nativeInterface.Throw!!(env, exception)
     }
 }
@@ -114,7 +113,7 @@ internal inline fun jbyteArray?.toKByteArray(env: CPointer<JNIEnvVar>) : ByteArr
     }
 }
 
-typealias BuildExceptionMethod = CFunction<(CPointer<JNIEnvVar>, jclass, jmethodID, jint, jstring?) -> jobject>
+// TODO we should wrap more exceptions
 internal inline fun <reified T> runWithJniExceptionConversion(
     env:CPointer<JNIEnvVar>,
     dummy : T,
