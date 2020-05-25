@@ -29,6 +29,13 @@ class SqliteStmt(
         }
     }
 
+    fun bind(index: Int, value: String) {
+        val resultCode = SqliteApi.bindText(stmtRef, index, value)
+        check(ResultCode.OK == resultCode) {
+            "unable to bind value $value to index $index"
+        }
+    }
+
     // TODO provide an API where we can enforce closing
     //  maybe sth like `use` which will give APIs like query during the time `use` is called.
     //  might be better to call it `acquire` or `obtain` if we won't close afterwards though.

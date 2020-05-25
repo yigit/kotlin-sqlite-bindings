@@ -68,6 +68,15 @@ class StatementTest {
         }
     }
 
+    @Test
+    fun bindString() {
+        query("SELECT ?") { stmt ->
+            stmt.bind(1, "Foo baz")
+            val read = stmt.query().first().readString(0)
+            assertEquals("Foo baz", read)
+        }
+    }
+
     private fun oneRowQuery(query:String, block : (Row) -> Unit) {
         return query(query) {
             block(it.query().first())

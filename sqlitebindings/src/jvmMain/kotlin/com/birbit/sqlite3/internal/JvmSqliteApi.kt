@@ -98,4 +98,9 @@ actual object SqliteApi {
         return nativeBindBlob(stmtRef.ptr, index, bytes)
     }
     external fun nativeBindBlob(stmtPtr: Long, index: Int, bytes: ByteArray?) : ResultCode
+    actual fun bindText(stmtRef: StmtRef, index: Int, value: String): ResultCode {
+        return nativeBindText(stmtRef.ptr, index, value)
+    }
+    external fun nativeBindText(stmtPtr: Long, index: Int, value: String) : ResultCode
+
 }

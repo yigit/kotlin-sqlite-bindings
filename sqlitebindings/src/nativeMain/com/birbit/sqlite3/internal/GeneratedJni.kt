@@ -186,3 +186,18 @@ fun bindBlob(
   val callResult = SqliteApi.bindBlob(localP0, p1, localP2)
   return callResult
 }
+
+@CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativeBindText")
+fun bindText(
+  env: CPointer<JNIEnvVar>,
+  clazz: jclass,
+  p0: jlong,
+  p1: jint,
+  p2: jstring
+): ResultCode {
+  initPlatform()
+  val localP0 = StmtRef.fromJni(p0)
+  val localP2 = checkNotNull(p2.toKString(env))
+  val callResult = SqliteApi.bindText(localP0, p1, localP2)
+  return callResult
+}

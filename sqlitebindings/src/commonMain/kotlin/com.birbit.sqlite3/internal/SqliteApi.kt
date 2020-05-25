@@ -39,4 +39,5 @@ expect object SqliteApi {
     fun close(dbRef: DbRef): ResultCode
     fun finalize(stmtRef: StmtRef): ResultCode
     fun bindBlob(stmtRef: StmtRef, index: Int, bytes: ByteArray?) : ResultCode
+    fun bindText(stmtRef: StmtRef, index: Int, value: String): ResultCode
 }
