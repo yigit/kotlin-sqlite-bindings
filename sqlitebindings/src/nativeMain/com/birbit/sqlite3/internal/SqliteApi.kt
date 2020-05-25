@@ -27,6 +27,7 @@ import sqlite3.sqlite3_column_blob
 import sqlite3.sqlite3_column_bytes
 import sqlite3.sqlite3_column_double
 import sqlite3.sqlite3_column_int
+import sqlite3.sqlite3_column_int64
 import sqlite3.sqlite3_column_text
 import sqlite3.sqlite3_column_type
 import sqlite3.sqlite3_errmsg
@@ -157,5 +158,9 @@ actual object SqliteApi {
 
     actual fun columnDouble(stmtRef: StmtRef, index: Int): Double {
         return sqlite3_column_double(stmtRef.rawPtr, index)
+    }
+
+    actual fun columnLong(stmtRef: StmtRef, index: Int): Long {
+        return sqlite3_column_int64(stmtRef.rawPtr, index)
     }
 }

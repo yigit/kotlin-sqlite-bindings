@@ -18,7 +18,8 @@ actual object PlatformTestUtils {
         val tmpDir = memScoped {
             val tmpName = "ksqlite_tmp${randomFolderName()}"
             // for some reason, mkdtemp does not work on command line tests :/
-            mkdir(tmpName, 0b0111111111.toUInt())//7.or(7.shl(4)).or(7.shl(8)).toUInt())
+            // second param to mkdir is UShort on mac and UInt on linux :/
+            mkdir(tmpName, 0b0111111111.toUShort())
             tmpName
         }
         return checkNotNull(tmpDir) {

@@ -15,6 +15,15 @@ class StatementTest {
     }
 
     @Test
+    fun readLong() {
+        val value = Long.MAX_VALUE
+        oneRowQuery("SELECT $value") { row ->
+            assertEquals(value, row.readLong(0))
+            assertFalse(row.isNull(0))
+        }
+    }
+
+    @Test
     fun readNulls() {
         oneRowQuery("SELECT NULL") { row ->
             assertEquals(0, row.readInt(0))

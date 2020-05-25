@@ -90,4 +90,8 @@ actual object SqliteApi {
     }
 
     external fun nativeColumnDouble(stmtPtr: Long, index: Int): Double
+    actual fun columnLong(stmtRef: StmtRef, index: Int): Long {
+        return nativeColumnLong(stmtRef.ptr, index)
+    }
+    external fun nativeColumnLong(stmtPtr: Long, index: Int) : Long
 }

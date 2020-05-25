@@ -158,3 +158,16 @@ fun columnDouble(
   val callResult = SqliteApi.columnDouble(localP0, p1)
   return callResult
 }
+
+@CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativeColumnLong")
+fun columnLong(
+  env: CPointer<JNIEnvVar>,
+  clazz: jclass,
+  p0: jlong,
+  p1: jint
+): jlong {
+  initPlatform()
+  val localP0 = StmtRef.fromJni(p0)
+  val callResult = SqliteApi.columnLong(localP0, p1)
+  return callResult
+}
