@@ -77,6 +77,34 @@ class StatementTest {
         }
     }
 
+    @Test
+    fun bindInt() {
+        query("SELECT ?") { stmt ->
+            stmt.bind(1, Int.MIN_VALUE)
+            val read = stmt.query().first().readInt(0)
+            assertEquals(Int.MIN_VALUE, read)
+        }
+    }
+
+    @Test
+    fun bindLong() {
+        query("SELECT ?") { stmt ->
+            stmt.bind(1, Long.MIN_VALUE)
+            val read = stmt.query().first().readLong(0)
+            assertEquals(Long.MIN_VALUE, read)
+        }
+    }
+
+    @Test
+    fun bindNull() {
+        query("SELECT ?") { stmt ->
+            stmt.bind(1, 3)
+            stmt.bindNull(1)
+            val read = stmt.query().first().readString(0)
+            assertEquals(null, read)
+        }
+    }
+
     private fun oneRowQuery(query:String, block : (Row) -> Unit) {
         return query(query) {
             block(it.query().first())

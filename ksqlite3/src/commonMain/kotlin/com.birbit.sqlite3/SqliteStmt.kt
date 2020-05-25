@@ -36,6 +36,28 @@ class SqliteStmt(
         }
     }
 
+
+    fun bind(index: Int, value: Int) {
+        val resultCode = SqliteApi.bindInt(stmtRef, index, value)
+        check(ResultCode.OK == resultCode) {
+            "unable to bind value $value to index $index"
+        }
+    }
+
+    fun bind(index: Int, value: Long) {
+        val resultCode = SqliteApi.bindLong(stmtRef, index, value)
+        check(ResultCode.OK == resultCode) {
+            "unable to bind value $value to index $index"
+        }
+    }
+
+    fun bindNull(index: Int) {
+        val resultCode = SqliteApi.bindNull(stmtRef, index)
+        check(ResultCode.OK == resultCode) {
+            "unable to bind null to index $index"
+        }
+    }
+
     // TODO provide an API where we can enforce closing
     //  maybe sth like `use` which will give APIs like query during the time `use` is called.
     //  might be better to call it `acquire` or `obtain` if we won't close afterwards though.

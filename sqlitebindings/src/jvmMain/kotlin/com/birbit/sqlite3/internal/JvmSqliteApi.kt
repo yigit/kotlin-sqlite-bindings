@@ -94,13 +94,27 @@ actual object SqliteApi {
         return nativeColumnLong(stmtRef.ptr, index)
     }
     external fun nativeColumnLong(stmtPtr: Long, index: Int) : Long
-    actual fun bindBlob(stmtRef: StmtRef, index: Int, bytes: ByteArray?): ResultCode {
+    actual fun bindBlob(stmtRef: StmtRef, index: Int, bytes: ByteArray): ResultCode {
         return nativeBindBlob(stmtRef.ptr, index, bytes)
     }
-    external fun nativeBindBlob(stmtPtr: Long, index: Int, bytes: ByteArray?) : ResultCode
+    external fun nativeBindBlob(stmtPtr: Long, index: Int, bytes: ByteArray) : ResultCode
     actual fun bindText(stmtRef: StmtRef, index: Int, value: String): ResultCode {
         return nativeBindText(stmtRef.ptr, index, value)
     }
     external fun nativeBindText(stmtPtr: Long, index: Int, value: String) : ResultCode
+    actual fun bindInt(stmtRef: StmtRef, index: Int, value: Int): ResultCode {
+        return nativeBindInt(stmtRef.ptr, index, value)
+    }
+    external fun nativeBindInt(stmtPtr: Long, index: Int, value:Int):ResultCode
 
+    actual fun bindLong(stmtRef: StmtRef, index: Int, value: Long): ResultCode {
+        return nativeBindLong(stmtRef.ptr, index, value)
+    }
+    external fun nativeBindLong(stmtPtr: Long, index: Int, value:Long):ResultCode
+
+    actual fun bindNull(stmtRef: StmtRef, index: Int): ResultCode {
+        return nativeBindNull(stmtRef.ptr, index)
+    }
+
+    external fun nativeBindNull(stmtPtr: Long, index: Int):ResultCode
 }

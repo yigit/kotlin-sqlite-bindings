@@ -28,6 +28,8 @@ import sqlite3.SQLITE_NULL
 import sqlite3.SQLITE_OK
 import sqlite3.SQLITE_TRANSIENT
 import sqlite3.sqlite3_bind_blob
+import sqlite3.sqlite3_bind_int
+import sqlite3.sqlite3_bind_int64
 import sqlite3.sqlite3_bind_null
 import sqlite3.sqlite3_bind_text
 import sqlite3.sqlite3_close
@@ -172,19 +174,30 @@ actual object SqliteApi {
         return sqlite3_column_int64(stmtRef.rawPtr, index)
     }
 
-    actual fun bindBlob(stmtRef: StmtRef, index: Int, bytes : ByteArray?) : ResultCode {
-        val resultCode = if (bytes == null) {
-            sqlite3_bind_null(stmtRef.rawPtr, index)
-        } else {
-            bytes.usePinned {
-                sqlite3_bind_blob(stmtRef.rawPtr, index, it.addressOf(0),bytes.size, SQLITE_TRANSIENT)
-            }
+    actual fun bindBlob(stmtRef: StmtRef, index: Int, bytes : ByteArray) : ResultCode {
+        val resultCode = bytes.usePinned {
+            sqlite3_bind_blob(stmtRef.rawPtr, index, it.addressOf(0),bytes.size, SQLITE_TRANSIENT)
         }
         return ResultCode(resultCode)
     }
 
     actual fun bindText(stmtRef: StmtRef, index: Int, value: String): ResultCode {
         val resultCode = sqlite3_bind_text(stmtRef.rawPtr, index, value, -1, SQLITE_TRANSIENT)
+        return ResultCode(resultCode)
+    }
+
+    actual fun bindInt(stmtRef: StmtRef, index: Int, value: Int): ResultCode {
+        val resultCode = sqlite3_bind_int(stmtRef.rawPtr, index, value)
+        return ResultCode(resultCode)
+    }
+
+    actual fun bindLong(stmtRef: StmtRef, index: Int, value: Long): ResultCode {
+        val resultCode = sqlite3_bind_int64(stmtRef.rawPtr, index, value)
+        return ResultCode(resultCode)
+    }
+
+    actual fun bindNull(stmtRef: StmtRef, index: Int): ResultCode {
+        val resultCode = sqlite3_bind_null(stmtRef.rawPtr, index)
         return ResultCode(resultCode)
     }
 }
