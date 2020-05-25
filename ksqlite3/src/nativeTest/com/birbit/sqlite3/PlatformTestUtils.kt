@@ -3,7 +3,6 @@ package com.birbit.sqlite3
 import kotlinx.cinterop.memScoped
 import platform.posix.F_OK
 import platform.posix.access
-import platform.posix.mkdir
 import platform.posix.system
 import kotlin.random.Random
 
@@ -19,7 +18,7 @@ actual object PlatformTestUtils {
             val tmpName = "ksqlite_tmp${randomFolderName()}"
             // for some reason, mkdtemp does not work on command line tests :/
             // second param to mkdir is UShort on mac and UInt on linux :/
-            mkdir(tmpName, 0b0111111111.toUShort())
+            OsSpecificTestUtils.mkdirForTest(tmpName)
             tmpName
         }
         return checkNotNull(tmpDir) {

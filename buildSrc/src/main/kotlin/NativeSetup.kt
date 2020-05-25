@@ -33,6 +33,22 @@ fun KotlinMultiplatformExtension.setupCommon(
     configure: KotlinNativeTarget.() -> Unit
 ) {
     setupNative(gradle) {
+        val os = DefaultNativePlatform.getCurrentOperatingSystem()
+        val osSpecificFolderPrefix = when {
+            os.isLinux -> "linux"
+            os.isMacOsX -> "mac"
+            os.isWindows -> "windows"
+            else -> null
+        }
+        // TODO we should nest these folders 1 more to be consistent w/ common
+        osSpecificFolderPrefix?.let {
+            compilations["main"].defaultSourceSet {
+                kotlin.srcDir("src/${it}Main")
+            }
+            compilations["test"].defaultSourceSet {
+                kotlin.srcDir("src/${it}Test")
+            }
+        }
         compilations["main"].defaultSourceSet {
             kotlin.srcDir("src/nativeMain")
         }
