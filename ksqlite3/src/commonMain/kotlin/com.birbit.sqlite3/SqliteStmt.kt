@@ -1,10 +1,12 @@
 package com.birbit.sqlite3
 
+import com.birbit.sqlite3.internal.DbRef
 import com.birbit.sqlite3.internal.ResultCode
 import com.birbit.sqlite3.internal.SqliteApi
 import com.birbit.sqlite3.internal.StmtRef
 
 class SqliteStmt(
+    val connection: SqliteConnection,
     private val stmtRef: StmtRef
 ) {
     fun close() {
@@ -64,8 +66,12 @@ class SqliteStmt(
     fun query(): Sequence<Row> = sequence {
         SqliteApi.reset(stmtRef)
         val row = Row(stmtRef)
-        while (SqliteApi.step(stmtRef) == ResultCode.ROW) {
+        val stepResultCode:ResultCode= ResultCode.OK
+        while (SqliteApi.step(stmtRef).also { stepResultCode == it } == ResultCode.ROW) {
             yield(row)
+        }
+        check(stepResultCode == ResultCode.DONE) {
+            "querying rows ended prematurely $stepResultCode"
         }
     }
 }

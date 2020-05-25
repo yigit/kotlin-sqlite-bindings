@@ -8,12 +8,16 @@ class SqliteConnection private constructor(
     private val dbRef: DbRef
 ) {
     fun prepareStmt(stmt:String) : SqliteStmt {
-        return SqliteStmt(SqliteApi.prepareStmt(dbRef, stmt))
+        return SqliteStmt(this, SqliteApi.prepareStmt(dbRef, stmt))
     }
 
-    fun <T> use(block : () -> T) : T {
+    fun lastErrorMessage() = SqliteApi.errorMsg(dbRef)
+
+    fun lastErrorCode() = SqliteApi.errorCode(dbRef)
+
+    fun <T> use(block : (SqliteConnection) -> T) : T {
         return try {
-            block()
+            block(this)
         } finally {
             close()
         }

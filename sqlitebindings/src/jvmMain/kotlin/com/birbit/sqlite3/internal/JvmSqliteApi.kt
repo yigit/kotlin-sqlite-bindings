@@ -18,7 +18,7 @@ open class JvmObjRef(
 
 actual class DbRef(ptr: Long) : JvmObjRef(ptr), ObjRef
 
-actual class StmtRef(ptr: Long) : JvmObjRef(ptr), ObjRef
+actual class StmtRef(actual val dbRef: DbRef, ptr: Long) : JvmObjRef(ptr), ObjRef
 
 actual object SqliteApi {
     init {
@@ -35,7 +35,7 @@ actual object SqliteApi {
         dbRef: DbRef,
         stmt: String
     ): StmtRef {
-        return StmtRef(nativePrepareStmt(dbRef.ptr, stmt))
+        return StmtRef(dbRef, nativePrepareStmt(dbRef.ptr, stmt))
     }
 
     external fun nativePrepareStmt(ptr: Long, stmt: String): Long
@@ -117,4 +117,20 @@ actual object SqliteApi {
     }
 
     external fun nativeBindNull(stmtPtr: Long, index: Int):ResultCode
+    actual fun errorMsg(dbRef: DbRef): String? {
+        return nativeErrorMsg(dbRef.ptr)
+    }
+
+    external fun nativeErrorMsg(dbPtr: Long): String?
+
+    actual fun errorCode(dbRef: DbRef): ResultCode {
+        return nativeErrorCode(dbRef.ptr)
+    }
+
+    external fun nativeErrorCode(dbPtr: Long) : ResultCode
+
+    actual fun errorString(code: ResultCode): String? {
+        return nativeErrorString(code)
+    }
+    external fun nativeErrorString(code: ResultCode) : String?
 }

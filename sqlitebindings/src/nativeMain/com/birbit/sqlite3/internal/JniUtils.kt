@@ -2,23 +2,10 @@
 
 package com.birbit.sqlite3.internal
 
-import com.birbit.jni.JNIEnvVar
-import com.birbit.jni.JNI_ABORT
-import com.birbit.jni.jboolean
-import com.birbit.jni.jbyteArray
-import com.birbit.jni.jstring
-import kotlinx.cinterop.CPointer
-import kotlinx.cinterop.addressOf
-import kotlinx.cinterop.cstr
-import kotlinx.cinterop.getBytes
-import kotlinx.cinterop.invoke
-import kotlinx.cinterop.memScoped
-import kotlinx.cinterop.objcPtr
-import kotlinx.cinterop.pointed
-import kotlinx.cinterop.readValues
+import com.birbit.jni.*
+import kotlinx.cinterop.*
 import kotlinx.cinterop.reinterpret
-import kotlinx.cinterop.toKStringFromUtf8
-import kotlinx.cinterop.usePinned
+import kotlin.native.concurrent.AtomicReference
 
 internal inline fun log(msg: Any) {
     println("LOG:$msg")
@@ -27,6 +14,46 @@ internal inline fun log(msg: Any) {
 internal fun initPlatform() {
     initRuntimeIfNeeded()
     Platform.isMemoryLeakCheckerActive = false
+}
+
+internal class CachedJniRef<T : Any>(
+    private val doGet : (CPointer<JNIEnvVar>) -> T
+) {
+    private var value : AtomicReference<T?> = AtomicReference(null)
+    fun get(env: CPointer<JNIEnvVar>) : T {
+        return value.value ?: doGet(env).also {
+            value.compareAndSet(null, it)
+        }
+    }
+}
+
+internal object JvmReferences {
+    private var jniHelperClass = CachedJniRef {
+        memScoped {
+            it.nativeInterface().FindClass!!(it, "com/birbit/sqlite3/internal/JniHelper".cstr.ptr)  ?: error("cannot find JniHelper class from native")
+        }
+    }
+    private var createSqliteExceptionMethod = CachedJniRef {
+        memScoped {
+            it.nativeInterface().GetStaticMethodID!!(it, jniHelperClass.get(it), "createSqliteException".cstr.ptr,
+                "(ILjava/lang/String;)Ljava/lang/Object;".cstr.ptr) ?: error("cannot find build exception method")
+        }
+    }
+    private var buildExceptionMethod = CachedJniRef {
+        it.nativeInterface()::CallStaticObjectMethod.get()?.reinterpret<BuildExceptionMethod>() ?: error("cannot cast build sqlite exception method")
+    }
+    fun throwJvmSqliteException(
+        env: CPointer<JNIEnvVar>,
+        sqliteException:SqliteException
+    ) {
+        val nativeInterface = env.nativeInterface()
+        val exception = buildExceptionMethod.get(env).invoke(env,
+            jniHelperClass.get(env),
+            createSqliteExceptionMethod.get(env),
+            sqliteException.resultCode.value,
+            sqliteException.msg.toJString(env))
+        nativeInterface.Throw!!(env, exception)
+    }
 }
 
 internal inline fun CPointer<JNIEnvVar>.nativeInterface() = checkNotNull(this.pointed.pointed)
@@ -83,5 +110,19 @@ internal inline fun jbyteArray?.toKByteArray(env: CPointer<JNIEnvVar>) : ByteArr
         bytes.pointed.readValues(length).getBytes()
     } finally {
         env.nativeInterface().ReleaseByteArrayElements!!(env, this, bytes, JNI_ABORT)
+    }
+}
+
+typealias BuildExceptionMethod = CFunction<(CPointer<JNIEnvVar>, jclass, jmethodID, jint, jstring?) -> jobject>
+internal inline fun <reified T> runWithJniExceptionConversion(
+    env:CPointer<JNIEnvVar>,
+    dummy : T,
+    block: () -> T
+) : T {
+    return try {
+        block()
+    } catch (sqliteException : SqliteException) {
+        JvmReferences.throwJvmSqliteException(env, sqliteException)
+        dummy
     }
 }

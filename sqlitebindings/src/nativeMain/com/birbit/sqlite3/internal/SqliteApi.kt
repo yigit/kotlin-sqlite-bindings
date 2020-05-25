@@ -12,9 +12,7 @@ import kotlinx.cinterop.UByteVar
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.allocPointerTo
 import kotlinx.cinterop.asStableRef
-import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.nativeHeap
-import kotlinx.cinterop.objcPtr
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.readBytes
 import kotlinx.cinterop.reinterpret
@@ -49,7 +47,7 @@ private class NativeRef<T : Any>(target: T) : ObjRef {
 
 }
 
-actual class StmtRef(val rawPtr: CPointer<sqlite3_stmt>) : ObjRef {
+actual class StmtRef(actual val dbRef: DbRef, val rawPtr: CPointer<sqlite3_stmt>) : ObjRef {
     private val nativeRef = NativeRef(this)
     fun toJni() = nativeRef.stableRef.toJni()
 
@@ -96,10 +94,8 @@ actual object SqliteApi {
     ): StmtRef {
         val stmtPtr = nativeHeap.allocPointerTo<sqlite3_stmt>()
         val resultCode = sqlite3_prepare_v2(dbRef.rawPtr, stmt.utf8, -1, stmtPtr.ptr, null)
-        check(resultCode == SQLITE_OK) {
-            "cannot prepare statement $stmt"
-        }
-        return StmtRef(stmtPtr.value!!)
+        checkResultCode(dbRef, resultCode, SQLITE_OK)
+        return StmtRef(dbRef, stmtPtr.value!!)
     }
 
     actual fun step(stmtRef: StmtRef): ResultCode {
@@ -178,5 +174,17 @@ actual object SqliteApi {
     actual fun bindNull(stmtRef: StmtRef, index: Int): ResultCode {
         val resultCode = sqlite3_bind_null(stmtRef.rawPtr, index)
         return ResultCode(resultCode)
+    }
+
+    actual fun errorMsg(dbRef: DbRef): String? {
+        return sqlite3_errmsg(dbRef.rawPtr)?.toKStringFromUtf8()
+    }
+
+    actual fun errorCode(dbRef: DbRef): ResultCode {
+        return ResultCode(sqlite3_errcode(dbRef.rawPtr))
+    }
+
+    actual fun errorString(code: ResultCode): String? {
+        return sqlite3_errstr(code.value)?.toKStringFromUtf8()
     }
 }

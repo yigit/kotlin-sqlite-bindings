@@ -22,10 +22,12 @@ fun openConnection(
   p0: jstring
 ): jlong {
   initPlatform()
-  val localP0 = checkNotNull(p0.toKString(env))
-  val callResult = SqliteApi.openConnection(localP0)
-  val localCallResult = callResult.toJni()
-  return localCallResult
+  return runWithJniExceptionConversion(env, 0L) {
+    val localP0 = checkNotNull(p0.toKString(env))
+    val callResult = SqliteApi.openConnection(localP0)
+    val localCallResult = callResult.toJni()
+    localCallResult
+  }
 }
 
 @CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativePrepareStmt")
@@ -36,11 +38,13 @@ fun prepareStmt(
   p1: jstring
 ): jlong {
   initPlatform()
-  val localP0 = DbRef.fromJni(p0)
-  val localP1 = checkNotNull(p1.toKString(env))
-  val callResult = SqliteApi.prepareStmt(localP0, localP1)
-  val localCallResult = callResult.toJni()
-  return localCallResult
+  return runWithJniExceptionConversion(env, 0L) {
+    val localP0 = DbRef.fromJni(p0)
+    val localP1 = checkNotNull(p1.toKString(env))
+    val callResult = SqliteApi.prepareStmt(localP0, localP1)
+    val localCallResult = callResult.toJni()
+    localCallResult
+  }
 }
 
 @CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativeStep")
@@ -50,9 +54,11 @@ fun step(
   p0: jlong
 ): ResultCode {
   initPlatform()
-  val localP0 = StmtRef.fromJni(p0)
-  val callResult = SqliteApi.step(localP0)
-  return callResult
+  return runWithJniExceptionConversion(env, ResultCode(-1)) {
+    val localP0 = StmtRef.fromJni(p0)
+    val callResult = SqliteApi.step(localP0)
+    callResult
+  }
 }
 
 @CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativeColumnText")
@@ -63,10 +69,12 @@ fun columnText(
   p1: jint
 ): jstring? {
   initPlatform()
-  val localP0 = StmtRef.fromJni(p0)
-  val callResult = SqliteApi.columnText(localP0, p1)
-  val localCallResult = callResult?.toJString(env)
-  return localCallResult
+  return runWithJniExceptionConversion(env, null) {
+    val localP0 = StmtRef.fromJni(p0)
+    val callResult = SqliteApi.columnText(localP0, p1)
+    val localCallResult = callResult?.toJString(env)
+    localCallResult
+  }
 }
 
 @CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativeColumnInt")
@@ -77,9 +85,11 @@ fun columnInt(
   p1: jint
 ): jint {
   initPlatform()
-  val localP0 = StmtRef.fromJni(p0)
-  val callResult = SqliteApi.columnInt(localP0, p1)
-  return callResult
+  return runWithJniExceptionConversion(env, 0) {
+    val localP0 = StmtRef.fromJni(p0)
+    val callResult = SqliteApi.columnInt(localP0, p1)
+    callResult
+  }
 }
 
 @CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativeColumnIsNull")
@@ -90,10 +100,12 @@ fun columnIsNull(
   p1: jint
 ): jboolean {
   initPlatform()
-  val localP0 = StmtRef.fromJni(p0)
-  val callResult = SqliteApi.columnIsNull(localP0, p1)
-  val localCallResult = callResult.toJBoolean()
-  return localCallResult
+  return runWithJniExceptionConversion(env, JFALSE) {
+    val localP0 = StmtRef.fromJni(p0)
+    val callResult = SqliteApi.columnIsNull(localP0, p1)
+    val localCallResult = callResult.toJBoolean()
+    localCallResult
+  }
 }
 
 @CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativeReset")
@@ -103,9 +115,11 @@ fun reset(
   p0: jlong
 ): ResultCode {
   initPlatform()
-  val localP0 = StmtRef.fromJni(p0)
-  val callResult = SqliteApi.reset(localP0)
-  return callResult
+  return runWithJniExceptionConversion(env, ResultCode(-1)) {
+    val localP0 = StmtRef.fromJni(p0)
+    val callResult = SqliteApi.reset(localP0)
+    callResult
+  }
 }
 
 @CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativeClose")
@@ -115,9 +129,11 @@ fun close(
   p0: jlong
 ): ResultCode {
   initPlatform()
-  val localP0 = DbRef.fromJni(p0)
-  val callResult = SqliteApi.close(localP0)
-  return callResult
+  return runWithJniExceptionConversion(env, ResultCode(-1)) {
+    val localP0 = DbRef.fromJni(p0)
+    val callResult = SqliteApi.close(localP0)
+    callResult
+  }
 }
 
 @CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativeFinalize")
@@ -127,9 +143,11 @@ fun finalize(
   p0: jlong
 ): ResultCode {
   initPlatform()
-  val localP0 = StmtRef.fromJni(p0)
-  val callResult = SqliteApi.finalize(localP0)
-  return callResult
+  return runWithJniExceptionConversion(env, ResultCode(-1)) {
+    val localP0 = StmtRef.fromJni(p0)
+    val callResult = SqliteApi.finalize(localP0)
+    callResult
+  }
 }
 
 @CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativeColumnBlob")
@@ -140,10 +158,12 @@ fun columnBlob(
   p1: jint
 ): jbyteArray? {
   initPlatform()
-  val localP0 = StmtRef.fromJni(p0)
-  val callResult = SqliteApi.columnBlob(localP0, p1)
-  val localCallResult = callResult?.toJByteArray(env)
-  return localCallResult
+  return runWithJniExceptionConversion(env, null) {
+    val localP0 = StmtRef.fromJni(p0)
+    val callResult = SqliteApi.columnBlob(localP0, p1)
+    val localCallResult = callResult?.toJByteArray(env)
+    localCallResult
+  }
 }
 
 @CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativeColumnDouble")
@@ -154,9 +174,11 @@ fun columnDouble(
   p1: jint
 ): jdouble {
   initPlatform()
-  val localP0 = StmtRef.fromJni(p0)
-  val callResult = SqliteApi.columnDouble(localP0, p1)
-  return callResult
+  return runWithJniExceptionConversion(env, 0.0) {
+    val localP0 = StmtRef.fromJni(p0)
+    val callResult = SqliteApi.columnDouble(localP0, p1)
+    callResult
+  }
 }
 
 @CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativeColumnLong")
@@ -167,9 +189,11 @@ fun columnLong(
   p1: jint
 ): jlong {
   initPlatform()
-  val localP0 = StmtRef.fromJni(p0)
-  val callResult = SqliteApi.columnLong(localP0, p1)
-  return callResult
+  return runWithJniExceptionConversion(env, 0L) {
+    val localP0 = StmtRef.fromJni(p0)
+    val callResult = SqliteApi.columnLong(localP0, p1)
+    callResult
+  }
 }
 
 @CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativeBindBlob")
@@ -181,10 +205,12 @@ fun bindBlob(
   p2: jbyteArray
 ): ResultCode {
   initPlatform()
-  val localP0 = StmtRef.fromJni(p0)
-  val localP2 = checkNotNull(p2.toKByteArray(env))
-  val callResult = SqliteApi.bindBlob(localP0, p1, localP2)
-  return callResult
+  return runWithJniExceptionConversion(env, ResultCode(-1)) {
+    val localP0 = StmtRef.fromJni(p0)
+    val localP2 = checkNotNull(p2.toKByteArray(env))
+    val callResult = SqliteApi.bindBlob(localP0, p1, localP2)
+    callResult
+  }
 }
 
 @CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativeBindText")
@@ -196,10 +222,12 @@ fun bindText(
   p2: jstring
 ): ResultCode {
   initPlatform()
-  val localP0 = StmtRef.fromJni(p0)
-  val localP2 = checkNotNull(p2.toKString(env))
-  val callResult = SqliteApi.bindText(localP0, p1, localP2)
-  return callResult
+  return runWithJniExceptionConversion(env, ResultCode(-1)) {
+    val localP0 = StmtRef.fromJni(p0)
+    val localP2 = checkNotNull(p2.toKString(env))
+    val callResult = SqliteApi.bindText(localP0, p1, localP2)
+    callResult
+  }
 }
 
 @CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativeBindInt")
@@ -211,9 +239,11 @@ fun bindInt(
   p2: jint
 ): ResultCode {
   initPlatform()
-  val localP0 = StmtRef.fromJni(p0)
-  val callResult = SqliteApi.bindInt(localP0, p1, p2)
-  return callResult
+  return runWithJniExceptionConversion(env, ResultCode(-1)) {
+    val localP0 = StmtRef.fromJni(p0)
+    val callResult = SqliteApi.bindInt(localP0, p1, p2)
+    callResult
+  }
 }
 
 @CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativeBindLong")
@@ -225,9 +255,11 @@ fun bindLong(
   p2: jlong
 ): ResultCode {
   initPlatform()
-  val localP0 = StmtRef.fromJni(p0)
-  val callResult = SqliteApi.bindLong(localP0, p1, p2)
-  return callResult
+  return runWithJniExceptionConversion(env, ResultCode(-1)) {
+    val localP0 = StmtRef.fromJni(p0)
+    val callResult = SqliteApi.bindLong(localP0, p1, p2)
+    callResult
+  }
 }
 
 @CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativeBindNull")
@@ -238,7 +270,52 @@ fun bindNull(
   p1: jint
 ): ResultCode {
   initPlatform()
-  val localP0 = StmtRef.fromJni(p0)
-  val callResult = SqliteApi.bindNull(localP0, p1)
-  return callResult
+  return runWithJniExceptionConversion(env, ResultCode(-1)) {
+    val localP0 = StmtRef.fromJni(p0)
+    val callResult = SqliteApi.bindNull(localP0, p1)
+    callResult
+  }
+}
+
+@CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativeErrorMsg")
+fun errorMsg(
+  env: CPointer<JNIEnvVar>,
+  clazz: jclass,
+  p0: jlong
+): jstring? {
+  initPlatform()
+  return runWithJniExceptionConversion(env, null) {
+    val localP0 = DbRef.fromJni(p0)
+    val callResult = SqliteApi.errorMsg(localP0)
+    val localCallResult = callResult?.toJString(env)
+    localCallResult
+  }
+}
+
+@CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativeErrorCode")
+fun errorCode(
+  env: CPointer<JNIEnvVar>,
+  clazz: jclass,
+  p0: jlong
+): ResultCode {
+  initPlatform()
+  return runWithJniExceptionConversion(env, ResultCode(-1)) {
+    val localP0 = DbRef.fromJni(p0)
+    val callResult = SqliteApi.errorCode(localP0)
+    callResult
+  }
+}
+
+@CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativeErrorString")
+fun errorString(
+  env: CPointer<JNIEnvVar>,
+  clazz: jclass,
+  p0: ResultCode
+): jstring? {
+  initPlatform()
+  return runWithJniExceptionConversion(env, null) {
+    val callResult = SqliteApi.errorString(p0)
+    val localCallResult = callResult?.toJString(env)
+    localCallResult
+  }
 }
