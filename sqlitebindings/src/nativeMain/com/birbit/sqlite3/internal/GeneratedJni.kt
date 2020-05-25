@@ -171,3 +171,18 @@ fun columnLong(
   val callResult = SqliteApi.columnLong(localP0, p1)
   return callResult
 }
+
+@CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativeBindBlob")
+fun bindBlob(
+  env: CPointer<JNIEnvVar>,
+  clazz: jclass,
+  p0: jlong,
+  p1: jint,
+  p2: jbyteArray?
+): ResultCode {
+  initPlatform()
+  val localP0 = StmtRef.fromJni(p0)
+  val localP2 = p2.toKByteArray(env)
+  val callResult = SqliteApi.bindBlob(localP0, p1, localP2)
+  return callResult
+}

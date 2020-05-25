@@ -9,19 +9,25 @@ import kotlinx.cinterop.CPointed
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.StableRef
 import kotlinx.cinterop.UByteVar
+import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.allocPointerTo
 import kotlinx.cinterop.asStableRef
+import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.nativeHeap
+import kotlinx.cinterop.objcPtr
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.readBytes
 import kotlinx.cinterop.reinterpret
 import kotlinx.cinterop.toCPointer
 import kotlinx.cinterop.toKStringFromUtf8
 import kotlinx.cinterop.toLong
+import kotlinx.cinterop.usePinned
 import kotlinx.cinterop.utf8
 import kotlinx.cinterop.value
 import sqlite3.SQLITE_NULL
 import sqlite3.SQLITE_OK
+import sqlite3.sqlite3_bind_blob
+import sqlite3.sqlite3_bind_null
 import sqlite3.sqlite3_close
 import sqlite3.sqlite3_column_blob
 import sqlite3.sqlite3_column_bytes
@@ -162,5 +168,16 @@ actual object SqliteApi {
 
     actual fun columnLong(stmtRef: StmtRef, index: Int): Long {
         return sqlite3_column_int64(stmtRef.rawPtr, index)
+    }
+
+    actual fun bindBlob(stmtRef: StmtRef, index: Int, bytes : ByteArray?) : ResultCode {
+        val resultCode = if (bytes == null) {
+            sqlite3_bind_null(stmtRef.rawPtr, index)
+        } else {
+            bytes.usePinned {
+                sqlite3_bind_blob(stmtRef.rawPtr, index, it.addressOf(0),bytes.size, null)
+            }
+        }
+        return ResultCode(resultCode)
     }
 }

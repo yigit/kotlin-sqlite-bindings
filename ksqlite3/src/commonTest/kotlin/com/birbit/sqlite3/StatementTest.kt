@@ -58,11 +58,27 @@ class StatementTest {
         }
     }
 
+    @Test
+    fun bindBlob() {
+        query("SELECT ?") { stmt ->
+            val byteArray = byteArrayOf(0b0, 0b1, 0b0, 0b1)
+            stmt.bind(1, byteArray)
+            val read = stmt.query().first().readByteArray(0)
+            assertEquals(byteArray.joinToString(), read!!.joinToString())
+        }
+    }
+
     private fun oneRowQuery(query:String, block : (Row) -> Unit) {
+        return query(query) {
+            block(it.query().first())
+        }
+    }
+
+    private fun query(query:String, block : (SqliteStmt) -> Unit) {
         val conn = SqliteConnection.openConnection(":memory:")
         val stmt = conn.prepareStmt(query)
         stmt.use {
-            block(stmt.query().first())
+            block(stmt)
         }
     }
 }

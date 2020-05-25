@@ -94,4 +94,8 @@ actual object SqliteApi {
         return nativeColumnLong(stmtRef.ptr, index)
     }
     external fun nativeColumnLong(stmtPtr: Long, index: Int) : Long
+    actual fun bindBlob(stmtRef: StmtRef, index: Int, bytes: ByteArray?): ResultCode {
+        return nativeBindBlob(stmtRef.ptr, index, bytes)
+    }
+    external fun nativeBindBlob(stmtPtr: Long, index: Int, bytes: ByteArray?) : ResultCode
 }

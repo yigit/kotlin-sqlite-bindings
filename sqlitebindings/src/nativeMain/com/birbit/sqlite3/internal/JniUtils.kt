@@ -3,16 +3,20 @@
 package com.birbit.sqlite3.internal
 
 import com.birbit.jni.JNIEnvVar
+import com.birbit.jni.JNI_ABORT
 import com.birbit.jni.jboolean
 import com.birbit.jni.jbyteArray
 import com.birbit.jni.jstring
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.cstr
+import kotlinx.cinterop.getBytes
 import kotlinx.cinterop.invoke
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.objcPtr
 import kotlinx.cinterop.pointed
+import kotlinx.cinterop.readValues
+import kotlinx.cinterop.reinterpret
 import kotlinx.cinterop.toKStringFromUtf8
 import kotlinx.cinterop.usePinned
 
@@ -28,7 +32,12 @@ internal fun initPlatform() {
 internal inline fun CPointer<JNIEnvVar>.nativeInterface() = checkNotNull(this.pointed.pointed)
 
 internal inline fun jstring?.toKString(env: CPointer<JNIEnvVar>): String? {
-    return env.nativeInterface().GetStringUTFChars!!.invoke(env, this, null)?.toKStringFromUtf8()
+    val chars = env.nativeInterface().GetStringUTFChars!!(env, this, null)
+    try {
+        return chars?.toKStringFromUtf8()
+    } finally {
+        env.nativeInterface().ReleaseStringUTFChars!!(env, this, chars)
+    }
 }
 
 internal inline fun String?.toJString(env: CPointer<JNIEnvVar>): jstring? = this?.let {
@@ -44,9 +53,12 @@ internal inline fun Boolean.toJBoolean(): jboolean = if (this) JTRUE else JFALSE
 
 internal inline fun jboolean.toKBoolean(): Boolean = this != JFALSE
 
-internal inline fun ByteArray.toJByteArray(env: CPointer<JNIEnvVar>) : jbyteArray = memScoped {
+internal inline fun ByteArray?.toJByteArray(env: CPointer<JNIEnvVar>) : jbyteArray? = memScoped {
     // TODO there is a double copy here from both sqlite to knative and then knative to java, we should probably
     //  avoid it in the future
+    if (this@toJByteArray == null) {
+        return@memScoped null
+    }
     val nativeInterface = env.nativeInterface()
     val newByteArray = nativeInterface.NewByteArray!!(env, this@toJByteArray.size)
     checkNotNull(newByteArray) {
@@ -57,4 +69,19 @@ internal inline fun ByteArray.toJByteArray(env: CPointer<JNIEnvVar>) : jbyteArra
         nativeInterface.SetByteArrayRegion!!(env, newByteArray, 0, this@toJByteArray.size, it.addressOf(0))
     }
     newByteArray
+}
+
+internal inline fun jbyteArray?.toKByteArray(env: CPointer<JNIEnvVar>) : ByteArray? {
+    if (this == null) return null
+    val bytes = env.nativeInterface().GetByteArrayElements!!(env, this, null)
+    checkNotNull(bytes) {
+        "unable to get bytes from JNI"
+    }
+    return try {
+        // TODO probably needs to be optimized
+        val length = env.nativeInterface().GetArrayLength!!(env, this)
+        bytes.pointed.readValues(length).getBytes()
+    } finally {
+        env.nativeInterface().ReleaseByteArrayElements!!(env, this, bytes, JNI_ABORT)
+    }
 }
