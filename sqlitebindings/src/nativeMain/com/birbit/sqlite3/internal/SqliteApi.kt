@@ -24,28 +24,7 @@ import kotlinx.cinterop.toLong
 import kotlinx.cinterop.usePinned
 import kotlinx.cinterop.utf8
 import kotlinx.cinterop.value
-import sqlite3.SQLITE_NULL
-import sqlite3.SQLITE_OK
-import sqlite3.SQLITE_TRANSIENT
-import sqlite3.sqlite3_bind_blob
-import sqlite3.sqlite3_bind_int
-import sqlite3.sqlite3_bind_int64
-import sqlite3.sqlite3_bind_null
-import sqlite3.sqlite3_bind_text
-import sqlite3.sqlite3_close
-import sqlite3.sqlite3_column_blob
-import sqlite3.sqlite3_column_bytes
-import sqlite3.sqlite3_column_double
-import sqlite3.sqlite3_column_int
-import sqlite3.sqlite3_column_int64
-import sqlite3.sqlite3_column_text
-import sqlite3.sqlite3_column_type
-import sqlite3.sqlite3_errmsg
-import sqlite3.sqlite3_finalize
-import sqlite3.sqlite3_open
-import sqlite3.sqlite3_prepare_v2
-import sqlite3.sqlite3_reset
-import sqlite3.sqlite3_step
+import sqlite3.*
 
 private inline fun <reified T : Any> jlong.castFromJni(): T {
     val ptr: COpaquePointer = this.toCPointer<CPointed>()!!
@@ -146,7 +125,7 @@ actual object SqliteApi {
     }
 
     actual fun close(dbRef: DbRef): ResultCode {
-        return ResultCode(sqlite3_close(dbRef.rawPtr))
+        return ResultCode(sqlite3_close_v2(dbRef.rawPtr))
     }
 
     actual fun finalize(stmtRef: StmtRef): ResultCode {

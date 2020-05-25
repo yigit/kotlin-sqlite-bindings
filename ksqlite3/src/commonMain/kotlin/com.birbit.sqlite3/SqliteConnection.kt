@@ -11,6 +11,14 @@ class SqliteConnection private constructor(
         return SqliteStmt(SqliteApi.prepareStmt(dbRef, stmt))
     }
 
+    fun <T> use(block : () -> T) : T {
+        return try {
+            block()
+        } finally {
+            close()
+        }
+    }
+
     fun close() {
         check(SqliteApi.close(dbRef) == ResultCode.OK) {
             "failed to close database"

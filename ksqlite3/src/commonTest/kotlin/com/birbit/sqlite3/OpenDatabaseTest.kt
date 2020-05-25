@@ -6,8 +6,8 @@ import kotlin.test.assertTrue
 class OpenDatabaseTest {
     @Test
     fun openInMemory() {
-        SqliteConnection.openConnection(":memory:")
-        // cool
+        val conn = SqliteConnection.openConnection(":memory:")
+        conn.close()
     }
 
     @Test

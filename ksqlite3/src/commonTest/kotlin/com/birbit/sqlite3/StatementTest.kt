@@ -113,9 +113,11 @@ class StatementTest {
 
     private fun query(query:String, block : (SqliteStmt) -> Unit) {
         val conn = SqliteConnection.openConnection(":memory:")
-        val stmt = conn.prepareStmt(query)
-        stmt.use {
-            block(stmt)
+        conn.use {
+            val stmt = conn.prepareStmt(query)
+            stmt.use {
+                block(stmt)
+            }
         }
     }
 }
