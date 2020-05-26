@@ -1,6 +1,20 @@
+/*
+ * Copyright 2020 Google, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.birbit.sqlite3
 
-import com.birbit.sqlite3.internal.DbRef
 import com.birbit.sqlite3.internal.ResultCode
 import com.birbit.sqlite3.internal.SqliteApi
 import com.birbit.sqlite3.internal.StmtRef
@@ -16,7 +30,7 @@ class SqliteStmt(
         stmtRef.dispose()
     }
 
-    fun <T> use(block : () -> T) : T {
+    fun <T> use(block: () -> T): T {
         return try {
             block()
         } finally {
@@ -37,7 +51,6 @@ class SqliteStmt(
             "unable to bind value $value to index $index"
         }
     }
-
 
     fun bind(index: Int, value: Int) {
         val resultCode = SqliteApi.bindInt(stmtRef, index, value)
@@ -66,7 +79,7 @@ class SqliteStmt(
     fun query(): Sequence<Row> = sequence {
         SqliteApi.reset(stmtRef)
         val row = Row(stmtRef)
-        val stepResultCode:ResultCode= ResultCode.OK
+        val stepResultCode: ResultCode = ResultCode.OK
         while (SqliteApi.step(stmtRef).also { stepResultCode == it } == ResultCode.ROW) {
             yield(row)
         }

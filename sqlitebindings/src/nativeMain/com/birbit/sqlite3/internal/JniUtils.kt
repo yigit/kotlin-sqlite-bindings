@@ -1,3 +1,18 @@
+/*
+ * Copyright 2020 Google, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 @file:Suppress("NOTHING_TO_INLINE", "EXPERIMENTAL_API_USAGE")
 
 package com.birbit.sqlite3.internal
@@ -80,7 +95,7 @@ internal inline fun Boolean.toJBoolean(): jboolean = if (this) JTRUE else JFALSE
 
 internal inline fun jboolean.toKBoolean(): Boolean = this != JFALSE
 
-internal inline fun ByteArray?.toJByteArray(env: CPointer<JNIEnvVar>) : jbyteArray? = memScoped {
+internal inline fun ByteArray?.toJByteArray(env: CPointer<JNIEnvVar>): jbyteArray? = memScoped {
     // TODO there is a double copy here from both sqlite to knative and then knative to java, we should probably
     //  avoid it in the future
     if (this@toJByteArray == null) {
@@ -98,7 +113,7 @@ internal inline fun ByteArray?.toJByteArray(env: CPointer<JNIEnvVar>) : jbyteArr
     newByteArray
 }
 
-internal inline fun jbyteArray?.toKByteArray(env: CPointer<JNIEnvVar>) : ByteArray? {
+internal inline fun jbyteArray?.toKByteArray(env: CPointer<JNIEnvVar>): ByteArray? {
     if (this == null) return null
     val bytes = env.nativeInterface().GetByteArrayElements!!(env, this, null)
     checkNotNull(bytes) {
@@ -115,13 +130,13 @@ internal inline fun jbyteArray?.toKByteArray(env: CPointer<JNIEnvVar>) : ByteArr
 
 // TODO we should wrap more exceptions
 internal inline fun <reified T> runWithJniExceptionConversion(
-    env:CPointer<JNIEnvVar>,
-    dummy : T,
+    env: CPointer<JNIEnvVar>,
+    dummy: T,
     block: () -> T
-) : T {
+): T {
     return try {
         block()
-    } catch (sqliteException : SqliteException) {
+    } catch (sqliteException: SqliteException) {
         JvmReferences.throwJvmSqliteException(env, sqliteException)
         dummy
     }

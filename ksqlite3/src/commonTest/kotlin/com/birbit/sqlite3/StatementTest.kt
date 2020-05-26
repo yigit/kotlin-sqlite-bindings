@@ -1,3 +1,18 @@
+/*
+ * Copyright 2020 Google, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.birbit.sqlite3
 
 import kotlin.test.Test
@@ -53,7 +68,7 @@ class StatementTest {
 
     @Test
     fun readDouble() {
-        oneRowQuery("SELECT 2.1234") {row ->
+        oneRowQuery("SELECT 2.1234") { row ->
             assertEquals(2.1234, row.readDouble(0))
         }
     }
@@ -105,13 +120,13 @@ class StatementTest {
         }
     }
 
-    private fun oneRowQuery(query:String, block : (Row) -> Unit) {
+    private fun oneRowQuery(query: String, block: (Row) -> Unit) {
         return query(query) {
             block(it.query().first())
         }
     }
 
-    private fun query(query:String, block : (SqliteStmt) -> Unit) {
+    private fun query(query: String, block: (SqliteStmt) -> Unit) {
         val conn = SqliteConnection.openConnection(":memory:")
         conn.use {
             val stmt = conn.prepareStmt(query)
