@@ -24,6 +24,11 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+    - name: Setup Java environment based on AdoptOpenJDK
+      uses: joschi/setup-jdk@v1.1.2
+      with:
+        # OpenJDK version, example: "openjdk8", "openjdk11", "openjdk13".
+        java-version: 'openjdk11' 
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
 
