@@ -51,7 +51,9 @@ jobs:
         key: ${{ runner.os }}-konan
     # Runs a single command using the runners shell
     - name: build and test
-      run: ./gradlew clean allTests
+      run: ./gradlew allTests
+    - name: run spotless
+      run: ./gradlew spotlessCheck
     - name: Upload test results for sqlitebindings
       if: always()
       uses: actions/upload-artifact@v2

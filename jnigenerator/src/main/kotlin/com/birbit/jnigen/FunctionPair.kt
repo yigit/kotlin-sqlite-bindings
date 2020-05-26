@@ -13,25 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.birbit.jnigen
 
-import com.birbit.ksqlite.build.Dependencies.KOTLIN_POET
-
-plugins {
-    kotlin("jvm") // version "1.3.72"
-}
-
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    implementation(kotlin("stdlib-jdk8"))
-    implementation(project.fileTree("libs") {
-        include("*.jar")
-    })
-    implementation(KOTLIN_POET)
-}
-
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-    kotlinOptions.jvmTarget = "1.8"
+data class FunctionPair(
+    val actualFun: FunctionDeclaration,
+    val nativeFun: FunctionDeclaration
+) {
+    val jniSignature: String
+        // TODO this is probably more complicated
+        get() = "Java_com_birbit_sqlite3_internal_SqliteApi_${nativeFun.name}"
 }
