@@ -30,7 +30,11 @@ subprojects {
     apply(plugin = "com.diffplug.gradle.spotless")
     this.extensions.getByType(SpotlessExtension::class).apply {
         kotlin {
-            ktlint()
+            ktlint().userData(
+                mapOf(
+                    "max_line_length" to "120"
+                )
+            )
             licenseHeaderFile(project.rootProject.file("scripts/copyright.kt"))
         }
         kotlinGradle {

@@ -80,7 +80,11 @@ class JniWriter(
         localCallResult
         }
          */
-        beginControlFlow("return runWithJniExceptionConversion(%N, %L)", envParam, pair.nativeFun.returnType.defaultValue())
+        beginControlFlow(
+            "return runWithJniExceptionConversion(%N, %L)",
+            envParam,
+            pair.nativeFun.returnType.defaultValue()
+        )
         val argumentNames = params.map {
             if (it.first.hasConvertFromJni()) {
                 val localVarName = "local${it.second.name.capitalize()}"
@@ -102,8 +106,12 @@ class JniWriter(
         //  addComment("return type: %L , %L", pair.actualFun.returnType, convertToJni == null)
         if (pair.actualFun.returnType.hasConvertToJni()) {
             val localResultName = "local${RETURN_VALUE_NAME.capitalize()}"
-            addCode(pair.actualFun.returnType.convertToJni(envParam,
-                RETURN_VALUE_NAME, localResultName))
+            addCode(
+                pair.actualFun.returnType.convertToJni(
+                    envParam,
+                    RETURN_VALUE_NAME, localResultName
+                )
+            )
             addStatement("%L", localResultName)
         } else {
             addStatement("%L", RETURN_VALUE_NAME)
