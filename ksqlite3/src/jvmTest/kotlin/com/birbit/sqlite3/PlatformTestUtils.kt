@@ -18,7 +18,7 @@ package com.birbit.sqlite3
 
 import java.io.File
 import java.nio.file.Paths
-import java.util.*
+import java.util.UUID
 
 actual object PlatformTestUtils {
     actual fun getTmpDir(): String {
