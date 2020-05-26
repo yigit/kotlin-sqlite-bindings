@@ -1,12 +1,9 @@
 import com.birbit.ksqlite.build.Dependencies
 import com.birbit.ksqlite.build.SqliteCompilationConfig
 import com.birbit.ksqlite.build.setupCommon
-import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform.getCurrentOperatingSystem
-import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
-import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
 plugins {
-    kotlin("multiplatform") //version "1.3.72"
+    kotlin("multiplatform") // version "1.3.72"
 }
 
 group = "com.birbit"

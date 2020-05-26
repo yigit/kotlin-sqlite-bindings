@@ -1,4 +1,7 @@
-import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.AnnotationSpec
+import com.squareup.kotlinpoet.FileSpec
+import com.squareup.kotlinpoet.FunSpec
+import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import java.io.File
 
@@ -40,7 +43,7 @@ class JniWriter(
         val params = mutableListOf<Pair<Type, ParameterSpec>>()
         pair.nativeFun.paramTypes.forEachIndexed { index, type ->
             val param = ParameterSpec.builder(
-                "p${index}",
+                "p$index",
                 type.nativeClass
             ).build()
             params.add(pair.actualFun.paramTypes[index] to param)

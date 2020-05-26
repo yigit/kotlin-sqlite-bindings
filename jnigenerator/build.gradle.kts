@@ -1,7 +1,7 @@
 import com.birbit.ksqlite.build.Dependencies.KOTLIN_POET
 
 plugins {
-    kotlin("jvm") //version "1.3.72"
+    kotlin("jvm") // version "1.3.72"
 }
 
 repositories {

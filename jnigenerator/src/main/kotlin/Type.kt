@@ -73,8 +73,8 @@ open class Type(
     class BytesBackedType(
         kotlinClass: ClassName,
         nativeClass: ClassName,
-        toKMethod : String,
-        toJMethod : String
+        toKMethod: String,
+        toJMethod: String
     ) : Type(
         kotlinClass = kotlinClass,
         nativeClass = nativeClass,
@@ -85,7 +85,6 @@ open class Type(
                 } else {
                     addStatement("val %L = checkNotNull(%L.$toJMethod(%N))", outVar, inVar, envParam)
                 }
-
             }.build()
         },
         convertFromJni = { type, envParam, inParam, outVar ->
@@ -95,7 +94,6 @@ open class Type(
                 } else {
                     addStatement("val %L = checkNotNull(%N.$toKMethod(%N))", outVar, inParam, envParam)
                 }
-
             }.build()
         },
         defaultValue = "null" // TODO this is probably NOT null. fix when we need it

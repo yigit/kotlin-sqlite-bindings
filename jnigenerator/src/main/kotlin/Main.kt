@@ -1,5 +1,5 @@
-import org.jetbrains.kotlin.spec.grammar.tools.parseKotlinCode
 import java.io.File
+import org.jetbrains.kotlin.spec.grammar.tools.parseKotlinCode
 
 /**
  * TODO: should we make this part of the build?
@@ -22,7 +22,7 @@ fun main() {
     } ?: error("no actual methods?")
     val pairs = externalMethods.map { native ->
         val actualMethod = checkNotNull(actualMethods[native.name]) {
-            "cannot find actual method for  ${native}"
+            "cannot find actual method for  $native"
         }
         FunctionPair(
             actualFun = actualMethod,

@@ -35,7 +35,7 @@ fun KotlinParseTree.name() = nameFiled.get(this) as? String
 
 fun KotlinParseTree.text() = textField.get(this) as? String
 
-fun KotlinParseTree.asSequence() : Sequence<KotlinParseTree> = sequence<KotlinParseTree> {
+fun KotlinParseTree.asSequence(): Sequence<KotlinParseTree> = sequence<KotlinParseTree> {
     yield(this@asSequence)
     children.forEach {
         it.asSequence().forEach {
@@ -54,7 +54,7 @@ fun KotlinParseTree.objectDeclarations() = asSequence().filter {
     ObjectDeclaration(it)
 }
 
-fun KotlinParseTree.findPath(sections : List<String>) : List<KotlinParseTree> {
+fun KotlinParseTree.findPath(sections: List<String>): List<KotlinParseTree> {
     if (sections.isEmpty()) {
         return listOf(this)
     }
@@ -137,10 +137,10 @@ class FunctionDeclaration(
             "cannot find return type for $parseTree"
         }.resolveType(nullable)
     }
-    val external : Boolean
+    val external: Boolean
         get() = modifiers.contains(Modifiers.EXTERNAL)
 
     override fun toString(): String {
-        return "$name(${paramTypes.joinToString()}):${returnType}"
+        return "$name(${paramTypes.joinToString()}):$returnType"
     }
 }
