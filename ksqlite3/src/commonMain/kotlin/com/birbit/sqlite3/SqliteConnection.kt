@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.birbit.sqlite3
 
 import com.birbit.sqlite3.internal.DbRef
@@ -23,7 +22,7 @@ import com.birbit.sqlite3.internal.SqliteApi
 class SqliteConnection private constructor(
     private val dbRef: DbRef
 ) {
-    fun prepareStmt(stmt:String) : SqliteStmt {
+    fun prepareStmt(stmt: String): SqliteStmt {
         return SqliteStmt(this, SqliteApi.prepareStmt(dbRef, stmt))
     }
 
@@ -31,7 +30,7 @@ class SqliteConnection private constructor(
 
     fun lastErrorCode() = SqliteApi.errorCode(dbRef)
 
-    fun <T> use(block : (SqliteConnection) -> T) : T {
+    fun <T> use(block: (SqliteConnection) -> T): T {
         return try {
             block(this)
         } finally {
@@ -47,7 +46,7 @@ class SqliteConnection private constructor(
     }
 
     companion object {
-        fun openConnection(path : String) = SqliteConnection(
+        fun openConnection(path: String) = SqliteConnection(
             SqliteApi.openConnection(path)
         )
     }

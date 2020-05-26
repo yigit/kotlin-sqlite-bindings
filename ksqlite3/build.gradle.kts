@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 import com.birbit.ksqlite.build.setupCommon
 import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform.getCurrentOperatingSystem
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension

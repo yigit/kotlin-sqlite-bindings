@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.birbit.sqlite3.internal
 
 import cnames.structs.sqlite3
@@ -38,7 +37,30 @@ import kotlinx.cinterop.toLong
 import kotlinx.cinterop.usePinned
 import kotlinx.cinterop.utf8
 import kotlinx.cinterop.value
-import sqlite3.*
+import sqlite3.SQLITE_NULL
+import sqlite3.SQLITE_OK
+import sqlite3.SQLITE_TRANSIENT
+import sqlite3.sqlite3_bind_blob
+import sqlite3.sqlite3_bind_int
+import sqlite3.sqlite3_bind_int64
+import sqlite3.sqlite3_bind_null
+import sqlite3.sqlite3_bind_text
+import sqlite3.sqlite3_close_v2
+import sqlite3.sqlite3_column_blob
+import sqlite3.sqlite3_column_bytes
+import sqlite3.sqlite3_column_double
+import sqlite3.sqlite3_column_int
+import sqlite3.sqlite3_column_int64
+import sqlite3.sqlite3_column_text
+import sqlite3.sqlite3_column_type
+import sqlite3.sqlite3_errcode
+import sqlite3.sqlite3_errmsg
+import sqlite3.sqlite3_errstr
+import sqlite3.sqlite3_finalize
+import sqlite3.sqlite3_open
+import sqlite3.sqlite3_prepare_v2
+import sqlite3.sqlite3_reset
+import sqlite3.sqlite3_step
 
 private inline fun <reified T : Any> jlong.castFromJni(): T {
     val ptr: COpaquePointer = this.toCPointer<CPointed>()!!
@@ -60,10 +82,9 @@ private class NativeRef<T : Any>(target: T) : ObjRef {
     }
 
     override fun isDisposed() = _stableRef == null
-
 }
 
-actual class StmtRef(actual val dbRef: DbRef, val rawPtr: CPointer<sqlite3_stmt>) : ObjRef {
+actual class StmtRef(@Suppress("unused") actual val dbRef: DbRef, val rawPtr: CPointer<sqlite3_stmt>) : ObjRef {
     private val nativeRef = NativeRef(this)
     fun toJni() = nativeRef.stableRef.toJni()
 
@@ -100,14 +121,15 @@ actual object SqliteApi {
         val openResult = sqlite3_open(path, ptr.ptr)
         if (openResult != SQLITE_OK) {
             try {
-                throw SqliteException(ResultCode(openResult),
-                    "could not open database at path  $path")
+                throw SqliteException(
+                    ResultCode(openResult),
+                    "could not open database at path  $path"
+                )
             } finally {
                 ptr.value?.let {
                     close(DbRef(it))
                 }
             }
-
         }
         return DbRef(ptr.value!!)
     }
@@ -173,9 +195,9 @@ actual object SqliteApi {
         return sqlite3_column_int64(stmtRef.rawPtr, index)
     }
 
-    actual fun bindBlob(stmtRef: StmtRef, index: Int, bytes : ByteArray) : ResultCode {
+    actual fun bindBlob(stmtRef: StmtRef, index: Int, bytes: ByteArray): ResultCode {
         val resultCode = bytes.usePinned {
-            sqlite3_bind_blob(stmtRef.rawPtr, index, it.addressOf(0),bytes.size, SQLITE_TRANSIENT)
+            sqlite3_bind_blob(stmtRef.rawPtr, index, it.addressOf(0), bytes.size, SQLITE_TRANSIENT)
         }
         return ResultCode(resultCode)
     }

@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.birbit.sqlite3.internal
 
 import org.scijava.nativelib.NativeLoader
@@ -30,7 +29,6 @@ open class JvmObjRef(
 
     override fun isDisposed() = ptr == 0L
 }
-
 
 actual class DbRef(ptr: Long) : JvmObjRef(ptr), ObjRef
 
@@ -109,30 +107,30 @@ actual object SqliteApi {
     actual fun columnLong(stmtRef: StmtRef, index: Int): Long {
         return nativeColumnLong(stmtRef.ptr, index)
     }
-    external fun nativeColumnLong(stmtPtr: Long, index: Int) : Long
+    external fun nativeColumnLong(stmtPtr: Long, index: Int): Long
     actual fun bindBlob(stmtRef: StmtRef, index: Int, bytes: ByteArray): ResultCode {
         return nativeBindBlob(stmtRef.ptr, index, bytes)
     }
-    external fun nativeBindBlob(stmtPtr: Long, index: Int, bytes: ByteArray) : ResultCode
+    external fun nativeBindBlob(stmtPtr: Long, index: Int, bytes: ByteArray): ResultCode
     actual fun bindText(stmtRef: StmtRef, index: Int, value: String): ResultCode {
         return nativeBindText(stmtRef.ptr, index, value)
     }
-    external fun nativeBindText(stmtPtr: Long, index: Int, value: String) : ResultCode
+    external fun nativeBindText(stmtPtr: Long, index: Int, value: String): ResultCode
     actual fun bindInt(stmtRef: StmtRef, index: Int, value: Int): ResultCode {
         return nativeBindInt(stmtRef.ptr, index, value)
     }
-    external fun nativeBindInt(stmtPtr: Long, index: Int, value:Int):ResultCode
+    external fun nativeBindInt(stmtPtr: Long, index: Int, value: Int): ResultCode
 
     actual fun bindLong(stmtRef: StmtRef, index: Int, value: Long): ResultCode {
         return nativeBindLong(stmtRef.ptr, index, value)
     }
-    external fun nativeBindLong(stmtPtr: Long, index: Int, value:Long):ResultCode
+    external fun nativeBindLong(stmtPtr: Long, index: Int, value: Long): ResultCode
 
     actual fun bindNull(stmtRef: StmtRef, index: Int): ResultCode {
         return nativeBindNull(stmtRef.ptr, index)
     }
 
-    external fun nativeBindNull(stmtPtr: Long, index: Int):ResultCode
+    external fun nativeBindNull(stmtPtr: Long, index: Int): ResultCode
     actual fun errorMsg(dbRef: DbRef): String? {
         return nativeErrorMsg(dbRef.ptr)
     }
@@ -143,10 +141,10 @@ actual object SqliteApi {
         return nativeErrorCode(dbRef.ptr)
     }
 
-    external fun nativeErrorCode(dbPtr: Long) : ResultCode
+    external fun nativeErrorCode(dbPtr: Long): ResultCode
 
     actual fun errorString(code: ResultCode): String? {
         return nativeErrorString(code)
     }
-    external fun nativeErrorString(code: ResultCode) : String?
+    external fun nativeErrorString(code: ResultCode): String?
 }

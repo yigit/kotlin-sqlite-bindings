@@ -13,10 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.birbit.sqlite3
 
-import com.birbit.sqlite3.internal.DbRef
 import com.birbit.sqlite3.internal.ResultCode
 import com.birbit.sqlite3.internal.SqliteApi
 import com.birbit.sqlite3.internal.StmtRef
@@ -32,7 +30,7 @@ class SqliteStmt(
         stmtRef.dispose()
     }
 
-    fun <T> use(block : () -> T) : T {
+    fun <T> use(block: () -> T): T {
         return try {
             block()
         } finally {
@@ -53,7 +51,6 @@ class SqliteStmt(
             "unable to bind value $value to index $index"
         }
     }
-
 
     fun bind(index: Int, value: Int) {
         val resultCode = SqliteApi.bindInt(stmtRef, index, value)
@@ -82,7 +79,7 @@ class SqliteStmt(
     fun query(): Sequence<Row> = sequence {
         SqliteApi.reset(stmtRef)
         val row = Row(stmtRef)
-        val stepResultCode:ResultCode= ResultCode.OK
+        val stepResultCode: ResultCode = ResultCode.OK
         while (SqliteApi.step(stmtRef).also { stepResultCode == it } == ResultCode.ROW) {
             yield(row)
         }

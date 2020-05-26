@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.birbit.sqlite3
 
 import kotlin.test.Test
@@ -69,7 +68,7 @@ class StatementTest {
 
     @Test
     fun readDouble() {
-        oneRowQuery("SELECT 2.1234") {row ->
+        oneRowQuery("SELECT 2.1234") { row ->
             assertEquals(2.1234, row.readDouble(0))
         }
     }
@@ -121,13 +120,13 @@ class StatementTest {
         }
     }
 
-    private fun oneRowQuery(query:String, block : (Row) -> Unit) {
+    private fun oneRowQuery(query: String, block: (Row) -> Unit) {
         return query(query) {
             block(it.query().first())
         }
     }
 
-    private fun query(query:String, block : (SqliteStmt) -> Unit) {
+    private fun query(query: String, block: (SqliteStmt) -> Unit) {
         val conn = SqliteConnection.openConnection(":memory:")
         conn.use {
             val stmt = conn.prepareStmt(query)
