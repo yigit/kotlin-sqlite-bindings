@@ -14,21 +14,26 @@ open class Type(
     val nativeClass: TypeName,
     private val convertToJni: ToJniFun? = null,
     private val convertFromJni: FronJniFun? = null,
-    val nullable: Boolean
+    val nullable: Boolean,
+    private val defaultValue: String
 ) {
     constructor(
         kotlinClass: ClassName,
         nativeClass: TypeName,
         convertToJni: ToJniFun? = null,
-        convertFromJni: FronJniFun? = null
+        convertFromJni: FronJniFun? = null,
+        defaultValue: String
     ) : this(
         kotlinDecl = kotlinClass.simpleName,
         kotlinClass = kotlinClass,
         nativeClass = nativeClass,
         convertToJni = convertToJni,
         convertFromJni = convertFromJni,
-        nullable = false
+        nullable = false,
+        defaultValue = defaultValue
     )
+
+    fun defaultValue() = if (nullable) "null" else defaultValue
 
     fun hasConvertToJni() = convertToJni != null
     fun hasConvertFromJni() = convertFromJni != null
@@ -45,7 +50,8 @@ open class Type(
         nativeClass = nativeClass.copy(nullable = nullable),
         convertFromJni = convertFromJni,
         convertToJni = convertToJni,
-        nullable = nullable
+        nullable = nullable,
+        defaultValue = defaultValue
     )
 
     class BridgeType(kotlinClass: ClassName) : Type(
@@ -60,18 +66,24 @@ open class Type(
             CodeBlock.builder().apply {
                 addStatement("val %L = %L.toJni()", outVar, inVar)
             }.build()
-        }
+        },
+        defaultValue = "0"
     )
 
-    class StringType() : Type(
-        kotlinClass = String::class.asClassName(),
-        nativeClass = ClassNames.JSTRING,
+    class BytesBackedType(
+        kotlinClass: ClassName,
+        nativeClass: ClassName,
+        toKMethod : String,
+        toJMethod : String
+    ) : Type(
+        kotlinClass = kotlinClass,
+        nativeClass = nativeClass,
         convertToJni = { type, envParam, inVar, outVar ->
             CodeBlock.builder().apply {
                 if (type.nullable) {
-                    addStatement("val %L = %L?.toJString(%N)", outVar, inVar, envParam)
+                    addStatement("val %L = %L?.$toJMethod(%N)", outVar, inVar, envParam)
                 } else {
-                    addStatement("val %L = checkNotNull(%L.toJString(%N))", outVar, inVar, envParam)
+                    addStatement("val %L = checkNotNull(%L.$toJMethod(%N))", outVar, inVar, envParam)
                 }
 
             }.build()
@@ -79,13 +91,14 @@ open class Type(
         convertFromJni = { type, envParam, inParam, outVar ->
             CodeBlock.builder().apply {
                 if (type.nullable) {
-                    addStatement("val %L = %N.toKString(%N)", outVar, inParam, envParam)
+                    addStatement("val %L = %N.$toKMethod(%N)", outVar, inParam, envParam)
                 } else {
-                    addStatement("val %L = checkNotNull(%N.toKString(%N))", outVar, inParam, envParam)
+                    addStatement("val %L = checkNotNull(%N.$toKMethod(%N))", outVar, inParam, envParam)
                 }
 
             }.build()
-        }
+        },
+        defaultValue = "null" // TODO this is probably NOT null. fix when we need it
     )
 
     companion object {
@@ -104,12 +117,18 @@ open class Type(
             it.copy(nullable = nullable)
         } ?: error("cannot resolve type $kotlinType")
 
-        val INT = Type(Int::class.asClassName(), ClassNames.JINT)
-        val STRING = StringType()
+        val INT = Type(Int::class.asClassName(), ClassNames.JINT, defaultValue = "0")
+        val STRING = BytesBackedType(
+            kotlinClass = String::class.asClassName(),
+            nativeClass = ClassNames.JSTRING,
+            toKMethod = "toKString",
+            toJMethod = "toJString"
+        )
         val DBREF = BridgeType(ClassNames.DB_REF)
         val STMTREF = BridgeType(ClassNames.STMT_REF)
-        val LONG = Type(Long::class.asClassName(), ClassNames.JLONG)
-        val BOOLEAN = Type(Boolean::class.asClassName(), ClassNames.JBOOLEAN,
+        val LONG = Type(Long::class.asClassName(), ClassNames.JLONG, defaultValue = "0L")
+        val DOUBLE = Type(Double::class.asClassName(), ClassNames.JDOUBLE, defaultValue = "0.0")
+        val BOOLEAN = Type(Boolean::class.asClassName(), ClassNames.JBOOLEAN, defaultValue = "JFALSE",
             convertFromJni = { type, envParam, inParam, outVar ->
                 buildCodeBlock {
                     addStatement("val %L = %N.toKBoolean()", outVar, inParam)
@@ -120,7 +139,13 @@ open class Type(
                     addStatement("val %L = %L.toJBoolean()", outVar, inVar)
                 }
             })
-        val RESULT_CODE = Type(ClassNames.RESULT_CODE, ClassNames.RESULT_CODE)
+        val RESULT_CODE = Type(ClassNames.RESULT_CODE, ClassNames.RESULT_CODE, defaultValue = "ResultCode(-1)")
+        val BYTE_ARRAY = BytesBackedType(
+            kotlinClass = ByteArray::class.asClassName(),
+            nativeClass = ClassNames.JBYTEARRAY,
+            toKMethod = "toKByteArray",
+            toJMethod = "toJByteArray"
+        )
     }
 }
 

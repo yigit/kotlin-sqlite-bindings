@@ -1,7 +1,4 @@
-import com.squareup.kotlinpoet.AnnotationSpec
-import com.squareup.kotlinpoet.FileSpec
-import com.squareup.kotlinpoet.FunSpec
-import com.squareup.kotlinpoet.ParameterSpec
+import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import java.io.File
 
@@ -53,6 +50,17 @@ class JniWriter(
         }
         // TODO add only for entry methods
         addStatement("initPlatform()")
+
+        /**
+        return runWithJniExceptionConversion(env, 0) {
+        val localP0 = DbRef.fromJni(p0)
+        val localP1 = checkNotNull(p1.toKString(env))
+        val callResult = SqliteApi.prepareStmt(localP0, localP1)
+        val localCallResult = callResult.toJni()
+        localCallResult
+        }
+         */
+        beginControlFlow("return runWithJniExceptionConversion(%N, %L)", envParam, pair.nativeFun.returnType.defaultValue())
         val argumentNames = params.map {
             if (it.first.hasConvertFromJni()) {
                 val localVarName = "local${it.second.name.capitalize()}"
@@ -75,11 +83,12 @@ class JniWriter(
         if (pair.actualFun.returnType.hasConvertToJni()) {
             val localResultName = "local${RETURN_VALUE_NAME.capitalize()}"
             addCode(pair.actualFun.returnType.convertToJni(envParam, RETURN_VALUE_NAME, localResultName))
-            addStatement("return %L", localResultName)
+            addStatement("%L", localResultName)
         } else {
-            addStatement("return %L", RETURN_VALUE_NAME)
+            addStatement("%L", RETURN_VALUE_NAME)
         }
         returns(pair.nativeFun.returnType.nativeClass)
+        endControlFlow()
     }.build()
 
     companion object {

@@ -15,6 +15,7 @@ jobs:
   # This workflow contains a single job called "build"
   build:
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
 
@@ -23,6 +24,11 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+    - name: Setup Java environment based on AdoptOpenJDK
+      uses: joschi/setup-jdk@v1.1.2
+      with:
+        # OpenJDK version, example: "openjdk8", "openjdk11", "openjdk13".
+        java-version: 'openjdk11' 
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
 
@@ -46,9 +52,21 @@ jobs:
     # Runs a single command using the runners shell
     - name: build and test
       run: ./gradlew clean allTests
-    - name: Upload test results # this is good to diagnose issues
+    - name: Upload test results for sqlitebindings
       if: always()
       uses: actions/upload-artifact@v2
       with:
-        name: reports
+        name: sqlitebindings-test-reports
         path: sqlitebindings/build/reports
+    - name: Upload test results for ksqlite3
+      if: always()
+      uses: actions/upload-artifact@v2
+      with:
+        name: ksqlite3-test-reports
+        path: ksqlite3/build/reports
+    - name: Upload JNI failures
+      if: always()
+      uses: actions/upload-artifact@v2
+      with:
+        name: ksqlite3-jni-errors
+        path: ksqlite3/hs_err*

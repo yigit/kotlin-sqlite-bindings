@@ -7,5 +7,5 @@ pluginManagement {
         maven("https://plugins.gradle.org/m2/")
     }
 }
-include("sqlitebindings", "jnigenerator")
+include("sqlitebindings", "jnigenerator", "ksqlite3")
 

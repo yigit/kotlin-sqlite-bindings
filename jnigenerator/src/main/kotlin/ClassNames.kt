@@ -5,9 +5,11 @@ private inline fun internalType(value: String) = ClassName("com.birbit.sqlite3.i
 private inline fun interopType(value: String) = ClassName("kotlinx.cinterop", value)
 
 object ClassNames {
+    val JBYTEARRAY = jniType("jbyteArray")
     val RESULT_CODE = internalType("ResultCode")
     val JINT = jniType("jint")
     val JLONG = jniType("jlong")
+    val JDOUBLE = jniType("jdouble")
     val JBOOLEAN = jniType("jboolean")
     val JSTRING = jniType("jstring")
     val CNAME = ClassName("kotlin.native", "CName")
