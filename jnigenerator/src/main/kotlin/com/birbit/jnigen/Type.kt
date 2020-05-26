@@ -1,3 +1,20 @@
+/*
+ * Copyright 2020 Google, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.birbit.jnigen
+
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.ParameterSpec
@@ -115,7 +132,8 @@ open class Type(
             it.copy(nullable = nullable)
         } ?: error("cannot resolve type $kotlinType")
 
-        val INT = Type(Int::class.asClassName(), ClassNames.JINT, defaultValue = "0")
+        val INT =
+            Type(Int::class.asClassName(), ClassNames.JINT, defaultValue = "0")
         val STRING = BytesBackedType(
             kotlinClass = String::class.asClassName(),
             nativeClass = ClassNames.JSTRING,
@@ -124,9 +142,16 @@ open class Type(
         )
         val DBREF = BridgeType(ClassNames.DB_REF)
         val STMTREF = BridgeType(ClassNames.STMT_REF)
-        val LONG = Type(Long::class.asClassName(), ClassNames.JLONG, defaultValue = "0L")
-        val DOUBLE = Type(Double::class.asClassName(), ClassNames.JDOUBLE, defaultValue = "0.0")
-        val BOOLEAN = Type(Boolean::class.asClassName(), ClassNames.JBOOLEAN, defaultValue = "JFALSE",
+        val LONG =
+            Type(Long::class.asClassName(), ClassNames.JLONG, defaultValue = "0L")
+        val DOUBLE = Type(
+            Double::class.asClassName(),
+            ClassNames.JDOUBLE,
+            defaultValue = "0.0"
+        )
+        val BOOLEAN = Type(Boolean::class.asClassName(),
+            ClassNames.JBOOLEAN,
+            defaultValue = "JFALSE",
             convertFromJni = { type, envParam, inParam, outVar ->
                 buildCodeBlock {
                     addStatement("val %L = %N.toKBoolean()", outVar, inParam)
@@ -137,7 +162,11 @@ open class Type(
                     addStatement("val %L = %L.toJBoolean()", outVar, inVar)
                 }
             })
-        val RESULT_CODE = Type(ClassNames.RESULT_CODE, ClassNames.RESULT_CODE, defaultValue = "ResultCode(-1)")
+        val RESULT_CODE = Type(
+            ClassNames.RESULT_CODE,
+            ClassNames.RESULT_CODE,
+            defaultValue = "ResultCode(-1)"
+        )
         val BYTE_ARRAY = BytesBackedType(
             kotlinClass = ByteArray::class.asClassName(),
             nativeClass = ClassNames.JBYTEARRAY,

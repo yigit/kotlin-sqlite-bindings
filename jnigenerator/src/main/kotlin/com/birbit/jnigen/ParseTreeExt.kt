@@ -1,3 +1,20 @@
+/*
+ * Copyright 2020 Google, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.birbit.jnigen
+
 import org.jetbrains.kotlin.spec.grammar.tools.KotlinParseTree
 object Declarations {
     const val FUN_DECLARATION = "functionDeclaration"
@@ -77,7 +94,8 @@ class ObjectDeclaration(
 ) {
     val name by lazy {
         parseTree.findPath(listOf(
-            Declarations.SIMPLE_IDENTIFIER, Declarations.IDENTIFIER
+            Declarations.SIMPLE_IDENTIFIER,
+            Declarations.IDENTIFIER
         )).first().text()
     }
 
@@ -94,27 +112,35 @@ class FunctionDeclaration(
 ) {
     val name by lazy {
         checkNotNull(parseTree.findPath(listOf(
-            Declarations.SIMPLE_IDENTIFIER, Declarations.IDENTIFIER
+            Declarations.SIMPLE_IDENTIFIER,
+            Declarations.IDENTIFIER
         )).first().text()) {
             "cannot find name for $parseTree"
         }
     }
     val modifiers by lazy {
-        parseTree.findPath(listOf(Declarations.MODIFIERS, Declarations.MODIFIER))
+        parseTree.findPath(listOf(
+            Declarations.MODIFIERS,
+            Declarations.MODIFIER
+        ))
             .map {
                 it.children[0].children[0].text()
             }
     }
     val paramTypes by lazy {
         val parameters = parseTree.findPath(listOf(
-            Declarations.FUN_VALUE_PARAMETERS, Declarations.FUN_VALUE_PARAMETER))
+            Declarations.FUN_VALUE_PARAMETERS,
+            Declarations.FUN_VALUE_PARAMETER
+        ))
         parameters.map {
             val name = it.findPath(listOf(
-                Declarations.TYPE_REFERENCE, Declarations.SIMPLE_IDENTIFIER,
+                Declarations.TYPE_REFERENCE,
+                Declarations.SIMPLE_IDENTIFIER,
                 Declarations.IDENTIFIER
             )).first().text()
             val nullable = it.findPath(listOf(
-                Declarations.TYPE, Declarations.NULLABLE_TYPE
+                Declarations.TYPE,
+                Declarations.NULLABLE_TYPE
             )).isNotEmpty()
             checkNotNull(name) {
                 "name cannot be null"
@@ -129,9 +155,13 @@ class FunctionDeclaration(
         checkNotNull(typeTree) {
             "cannot find type tree ${parseTree.children.map { it.name() }}"
         }
-        val nullable = typeTree.findPath(listOf(Declarations.TYPE, Declarations.NULLABLE_TYPE)).isNotEmpty()
+        val nullable = typeTree.findPath(listOf(
+            Declarations.TYPE,
+            Declarations.NULLABLE_TYPE
+        )).isNotEmpty()
         checkNotNull(typeTree.findPath(listOf(
-            Declarations.TYPE_REFERENCE, Declarations.SIMPLE_IDENTIFIER,
+            Declarations.TYPE_REFERENCE,
+            Declarations.SIMPLE_IDENTIFIER,
             Declarations.IDENTIFIER
         )).first().text()) {
             "cannot find return type for $parseTree"

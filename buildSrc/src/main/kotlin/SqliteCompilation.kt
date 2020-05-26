@@ -1,3 +1,19 @@
+/*
+ * Copyright 2020 Google, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.birbit.ksqlite.build
 
 import org.gradle.api.Project
@@ -6,7 +22,6 @@ import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.Exec
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.kotlin.dsl.get
-import org.gradle.kotlin.dsl.invoke
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.konan.target.Family
@@ -14,7 +29,6 @@ import org.jetbrains.kotlin.konan.target.HostManager
 import org.jetbrains.kotlin.konan.target.KonanTarget
 import org.jetbrains.kotlin.konan.target.presetName
 import java.io.File
-import java.lang.RuntimeException
 import java.util.concurrent.Callable
 
 data class SqliteCompilationConfig(
@@ -23,7 +37,7 @@ data class SqliteCompilationConfig(
 
 data class SqliteCompilationOutputs(
     val srcDir: File,
-    val compileTasks : List<TaskProvider<out Task>>,
+    val compileTasks: List<TaskProvider<out Task>>,
     val soFiles: List<File>
 )
 
@@ -81,7 +95,6 @@ val targetInfoMap = mapOf(
         androidSysRootParent.resolve("arch-x64")
     )
 )
-
 
 // TODO: could be a plugin instead?
 object SqliteCompilation {
@@ -185,14 +198,18 @@ object SqliteCompilation {
                 )
                 val original = it.defFile
                 val newDefFile = generatedDefFileFolder.resolve("${konanTarget.presetName}/sqlite-generated.def")
-                val createDefFileTask = project.tasks.register("createDefFileForSqlite${konanTarget.presetName.capitalize()}", CreateDefFileWithLibraryPathTask::class.java) {task ->
+                val createDefFileTask = project.tasks.register(
+                    "createDefFileForSqlite${konanTarget.presetName.capitalize()}",
+                    CreateDefFileWithLibraryPathTask::class.java
+                ) { task ->
                     task.original = original
                     task.target = newDefFile
-                    task.soFilePath =  staticLibFile
+                    task.soFilePath = staticLibFile
                 }
                 // create def file w/ library paths. couldn't figure out how else to add it :/ :)
                 it.defFile = newDefFile
-                cInteropTask.dependsOn(createDefFileTask)            }
+                cInteropTask.dependsOn(createDefFileTask)
+            }
         }
     }
 }
