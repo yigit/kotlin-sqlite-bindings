@@ -26,6 +26,13 @@ class SqliteConnection private constructor(
         return SqliteStmt(this, SqliteApi.prepareStmt(dbRef, stmt))
     }
 
+    fun <T> query(query:String, args : List<Any?> = emptyList(), callback : (Sequence<Row>) -> T) : T {
+        return prepareStmt(query).use { stmt ->
+            stmt.bindValues(args)
+            callback(stmt.query())
+        }
+    }
+
     fun lastErrorMessage() = SqliteApi.errorMsg(dbRef)
 
     fun lastErrorCode() = SqliteApi.errorCode(dbRef)

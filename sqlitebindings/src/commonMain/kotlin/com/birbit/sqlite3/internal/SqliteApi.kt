@@ -88,6 +88,7 @@ expect object SqliteApi {
     fun bindText(stmtRef: StmtRef, index: Int, value: String): ResultCode
     fun bindInt(stmtRef: StmtRef, index: Int, value: Int): ResultCode
     fun bindLong(stmtRef: StmtRef, index: Int, value: Long): ResultCode
+    fun bindDouble(stmtRef: StmtRef, index: Int, value: Double): ResultCode
     fun bindNull(stmtRef: StmtRef, index: Int): ResultCode
     fun errorMsg(dbRef: DbRef): String?
     fun errorCode(dbRef: DbRef): ResultCode

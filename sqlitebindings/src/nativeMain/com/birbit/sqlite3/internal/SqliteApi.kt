@@ -41,6 +41,7 @@ import sqlite3.SQLITE_NULL
 import sqlite3.SQLITE_OK
 import sqlite3.SQLITE_TRANSIENT
 import sqlite3.sqlite3_bind_blob
+import sqlite3.sqlite3_bind_double
 import sqlite3.sqlite3_bind_int
 import sqlite3.sqlite3_bind_int64
 import sqlite3.sqlite3_bind_null
@@ -219,6 +220,11 @@ actual object SqliteApi {
 
     actual fun bindNull(stmtRef: StmtRef, index: Int): ResultCode {
         val resultCode = sqlite3_bind_null(stmtRef.rawPtr, index)
+        return ResultCode(resultCode)
+    }
+
+    actual fun bindDouble(stmtRef: StmtRef, index: Int, value: Double): ResultCode {
+        val resultCode = sqlite3_bind_double(stmtRef.rawPtr, index, value)
         return ResultCode(resultCode)
     }
 

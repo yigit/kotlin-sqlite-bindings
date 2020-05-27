@@ -64,4 +64,16 @@ class OpenDatabaseTest {
             assertEquals(it.lastErrorMessage(), "no such table: nonExistingTable")
         }
     }
+
+    @Test
+    fun oneTimeQuery() {
+        val res = SqliteConnection.openConnection(":memory:").use {
+            it.query("SELECT ?, ?", listOf(3, "a")) {
+                it.first()?.let {
+                    it.readInt(0) to it.readString(1)
+                }
+            }
+        }
+        assertEquals(res, 3 to "a")
+    }
 }
