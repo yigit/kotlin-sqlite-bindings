@@ -158,4 +158,12 @@ actual object SqliteApi {
     }
 
     external fun nativeBindDouble(stmtPtr: Long, index: Int, value: Double): ResultCode
+    actual fun setAuthorizer(
+        dbRef: DbRef,
+        authorizer: Authorizer
+    ): ResultCode {
+        return nativeSetAuthorizer(dbRef.ptr, authorizer)
+    }
+
+    external fun nativeSetAuthorizer(dbPtr: Long, authorizer: Authorizer): ResultCode
 }

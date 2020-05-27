@@ -15,6 +15,7 @@
  */
 package com.birbit.sqlite3
 
+import com.birbit.sqlite3.internal.AuthResult
 import com.birbit.sqlite3.internal.ResultCode
 import com.birbit.sqlite3.internal.SqliteException
 import kotlin.test.Test
@@ -69,11 +70,27 @@ class OpenDatabaseTest {
     fun oneTimeQuery() {
         val res = SqliteConnection.openConnection(":memory:").use {
             it.query("SELECT ?, ?", listOf(3, "a")) {
-                it.first()?.let {
+                it.first().let {
                     it.readInt(0) to it.readString(1)
                 }
             }
         }
         assertEquals(res, 3 to "a")
+    }
+
+    @Test
+    fun authCallback() {
+        val allParams = mutableListOf<Any>()
+        SqliteConnection.openConnection(":memory:").use { conn ->
+            conn.setAuthCallback {
+                allParams.addAll(
+                    listOfNotNull(it.param1, it.param2, it.param3, it.param4)
+                )
+
+                AuthResult.OK
+            }
+            conn.prepareStmt("SELECT * from sqlite_master").use { }
+            assertTrue(allParams.contains("sqlite_master"), "auth callback has not been called")
+        }
     }
 }

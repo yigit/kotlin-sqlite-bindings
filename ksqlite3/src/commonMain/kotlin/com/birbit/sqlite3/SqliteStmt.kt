@@ -98,7 +98,7 @@ class SqliteStmt(
 
     fun bindValue(index: Int, value: Any?) {
         // should we delgate to sqlite? might be tricky w/ all type casting
-        when(value) {
+        when (value) {
             null -> bindNull(index)
             is Int -> bind(index, value)
             is Long -> bind(index, value)

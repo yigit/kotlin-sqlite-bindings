@@ -18,7 +18,11 @@
 package com.birbit.sqlite3.internal
 
 import com.birbit.jni.JNIEnvVar
+import com.birbit.jni.JNINativeInterface_
 import com.birbit.jni.JNI_ABORT
+import com.birbit.jni.JNI_OK
+import com.birbit.jni.JNI_VERSION_1_2
+import com.birbit.jni.JavaVMVar
 import com.birbit.jni.jboolean
 import com.birbit.jni.jbyteArray
 import com.birbit.jni.jclass
@@ -26,25 +30,129 @@ import com.birbit.jni.jint
 import com.birbit.jni.jmethodID
 import com.birbit.jni.jobject
 import com.birbit.jni.jstring
+import kotlin.native.concurrent.AtomicReference
 import kotlinx.cinterop.CFunction
+import kotlinx.cinterop.COpaquePointerVar
 import kotlinx.cinterop.CPointer
+import kotlinx.cinterop.CPointerVar
+import kotlinx.cinterop.MemScope
 import kotlinx.cinterop.addressOf
+import kotlinx.cinterop.alloc
 import kotlinx.cinterop.cstr
 import kotlinx.cinterop.getBytes
 import kotlinx.cinterop.invoke
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.pointed
+import kotlinx.cinterop.ptr
 import kotlinx.cinterop.readValues
 import kotlinx.cinterop.reinterpret
 import kotlinx.cinterop.toKStringFromUtf8
 import kotlinx.cinterop.usePinned
+import kotlinx.cinterop.value
+
+val globalVM = AtomicReference<CPointer<JavaVMVar>?>(null)
+
+@Suppress("FunctionName")
+@CName("JNI_OnLoad")
+fun JNI_OnLoad(vm: CPointer<JavaVMVar>, reserved: kotlinx.cinterop.CValuesRef<*>?): jint {
+    println("setting global VM")
+    globalVM.value = vm
+    return JNI_VERSION_1_2
+}
 
 internal fun initPlatform() {
     initRuntimeIfNeeded()
     Platform.isMemoryLeakCheckerActive = false
 }
 
+//
+class JvmAuthCallbackWrapper(
+    private val globalRef: jobject,
+    private val invokeMethodID: jmethodID
+) : Authorizer {
+    companion object {
+        fun createFromInstance(env: CPointer<JNIEnvVar>, jobject: jobject): JvmAuthCallbackWrapper {
+            val globalRef = JvmReferences.getGlobalRef(env, jobject)
+            return memScoped {
+                val authorizerClass = findClass(env, "com/birbit/sqlite3/internal/Authorizer")
+                val invokeMethod =
+                    getMethodId(env, authorizerClass, "invoke", "(Lcom/birbit/sqlite3/internal/AuthorizationParams;)I")
+
+                JvmAuthCallbackWrapper(
+                    globalRef = globalRef,
+                    invokeMethodID = invokeMethod
+                )
+            }
+        }
+    }
+
+    override fun invoke(params: AuthorizationParams): AuthResult {
+        val jvmVar: CPointer<JavaVMVar> = globalVM.value ?: error("cannot access global VM")
+        val authCode = memScoped {
+            val outEnv = alloc<COpaquePointerVar>()
+            val res = jvmVar.pointed.pointed!!.GetEnv!!(
+                jvmVar,
+                outEnv.ptr,
+                JNI_VERSION_1_2
+            )
+            check(res == JNI_OK) {
+                "couldn't get env, probably need to attach"
+            }
+            // TODO handle not attached thread etc
+            val env: CPointer<JNIEnvVar> = outEnv.reinterpret<CPointerVar<JNIEnvVar>>().value?.reinterpret()
+                ?: error("cannot get env")
+
+            val nativeInterface: JNINativeInterface_ = env.nativeInterface()
+
+            val callIntMethod = nativeInterface.CallIntMethod!!.reinterpret<AuthCallbackMethod>()
+                ?: error("cannot get call int method")
+            // TODO cache these
+            val paramsClass = findClass(env, "com/birbit/sqlite3/internal/AuthorizationParams")
+            val paramsConstructor = getMethodId(
+                env, paramsClass, "<init>",
+                "(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V"
+            )
+            val authParamConstructor = nativeInterface.NewObject!!.reinterpret<AuthParamsConstructor>()
+            val paramsJObject = authParamConstructor.invoke(
+                env,
+                paramsClass,
+                paramsConstructor,
+                params.actionCode,
+                params.param1?.toJString(env),
+                params.param2?.toJString(env),
+                params.param3?.toJString(env),
+                params.param4?.toJString(env)
+            )
+            // TODO make sure we are not leaking the new params
+            callIntMethod.invoke(env, globalRef, invokeMethodID, paramsJObject)
+        }
+        return AuthResult(authCode)
+    }
+}
+
+internal fun MemScope.findClass(env: CPointer<JNIEnvVar>, name: String): jclass {
+    return env.nativeInterface().FindClass!!(env, name.cstr.ptr) ?: error("cannot find class $name")
+}
+
+internal fun MemScope.getMethodId(env: CPointer<JNIEnvVar>, klass: jclass, name: String, signature: String): jmethodID {
+    return env.nativeInterface().GetMethodID!!(env, klass, name.cstr.ptr, signature.cstr.ptr)
+        ?: error("cannot find method id $name / $signature")
+}
+
+typealias AuthParamsConstructor = CFunction<(
+    CPointer<JNIEnvVar>,
+    jclass,
+    jmethodID,
+    jint,
+    jstring?,
+    jstring?,
+    jstring?,
+    jstring?
+) -> jobject>
+
 typealias SqliteExceptionConstructor = CFunction<(CPointer<JNIEnvVar>, jclass, jmethodID, jint, jstring?) -> jobject>
+typealias NewGlobalRef = CFunction<(CPointer<JNIEnvVar>, jobject) -> jobject>
+typealias AuthCallbackMethod = CFunction<(CPointer<JNIEnvVar>, jclass, jmethodID, jobject) -> jint>
 
 internal object JvmReferences {
     fun throwJvmSqliteException(
@@ -53,12 +161,11 @@ internal object JvmReferences {
     ) {
         val nativeInterface = env.nativeInterface()
         val exception = memScoped {
-            val exceptionClass = nativeInterface.FindClass!!(
-                env, "com/birbit/sqlite3/internal/SqliteException".cstr.ptr)
-                ?: error("cannot find SqliteException class from native")
-            val constructor = nativeInterface.GetMethodID!!(
-                env, exceptionClass, "<init>".cstr.ptr, "(ILjava/lang/String;)V".cstr.ptr
-            ) ?: error("cannot find build exception method")
+            val exceptionClass = findClass(
+                env, "com/birbit/sqlite3/internal/SqliteException"
+            )
+
+            val constructor = getMethodId(env, exceptionClass, "<init>", "(ILjava/lang/String;)V")
             nativeInterface.NewObject!!.reinterpret<SqliteExceptionConstructor>().invoke(
                 env,
                 exceptionClass,
@@ -69,9 +176,18 @@ internal object JvmReferences {
         }
         nativeInterface.Throw!!(env, exception)
     }
+
+    fun getGlobalRef(env: CPointer<JNIEnvVar>, obj: jobject): jobject {
+        return env.nativeInterface().NewGlobalRef!!.reinterpret<NewGlobalRef>().invoke(
+            env,
+            obj
+        )
+    }
 }
 
-internal inline fun CPointer<JNIEnvVar>.nativeInterface() = checkNotNull(this.pointed.pointed)
+internal inline fun CPointer<JNIEnvVar>.nativeInterface() = checkNotNull(this.pointed.pointed) {
+    "there is no JNINativeInterface_ in $this environment"
+}
 
 internal inline fun jstring?.toKString(env: CPointer<JNIEnvVar>): String? {
     val chars = env.nativeInterface().GetStringUTFChars!!(env, this, null)

@@ -31,6 +31,7 @@ import kotlinx.cinterop.nativeHeap
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.readBytes
 import kotlinx.cinterop.reinterpret
+import kotlinx.cinterop.staticCFunction
 import kotlinx.cinterop.toCPointer
 import kotlinx.cinterop.toKStringFromUtf8
 import kotlinx.cinterop.toLong
@@ -61,6 +62,7 @@ import sqlite3.sqlite3_finalize
 import sqlite3.sqlite3_open
 import sqlite3.sqlite3_prepare_v2
 import sqlite3.sqlite3_reset
+import sqlite3.sqlite3_set_authorizer
 import sqlite3.sqlite3_step
 
 private inline fun <reified T : Any> jlong.castFromJni(): T {
@@ -239,4 +241,40 @@ actual object SqliteApi {
     actual fun errorString(code: ResultCode): String? {
         return sqlite3_errstr(code.value)?.toKStringFromUtf8()
     }
+
+    actual fun setAuthorizer(
+        dbRef: DbRef,
+        authorizer: Authorizer
+    ): ResultCode {
+        val authRef = StableRef.create(authorizer)
+        val resultCode = sqlite3_set_authorizer(
+            dbRef.rawPtr,
+            staticCFunction(::callAuthCallback),
+            authRef.asCPointer()
+        )
+        checkResultCode(dbRef, resultCode, SQLITE_OK)
+        return ResultCode(resultCode)
+    }
+}
+
+fun callAuthCallback(
+    authorizer: COpaquePointer?,
+    actionCode: Int,
+    param1: CPointer<ByteVar>?,
+    param2: CPointer<ByteVar>?,
+    param3: CPointer<ByteVar>?,
+    param4: CPointer<ByteVar>?
+): Int {
+    StableRef
+    val auth = authorizer!!.asStableRef<Authorizer>().get()
+    println("auth callback received the call")
+    return auth(
+        AuthorizationParams(
+            actionCode = actionCode,
+            param1 = param1?.toKStringFromUtf8(),
+            param2 = param2?.toKStringFromUtf8(),
+            param3 = param3?.toKStringFromUtf8(),
+            param4 = param4?.toKStringFromUtf8()
+        )
+    ).value
 }
