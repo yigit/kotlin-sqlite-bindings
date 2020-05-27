@@ -30,12 +30,10 @@ import com.birbit.jni.jint
 import com.birbit.jni.jmethodID
 import com.birbit.jni.jobject
 import com.birbit.jni.jstring
-import kotlin.native.concurrent.AtomicReference
 import kotlinx.cinterop.CFunction
 import kotlinx.cinterop.COpaquePointerVar
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.CPointerVar
-import kotlinx.cinterop.MemScope
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.alloc
 import kotlinx.cinterop.cstr
@@ -50,15 +48,13 @@ import kotlinx.cinterop.toKStringFromUtf8
 import kotlinx.cinterop.usePinned
 import kotlinx.cinterop.value
 
-val globalVM = AtomicReference<CPointer<JavaVMVar>?>(null)
-
-@Suppress("FunctionName")
-@CName("JNI_OnLoad")
-fun JNI_OnLoad(vm: CPointer<JavaVMVar>, reserved: kotlinx.cinterop.CValuesRef<*>?): jint {
-    println("setting global VM")
-    globalVM.value = vm
-    return JNI_VERSION_1_2
-}
+// @Suppress("FunctionName")
+// @CName("JNI_OnLoad")
+// fun JNI_OnLoad(vm: CPointer<JavaVMVar>, reserved: kotlinx.cinterop.CValuesRef<*>?): jint {
+//     println("setting global VM")
+//     globalVM.value = vm
+//     return JNI_VERSION_1_2
+// }
 
 internal fun initPlatform() {
     initRuntimeIfNeeded()
@@ -107,48 +103,13 @@ class JvmAuthCallbackWrapper(
             val callIntMethod = nativeInterface.CallIntMethod!!.reinterpret<AuthCallbackMethod>()
                 ?: error("cannot get call int method")
             // TODO cache these
-            val paramsClass = findClass(env, "com/birbit/sqlite3/internal/AuthorizationParams")
-            val paramsConstructor = getMethodId(
-                env, paramsClass, "<init>",
-                "(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V"
-            )
-            val authParamConstructor = nativeInterface.NewObject!!.reinterpret<AuthParamsConstructor>()
-            val paramsJObject = authParamConstructor.invoke(
-                env,
-                paramsClass,
-                paramsConstructor,
-                params.actionCode,
-                params.param1?.toJString(env),
-                params.param2?.toJString(env),
-                params.param3?.toJString(env),
-                params.param4?.toJString(env)
-            )
+            val paramsJObject = JvmAuthorizerParams.instance.createJvmInstance(env, params)
             // TODO make sure we are not leaking the new params
             callIntMethod.invoke(env, globalRef, invokeMethodID, paramsJObject)
         }
         return AuthResult(authCode)
     }
 }
-
-internal fun MemScope.findClass(env: CPointer<JNIEnvVar>, name: String): jclass {
-    return env.nativeInterface().FindClass!!(env, name.cstr.ptr) ?: error("cannot find class $name")
-}
-
-internal fun MemScope.getMethodId(env: CPointer<JNIEnvVar>, klass: jclass, name: String, signature: String): jmethodID {
-    return env.nativeInterface().GetMethodID!!(env, klass, name.cstr.ptr, signature.cstr.ptr)
-        ?: error("cannot find method id $name / $signature")
-}
-
-typealias AuthParamsConstructor = CFunction<(
-    CPointer<JNIEnvVar>,
-    jclass,
-    jmethodID,
-    jint,
-    jstring?,
-    jstring?,
-    jstring?,
-    jstring?
-) -> jobject>
 
 typealias SqliteExceptionConstructor = CFunction<(CPointer<JNIEnvVar>, jclass, jmethodID, jint, jstring?) -> jobject>
 typealias NewGlobalRef = CFunction<(CPointer<JNIEnvVar>, jobject) -> jobject>
