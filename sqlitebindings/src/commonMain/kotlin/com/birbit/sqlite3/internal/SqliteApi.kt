@@ -23,7 +23,16 @@ inline class AuthResult(val value: Int) {
         val IGNORE = AuthResult(2)
     }
 }
-
+// see https://www.sqlite.org/c3ref/c_blob.html
+inline class ColumnType(val value: Int) {
+    companion object {
+        val INTEGER = ColumnType(1)
+        val FLOAT = ColumnType(2)
+        val STRING = ColumnType(3)
+        val BLOB = ColumnType(4)
+        val NULL = ColumnType(5)
+    }
+}
 // commonized sqlite APIs to build the rest in common, or most at least
 inline class ResultCode(val value: Int) {
     fun errorString() = SqliteApi.errorString(this)
@@ -124,4 +133,12 @@ expect object SqliteApi {
     fun errorCode(dbRef: DbRef): ResultCode
     fun errorString(code: ResultCode): String?
     fun setAuthorizer(dbRef: DbRef, authorizer: Authorizer?): ResultCode
+    fun columnType(stmtRef: StmtRef, index: Int): ColumnType
+    fun exec(dbRef: DbRef, query: String): ResultCode
+    fun columnDeclType(stmtRef: StmtRef, index: Int): String?
+    fun columnDatabaseName(stmtRef: StmtRef, index: Int): String?
+    fun columnTableName(stmtRef: StmtRef, index: Int): String?
+    fun columnOriginName(stmtRef: StmtRef, index: Int): String?
+    fun columnCount(stmtRef: StmtRef): Int
+    fun columnName(stmtRef: StmtRef, index: Int): String?
 }

@@ -166,4 +166,53 @@ actual object SqliteApi {
     }
 
     external fun nativeSetAuthorizer(dbPtr: Long, authorizer: Authorizer?): ResultCode
+    actual fun columnType(
+        stmtRef: StmtRef,
+        index: Int
+    ): ColumnType {
+        return nativeColumnType(stmtRef.ptr, index)
+    }
+
+    external fun nativeColumnType(stmtPtr: Long, index: Int): ColumnType
+    actual fun exec(
+        dbRef: DbRef,
+        query: String
+    ): ResultCode {
+        return nativeExec(dbRef.ptr, query)
+    }
+    external fun nativeExec(dbPtr: Long, query: String): ResultCode
+    actual fun columnDeclType(stmtRef: StmtRef, index: Int): String? {
+        return nativeColumnDeclType(stmtRef.ptr, index)
+    }
+
+    external fun nativeColumnDeclType(stmtPtr: Long, index: Int): String?
+
+    actual fun columnDatabaseName(stmtRef: StmtRef, index: Int): String? {
+        return nativeColumnDatabaseName(stmtRef.ptr, index)
+    }
+
+    external fun nativeColumnDatabaseName(stmtPtr: Long, index: Int): String?
+
+    actual fun columnTableName(stmtRef: StmtRef, index: Int): String? {
+        return nativeColumnTableName(stmtRef.ptr, index)
+    }
+
+    external fun nativeColumnTableName(stmtPtr: Long, index: Int): String?
+
+    actual fun columnOriginName(stmtRef: StmtRef, index: Int): String? {
+        return nativeColumnOriginName(stmtRef.ptr, index)
+    }
+
+    external fun nativeColumnOriginName(stmtPtr: Long, index: Int): String?
+    actual fun columnCount(stmtRef: StmtRef): Int {
+        return nativeColumnCount(stmtRef.ptr)
+    }
+
+    external fun nativeColumnCount(ptr: Long): Int
+
+    actual fun columnName(stmtRef: StmtRef, index: Int): String? {
+        return nativeColumnName(stmtRef.ptr, index)
+    }
+
+    external fun nativeColumnName(stmtPtr: Long, index: Int): String?
 }

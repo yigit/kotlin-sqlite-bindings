@@ -51,14 +51,21 @@ import sqlite3.sqlite3_bind_text
 import sqlite3.sqlite3_close_v2
 import sqlite3.sqlite3_column_blob
 import sqlite3.sqlite3_column_bytes
+import sqlite3.sqlite3_column_count
+import sqlite3.sqlite3_column_database_name
+import sqlite3.sqlite3_column_decltype
 import sqlite3.sqlite3_column_double
 import sqlite3.sqlite3_column_int
 import sqlite3.sqlite3_column_int64
+import sqlite3.sqlite3_column_name
+import sqlite3.sqlite3_column_origin_name
+import sqlite3.sqlite3_column_table_name
 import sqlite3.sqlite3_column_text
 import sqlite3.sqlite3_column_type
 import sqlite3.sqlite3_errcode
 import sqlite3.sqlite3_errmsg
 import sqlite3.sqlite3_errstr
+import sqlite3.sqlite3_exec
 import sqlite3.sqlite3_finalize
 import sqlite3.sqlite3_open
 import sqlite3.sqlite3_prepare_v2
@@ -269,6 +276,47 @@ actual object SqliteApi {
         }
         dbRef.authorizer.value = authRef
         return ResultCode(SQLITE_OK)
+    }
+
+    actual fun columnType(
+        stmtRef: StmtRef,
+        index: Int
+    ): ColumnType {
+        val result = sqlite3_column_type(stmtRef.rawPtr, index)
+        return ColumnType(result)
+    }
+
+    actual fun exec(
+        dbRef: DbRef,
+        query: String
+    ): ResultCode {
+        val resultCode = sqlite3_exec(dbRef.rawPtr, query, null, null, null)
+        checkResultCode(dbRef, resultCode, SQLITE_OK)
+        return ResultCode(resultCode)
+    }
+
+    actual fun columnDeclType(stmtRef: StmtRef, index: Int): String? {
+        return sqlite3_column_decltype(stmtRef.rawPtr, index)?.toKStringFromUtf8()
+    }
+
+    actual fun columnDatabaseName(stmtRef: StmtRef, index: Int): String? {
+        return sqlite3_column_database_name(stmtRef.rawPtr, index)?.toKStringFromUtf8()
+    }
+
+    actual fun columnTableName(stmtRef: StmtRef, index: Int): String? {
+        return sqlite3_column_table_name(stmtRef.rawPtr, index)?.toKStringFromUtf8()
+    }
+
+    actual fun columnOriginName(stmtRef: StmtRef, index: Int): String? {
+        return sqlite3_column_origin_name(stmtRef.rawPtr, index)?.toKStringFromUtf8()
+    }
+
+    actual fun columnCount(stmtRef: StmtRef): Int {
+        return sqlite3_column_count(stmtRef.rawPtr)
+    }
+
+    actual fun columnName(stmtRef: StmtRef, index: Int): String? {
+        return sqlite3_column_name(stmtRef.rawPtr, index)?.toKStringFromUtf8()
     }
 }
 

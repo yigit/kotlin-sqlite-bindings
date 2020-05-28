@@ -16,6 +16,7 @@
 package com.birbit.jnigen
 
 import java.io.File
+import java.util.Calendar
 import org.jetbrains.kotlin.spec.grammar.tools.parseKotlinCode
 
 /**
@@ -23,7 +24,7 @@ import org.jetbrains.kotlin.spec.grammar.tools.parseKotlinCode
  */
 fun main() {
     val srcFile = File("./sqlitebindings/src/jvmMain/kotlin/com/birbit/sqlite3/internal/JvmSqliteApi.kt")
-    val targetFile = File("./sqlitebindings/src/nativeMain")
+    val targetFile = File("./sqlitebindings/src/nativeMain/com/birbit/sqlite3/internal/GeneratedJni.kt")
     println("hello ${File(".").absolutePath}")
     val tokens = parseKotlinCode(srcFile.readText(Charsets.UTF_8))
     val sqliteApiObject = tokens.objectDeclarations().first {
@@ -47,5 +48,8 @@ fun main() {
         )
     }
     println(pairs)
-    JniWriter(pairs).write(targetFile)
+    val copyright = File("./scripts/copyright.txt")
+        .readText(Charsets.UTF_8)
+        .replace("\$YEAR", Calendar.getInstance().get(Calendar.YEAR).toString())
+    JniWriter(copyright, pairs).write(targetFile)
 }

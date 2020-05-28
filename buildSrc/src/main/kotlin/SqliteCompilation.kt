@@ -157,13 +157,27 @@ object SqliteCompilation {
                     it.args("--target=${targetInfo.targetName}", "--sysroot=${targetInfo.sysRoot}")
                     it.args(targetInfo.clangArgs)
                     it.args(
-                        "-DSQLITE_ENABLE_FTS3",
-                        "-DSQLITE_ENABLE_FTS5",
-                        "-DSQLITE_ENABLE_RTREE",
-                        "-DSQLITE_ENABLE_DBSTAT_VTAB",
-                        "-DSQLITE_ENABLE_JSON1",
-                        "-DSQLITE_ENABLE_RBU"
+                        "-DSQLITE_ENABLE_COLUMN_METADATA=1",
+                        "-DSQLITE_ENABLE_NORMALIZE=1",
+//                        "-DSQLITE_ENABLE_EXPLAIN_COMMENTS=1",
+//                        "-DSQLITE_ENABLE_DBSTAT_VTAB=1",
+                        "-DSQLITE_ENABLE_LOAD_EXTENSION=1",
+//                        "-DSQLITE_HAVE_ISNAN=1",
+                        "-DHAVE_USLEEP=1",
+//                        "-DSQLITE_CORE=1",
+                        "-DSQLITE_ENABLE_FTS3=1",
+                        "-DSQLITE_ENABLE_FTS3_PARENTHESIS=1",
+                        "-DSQLITE_ENABLE_FTS4=1",
+                        "-DSQLITE_ENABLE_FTS5=1",
+                        "-DSQLITE_ENABLE_JSON1=1",
+                        "-DSQLITE_ENABLE_RTREE=1",
+                        "-DSQLITE_ENABLE_STAT4=1",
+                        "-DSQLITE_THREADSAFE=1",
+                        "-DSQLITE_DEFAULT_MEMSTATUS=0",
+                        "-DSQLITE_OMIT_PROGRESS_CALLBACK=0",
+                        "-DSQLITE_ENABLE_RBU=1"
                     )
+
                     it.args(
                         "-I${srcDir.absolutePath}",
                         "-o", objFile.absolutePath,

@@ -31,6 +31,20 @@ class SqliteStmt(
         stmtRef.dispose()
     }
 
+    fun obtainMetadata(): Metadata {
+        val columnCount = SqliteApi.columnCount(stmtRef)
+        val columns = (0 until columnCount).map { columnIndex ->
+            Metadata.ColumnInfo(
+                databaseName = SqliteApi.columnDatabaseName(stmtRef, columnIndex),
+                tableName = SqliteApi.columnTableName(stmtRef, columnIndex),
+                originName = SqliteApi.columnOriginName(stmtRef, columnIndex),
+                declaredType = SqliteApi.columnDeclType(stmtRef, columnIndex),
+                name = SqliteApi.columnName(stmtRef, columnIndex)
+            )
+        }
+        return Metadata(columns)
+    }
+
     fun <T> use(block: (SqliteStmt) -> T): T {
         return try {
             block(this)
@@ -114,5 +128,19 @@ class SqliteStmt(
         args.forEachIndexed { index, value ->
             bindValue(index + 1, value)
         }
+    }
+
+    fun columnType(index: Int) = SqliteApi.columnType(stmtRef, index)
+
+    data class Metadata(
+        val columns: List<ColumnInfo>
+    ) {
+        data class ColumnInfo(
+            val name: String?,
+            val databaseName: String?,
+            val tableName: String?,
+            val originName: String?,
+            val declaredType: String?
+        )
     }
 }

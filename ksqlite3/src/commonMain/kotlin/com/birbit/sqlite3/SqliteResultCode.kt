@@ -14,8 +14,5 @@
  * limitations under the License.
  */
 package com.birbit.sqlite3
-
-object SqliteResultCodes {
-    const val SQLITE_OK = 0
-    const val SQLITE_ROW = 100
-}
+// TODO check if this is enough to make it public API from here
+typealias ResultCode = com.birbit.sqlite3.internal.ResultCode
