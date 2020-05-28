@@ -15,6 +15,9 @@
  */
 package com.birbit.sqlite3
 
+import com.birbit.sqlite3.internal.AuthResult
+import com.birbit.sqlite3.internal.AuthorizationParams
+import com.birbit.sqlite3.internal.Authorizer
 import com.birbit.sqlite3.internal.DbRef
 import com.birbit.sqlite3.internal.ResultCode
 import com.birbit.sqlite3.internal.SqliteApi
@@ -23,7 +26,15 @@ class SqliteConnection private constructor(
     private val dbRef: DbRef
 ) {
     fun prepareStmt(stmt: String): SqliteStmt {
+        // TODO we should track these to ensure we release them if closed as they keep a StableRef
         return SqliteStmt(this, SqliteApi.prepareStmt(dbRef, stmt))
+    }
+
+    fun <T> query(query: String, args: List<Any?> = emptyList(), callback: (Sequence<Row>) -> T): T {
+        return prepareStmt(query).use { stmt ->
+            stmt.bindValues(args)
+            callback(stmt.query())
+        }
     }
 
     fun lastErrorMessage() = SqliteApi.errorMsg(dbRef)
@@ -43,6 +54,22 @@ class SqliteConnection private constructor(
             "failed to close database"
         }
         dbRef.dispose()
+    }
+
+    fun setAuthCallback(
+        callback: (AuthorizationParams) -> AuthResult
+    ) {
+        // TODO we should track these to ensure we release them if closed as they keep a StableRef
+        // this object can disappear once we move Authorizer to fun interface
+        SqliteApi.setAuthorizer(dbRef, object : Authorizer {
+            override fun invoke(params: AuthorizationParams): AuthResult {
+                return callback(params)
+            }
+        })
+    }
+
+    fun clearAuthCallback() {
+        SqliteApi.setAuthorizer(dbRef, null)
     }
 
     companion object {

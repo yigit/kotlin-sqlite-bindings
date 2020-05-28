@@ -17,6 +17,7 @@ package com.birbit.sqlite3
 
 import com.birbit.sqlite3.internal.ResultCode
 import com.birbit.sqlite3.internal.SqliteApi
+import com.birbit.sqlite3.internal.SqliteException
 import com.birbit.sqlite3.internal.StmtRef
 
 class SqliteStmt(
@@ -30,9 +31,9 @@ class SqliteStmt(
         stmtRef.dispose()
     }
 
-    fun <T> use(block: () -> T): T {
+    fun <T> use(block: (SqliteStmt) -> T): T {
         return try {
-            block()
+            block(this)
         } finally {
             close()
         }
@@ -73,6 +74,13 @@ class SqliteStmt(
         }
     }
 
+    fun bind(index: Int, value: Double) {
+        val resultCode = SqliteApi.bindDouble(stmtRef, index, value)
+        check(ResultCode.OK == resultCode) {
+            "unable to bind value $value to index $index"
+        }
+    }
+
     // TODO provide an API where we can enforce closing
     //  maybe sth like `use` which will give APIs like query during the time `use` is called.
     //  might be better to call it `acquire` or `obtain` if we won't close afterwards though.
@@ -85,6 +93,26 @@ class SqliteStmt(
         }
         check(stepResultCode == ResultCode.DONE) {
             "querying rows ended prematurely $stepResultCode"
+        }
+    }
+
+    fun bindValue(index: Int, value: Any?) {
+        // should we delgate to sqlite? might be tricky w/ all type casting
+        when (value) {
+            null -> bindNull(index)
+            is Int -> bind(index, value)
+            is Long -> bind(index, value)
+            is Float -> bind(index, value.toDouble())
+            is Double -> bind(index, value)
+            is String -> bind(index, value)
+            is ByteArray -> bind(index, value)
+            is Number -> bind(index, value.toDouble())
+            else -> throw SqliteException(ResultCode.FORMAT, "cannot bind $value")
+        }
+    }
+    fun bindValues(args: List<Any?>) {
+        args.forEachIndexed { index, value ->
+            bindValue(index + 1, value)
         }
     }
 }

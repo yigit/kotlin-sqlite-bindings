@@ -24,6 +24,7 @@ import com.birbit.jni.jclass
 import com.birbit.jni.jdouble
 import com.birbit.jni.jint
 import com.birbit.jni.jlong
+import com.birbit.jni.jobject
 import com.birbit.jni.jstring
 import kotlinx.cinterop.CPointer
 
@@ -329,5 +330,37 @@ fun errorString(
         val callResult = SqliteApi.errorString(p0)
         val localCallResult = callResult?.toJString(env)
         localCallResult
+    }
+}
+
+@CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativeBindDouble")
+fun bindDouble(
+    env: CPointer<JNIEnvVar>,
+    clazz: jclass,
+    p0: jlong,
+    p1: jint,
+    p2: jdouble
+): ResultCode {
+    initPlatform()
+    return runWithJniExceptionConversion(env, ResultCode(-1)) {
+        val localP0 = StmtRef.fromJni(p0)
+        val callResult = SqliteApi.bindDouble(localP0, p1, p2)
+        callResult
+    }
+}
+
+@CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativeSetAuthorizer")
+fun setAuthorizer(
+    env: CPointer<JNIEnvVar>,
+    clazz: jclass,
+    p0: jlong,
+    p1: jobject?
+): ResultCode {
+    initPlatform()
+    return runWithJniExceptionConversion(env, ResultCode(-1)) {
+        val localP0 = DbRef.fromJni(p0)
+        val localP1 = p1.toKAuthorizer(env)
+        val callResult = SqliteApi.setAuthorizer(localP0, localP1)
+        callResult
     }
 }

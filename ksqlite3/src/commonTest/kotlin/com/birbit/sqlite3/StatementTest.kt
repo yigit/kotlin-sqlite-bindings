@@ -120,6 +120,47 @@ class StatementTest {
         }
     }
 
+    @Test
+    fun bindDouble() {
+        query("SELECT ?") { stmt ->
+            stmt.bind(1, Double.MAX_VALUE)
+            val read = stmt.query().first().readDouble(0)
+            assertEquals(Double.MAX_VALUE, read)
+        }
+    }
+
+    @Test
+    fun bindValues() {
+        query("VALUES(?, ?, ?, ?, ?, ?, ?, ?)") { stmt ->
+            val byteArray = byteArrayOf(1, 2, 3)
+            stmt.bindValues(
+                listOf(
+                    1,
+                    Double.MAX_VALUE,
+                    Long.MIN_VALUE,
+                    null,
+                    "a",
+                    byteArray,
+                    3.14f,
+                    0b011
+                )
+            )
+            val row = stmt.query().first()
+            assertEquals(1, row.readInt(0))
+            assertEquals(Double.MAX_VALUE, row.readDouble(1))
+            assertEquals(Long.MIN_VALUE, row.readLong(2))
+            assertEquals(null, row.readString(3))
+            assertEquals("a", row.readString(4))
+            assertEquals(byteArray.joinToString(), row.readByteArray(5)?.joinToString())
+            assertEquals(3.14f, row.readDouble(6).toFloat())
+            assertEquals(0b011, row.readInt(7))
+        }
+    }
+
+    @Test
+    fun bindValuesInvalid() {
+    }
+
     private fun oneRowQuery(query: String, block: (Row) -> Unit) {
         return query(query) {
             block(it.query().first())

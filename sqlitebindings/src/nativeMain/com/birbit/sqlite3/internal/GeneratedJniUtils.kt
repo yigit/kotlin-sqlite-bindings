@@ -21,12 +21,8 @@ import com.birbit.jni.JNIEnvVar
 import com.birbit.jni.JNI_ABORT
 import com.birbit.jni.jboolean
 import com.birbit.jni.jbyteArray
-import com.birbit.jni.jclass
-import com.birbit.jni.jint
-import com.birbit.jni.jmethodID
 import com.birbit.jni.jobject
 import com.birbit.jni.jstring
-import kotlinx.cinterop.CFunction
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.cstr
@@ -35,7 +31,6 @@ import kotlinx.cinterop.invoke
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.pointed
 import kotlinx.cinterop.readValues
-import kotlinx.cinterop.reinterpret
 import kotlinx.cinterop.toKStringFromUtf8
 import kotlinx.cinterop.usePinned
 
@@ -44,35 +39,6 @@ internal fun initPlatform() {
     Platform.isMemoryLeakCheckerActive = false
 }
 
-typealias SqliteExceptionConstructor = CFunction<(CPointer<JNIEnvVar>, jclass, jmethodID, jint, jstring?) -> jobject>
-
-internal object JvmReferences {
-    fun throwJvmSqliteException(
-        env: CPointer<JNIEnvVar>,
-        sqliteException: SqliteException
-    ) {
-        val nativeInterface = env.nativeInterface()
-        val exception = memScoped {
-            val exceptionClass = nativeInterface.FindClass!!(
-                env, "com/birbit/sqlite3/internal/SqliteException".cstr.ptr)
-                ?: error("cannot find SqliteException class from native")
-            val constructor = nativeInterface.GetMethodID!!(
-                env, exceptionClass, "<init>".cstr.ptr, "(ILjava/lang/String;)V".cstr.ptr
-            ) ?: error("cannot find build exception method")
-            nativeInterface.NewObject!!.reinterpret<SqliteExceptionConstructor>().invoke(
-                env,
-                exceptionClass,
-                constructor,
-                sqliteException.resultCode.value,
-                sqliteException.msg.toJString(env)
-            )
-        }
-        nativeInterface.Throw!!(env, exception)
-    }
-}
-
-internal inline fun CPointer<JNIEnvVar>.nativeInterface() = checkNotNull(this.pointed.pointed)
-
 internal inline fun jstring?.toKString(env: CPointer<JNIEnvVar>): String? {
     val chars = env.nativeInterface().GetStringUTFChars!!(env, this, null)
     try {
@@ -80,6 +46,11 @@ internal inline fun jstring?.toKString(env: CPointer<JNIEnvVar>): String? {
     } finally {
         env.nativeInterface().ReleaseStringUTFChars!!(env, this, chars)
     }
+}
+
+internal inline fun jobject?.toKAuthorizer(env: CPointer<JNIEnvVar>): Authorizer? {
+    if (this == null) return null
+    return JvmAuthorizerCallback.createFromJvmInstance(env, this)
 }
 
 internal inline fun String?.toJString(env: CPointer<JNIEnvVar>): jstring? = this?.let {
@@ -137,7 +108,7 @@ internal inline fun <reified T> runWithJniExceptionConversion(
     return try {
         block()
     } catch (sqliteException: SqliteException) {
-        JvmReferences.throwJvmSqliteException(env, sqliteException)
+        JvmSqliteException.doThrow(env, sqliteException)
         dummy
     }
 }

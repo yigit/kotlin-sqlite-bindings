@@ -15,6 +15,15 @@
  */
 package com.birbit.sqlite3.internal
 
+// see https://www.sqlite.org/c3ref/c_deny.html
+inline class AuthResult(val value: Int) {
+    companion object {
+        val OK = AuthResult(0)
+        val DENY = AuthResult(1)
+        val IGNORE = AuthResult(2)
+    }
+}
+
 // commonized sqlite APIs to build the rest in common, or most at least
 inline class ResultCode(val value: Int) {
     fun errorString() = SqliteApi.errorString(this)
@@ -65,6 +74,27 @@ expect class StmtRef : ObjRef {
     val dbRef: DbRef
 }
 
+class AuthorizationParams(
+    val actionCode: Int,
+    val param1: String?,
+    val param2: String?,
+    val param3: String?,
+    val param4: String?
+) {
+    override fun toString(): String {
+        return "AuthorizationParams(actionCode=$actionCode, param1=$param1, param2=$param2, param3=$param3, " +
+            "param4=$param4)"
+    }
+}
+
+// TODO make this a fun interface when migration to kotlin 1.4 happens
+//  maybe not as this likely needs a dispose :/
+interface Authorizer {
+    operator fun invoke(params: AuthorizationParams): AuthResult
+    fun dispose() {
+    }
+}
+
 /**
  * Common API for all calls.
  *
@@ -88,8 +118,10 @@ expect object SqliteApi {
     fun bindText(stmtRef: StmtRef, index: Int, value: String): ResultCode
     fun bindInt(stmtRef: StmtRef, index: Int, value: Int): ResultCode
     fun bindLong(stmtRef: StmtRef, index: Int, value: Long): ResultCode
+    fun bindDouble(stmtRef: StmtRef, index: Int, value: Double): ResultCode
     fun bindNull(stmtRef: StmtRef, index: Int): ResultCode
     fun errorMsg(dbRef: DbRef): String?
     fun errorCode(dbRef: DbRef): ResultCode
     fun errorString(code: ResultCode): String?
+    fun setAuthorizer(dbRef: DbRef, authorizer: Authorizer?): ResultCode
 }

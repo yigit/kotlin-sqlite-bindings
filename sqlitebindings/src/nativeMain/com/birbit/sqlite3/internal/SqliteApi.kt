@@ -18,9 +18,10 @@ package com.birbit.sqlite3.internal
 import cnames.structs.sqlite3
 import cnames.structs.sqlite3_stmt
 import com.birbit.jni.jlong
+import kotlin.native.concurrent.AtomicReference
+import kotlin.native.concurrent.freeze
 import kotlinx.cinterop.ByteVar
 import kotlinx.cinterop.COpaquePointer
-import kotlinx.cinterop.CPointed
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.StableRef
 import kotlinx.cinterop.UByteVar
@@ -31,6 +32,7 @@ import kotlinx.cinterop.nativeHeap
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.readBytes
 import kotlinx.cinterop.reinterpret
+import kotlinx.cinterop.staticCFunction
 import kotlinx.cinterop.toCPointer
 import kotlinx.cinterop.toKStringFromUtf8
 import kotlinx.cinterop.toLong
@@ -41,6 +43,7 @@ import sqlite3.SQLITE_NULL
 import sqlite3.SQLITE_OK
 import sqlite3.SQLITE_TRANSIENT
 import sqlite3.sqlite3_bind_blob
+import sqlite3.sqlite3_bind_double
 import sqlite3.sqlite3_bind_int
 import sqlite3.sqlite3_bind_int64
 import sqlite3.sqlite3_bind_null
@@ -60,25 +63,26 @@ import sqlite3.sqlite3_finalize
 import sqlite3.sqlite3_open
 import sqlite3.sqlite3_prepare_v2
 import sqlite3.sqlite3_reset
+import sqlite3.sqlite3_set_authorizer
 import sqlite3.sqlite3_step
 
 private inline fun <reified T : Any> jlong.castFromJni(): T {
-    val ptr: COpaquePointer = this.toCPointer<CPointed>()!!
+    val ptr: COpaquePointer = this.toCPointer()!!
     return ptr.asStableRef<T>().get()
 }
 
 private inline fun <reified T : Any> StableRef<T>.toJni() = this.asCPointer().toLong()
 
-private class NativeRef<T : Any>(target: T) : ObjRef {
-    private var _stableRef: StableRef<T>? = StableRef.create(target)
+internal class NativeRef<T : Any>(target: T) : ObjRef {
+    private val _stableRef: AtomicReference<StableRef<T>?> = AtomicReference(StableRef.create(target))
     val stableRef: StableRef<T>
-        get() = checkNotNull(_stableRef) {
+        get() = checkNotNull(_stableRef.value) {
             "tried to access stable ref after it is disposed"
         }
 
     override fun dispose() {
-        _stableRef?.dispose()
-        _stableRef = null
+        _stableRef.value?.dispose()
+        _stableRef.value = null
     }
 
     override fun isDisposed() = _stableRef == null
@@ -102,6 +106,7 @@ actual class StmtRef(@Suppress("unused") actual val dbRef: DbRef, val rawPtr: CP
 // TODO these two classes are almost idential, should probably commanize as more comes
 actual class DbRef(val rawPtr: CPointer<sqlite3>) : ObjRef {
     private val nativeRef = NativeRef(this)
+    internal val authorizer = AtomicReference<NativeRef<Authorizer>?>(null)
     fun toJni() = nativeRef.stableRef.toJni()
 
     companion object {
@@ -222,6 +227,11 @@ actual object SqliteApi {
         return ResultCode(resultCode)
     }
 
+    actual fun bindDouble(stmtRef: StmtRef, index: Int, value: Double): ResultCode {
+        val resultCode = sqlite3_bind_double(stmtRef.rawPtr, index, value)
+        return ResultCode(resultCode)
+    }
+
     actual fun errorMsg(dbRef: DbRef): String? {
         return sqlite3_errmsg(dbRef.rawPtr)?.toKStringFromUtf8()
     }
@@ -233,4 +243,52 @@ actual object SqliteApi {
     actual fun errorString(code: ResultCode): String? {
         return sqlite3_errstr(code.value)?.toKStringFromUtf8()
     }
+
+    actual fun setAuthorizer(
+        dbRef: DbRef,
+        authorizer: Authorizer?
+    ): ResultCode {
+        val (authRef, resultCode) = if (authorizer != null) {
+            val authRef = NativeRef(authorizer)
+            authRef.freeze()
+            val resultCode = sqlite3_set_authorizer(
+                dbRef.rawPtr,
+                staticCFunction(::callAuthCallback),
+                authRef.stableRef.asCPointer()
+            )
+            authRef to resultCode
+        } else {
+            null to sqlite3_set_authorizer(dbRef.rawPtr, null, null)
+        }
+        checkResultCode(dbRef, resultCode, SQLITE_OK)
+        // dispose previous one if exists
+        val previous = dbRef.authorizer.value
+        previous?.let {
+            it.stableRef.get().dispose()
+            it.dispose()
+        }
+        dbRef.authorizer.value = authRef
+        return ResultCode(SQLITE_OK)
+    }
+}
+
+fun callAuthCallback(
+    authorizer: COpaquePointer?,
+    actionCode: Int,
+    param1: CPointer<ByteVar>?,
+    param2: CPointer<ByteVar>?,
+    param3: CPointer<ByteVar>?,
+    param4: CPointer<ByteVar>?
+): Int {
+    StableRef
+    val auth = authorizer!!.asStableRef<Authorizer>().get()
+    return auth(
+        AuthorizationParams(
+            actionCode = actionCode,
+            param1 = param1?.toKStringFromUtf8(),
+            param2 = param2?.toKStringFromUtf8(),
+            param3 = param3?.toKStringFromUtf8(),
+            param4 = param4?.toKStringFromUtf8()
+        )
+    ).value
 }

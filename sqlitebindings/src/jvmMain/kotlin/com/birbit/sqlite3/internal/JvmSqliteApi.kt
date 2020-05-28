@@ -107,23 +107,28 @@ actual object SqliteApi {
     actual fun columnLong(stmtRef: StmtRef, index: Int): Long {
         return nativeColumnLong(stmtRef.ptr, index)
     }
+
     external fun nativeColumnLong(stmtPtr: Long, index: Int): Long
     actual fun bindBlob(stmtRef: StmtRef, index: Int, bytes: ByteArray): ResultCode {
         return nativeBindBlob(stmtRef.ptr, index, bytes)
     }
+
     external fun nativeBindBlob(stmtPtr: Long, index: Int, bytes: ByteArray): ResultCode
     actual fun bindText(stmtRef: StmtRef, index: Int, value: String): ResultCode {
         return nativeBindText(stmtRef.ptr, index, value)
     }
+
     external fun nativeBindText(stmtPtr: Long, index: Int, value: String): ResultCode
     actual fun bindInt(stmtRef: StmtRef, index: Int, value: Int): ResultCode {
         return nativeBindInt(stmtRef.ptr, index, value)
     }
+
     external fun nativeBindInt(stmtPtr: Long, index: Int, value: Int): ResultCode
 
     actual fun bindLong(stmtRef: StmtRef, index: Int, value: Long): ResultCode {
         return nativeBindLong(stmtRef.ptr, index, value)
     }
+
     external fun nativeBindLong(stmtPtr: Long, index: Int, value: Long): ResultCode
 
     actual fun bindNull(stmtRef: StmtRef, index: Int): ResultCode {
@@ -146,5 +151,19 @@ actual object SqliteApi {
     actual fun errorString(code: ResultCode): String? {
         return nativeErrorString(code)
     }
+
     external fun nativeErrorString(code: ResultCode): String?
+    actual fun bindDouble(stmtRef: StmtRef, index: Int, value: Double): ResultCode {
+        return nativeBindDouble(stmtRef.ptr, index, value)
+    }
+
+    external fun nativeBindDouble(stmtPtr: Long, index: Int, value: Double): ResultCode
+    actual fun setAuthorizer(
+        dbRef: DbRef,
+        authorizer: Authorizer?
+    ): ResultCode {
+        return nativeSetAuthorizer(dbRef.ptr, authorizer)
+    }
+
+    external fun nativeSetAuthorizer(dbPtr: Long, authorizer: Authorizer?): ResultCode
 }
