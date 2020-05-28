@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
+import com.birbit.ksqlite.build.BuildOnServer
 import com.diffplug.gradle.spotless.SpotlessExtension
-import com.diffplug.spotless.kotlin.KotlinConstants.LICENSE_HEADER_DELIMITER
 
 plugins {
     id("com.diffplug.gradle.spotless") version "4.0.1" apply false
@@ -26,6 +26,7 @@ repositories {
     mavenCentral()
 }
 
+BuildOnServer.init(project)
 subprojects {
     apply(plugin = "com.diffplug.gradle.spotless")
     this.extensions.getByType(SpotlessExtension::class).apply {
