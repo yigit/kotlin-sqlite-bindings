@@ -68,6 +68,10 @@ class SqliteConnection private constructor(
         })
     }
 
+    fun clearAuthCallback() {
+        SqliteApi.setAuthorizer(dbRef, null)
+    }
+
     companion object {
         fun openConnection(path: String) = SqliteConnection(
             SqliteApi.openConnection(path)

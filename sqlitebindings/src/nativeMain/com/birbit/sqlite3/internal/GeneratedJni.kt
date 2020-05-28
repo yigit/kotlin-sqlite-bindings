@@ -350,15 +350,17 @@ fun bindDouble(
 }
 
 @CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativeSetAuthorizer")
-fun bindDouble(
+fun setAuthorizer(
     env: CPointer<JNIEnvVar>,
     clazz: jclass,
     p0: jlong,
-    p1: jobject
+    p1: jobject?
 ): ResultCode {
     initPlatform()
     return runWithJniExceptionConversion(env, ResultCode(-1)) {
-        val wrapper = JvmAuthCallbackWrapper.createFromInstance(env, p1)
-        SqliteApi.setAuthorizer(DbRef.fromJni(p0), wrapper)
+        val localP0 = DbRef.fromJni(p0)
+        val localP1 = p1.toKAuthorizer(env)
+        val callResult = SqliteApi.setAuthorizer(localP0, localP1)
+        callResult
     }
 }

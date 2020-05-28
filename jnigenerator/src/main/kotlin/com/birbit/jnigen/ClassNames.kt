@@ -29,6 +29,7 @@ object ClassNames {
     val JDOUBLE = jniType("jdouble")
     val JBOOLEAN = jniType("jboolean")
     val JSTRING = jniType("jstring")
+    val JOBJECT = jniType("jobject")
     val CNAME = ClassName("kotlin.native", "CName")
     val CPOINTER = interopType("CPointer")
     val CPOINTER_VGAR_OF = interopType("CPointerVarOf")
@@ -37,4 +38,5 @@ object ClassNames {
     val SQLITE_API = internalType("SqliteApi")
     val DB_REF = internalType("DbRef")
     val STMT_REF = internalType("StmtRef")
+    val AUTHORIZER = internalType("Authorizer")
 }

@@ -173,6 +173,16 @@ open class Type(
             toKMethod = "toKByteArray",
             toJMethod = "toJByteArray"
         )
+        val Authorizer = Type(
+            kotlinClass = ClassNames.AUTHORIZER,
+            nativeClass = ClassNames.JOBJECT,
+            convertFromJni = { type, envParam, inParam, outVar ->
+                buildCodeBlock {
+                    addStatement("val %N = %N.toKAuthorizer(%N)", outVar, inParam, envParam)
+                }
+            },
+            defaultValue = "null"
+        )
     }
 }
 

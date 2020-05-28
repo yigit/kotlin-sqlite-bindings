@@ -88,8 +88,11 @@ class AuthorizationParams(
 }
 
 // TODO make this a fun interface when migration to kotlin 1.4 happens
+//  maybe not as this likely needs a dispose :/
 interface Authorizer {
     operator fun invoke(params: AuthorizationParams): AuthResult
+    fun dispose() {
+    }
 }
 
 /**
@@ -120,5 +123,5 @@ expect object SqliteApi {
     fun errorMsg(dbRef: DbRef): String?
     fun errorCode(dbRef: DbRef): ResultCode
     fun errorString(code: ResultCode): String?
-    fun setAuthorizer(dbRef: DbRef, authorizer: Authorizer): ResultCode
+    fun setAuthorizer(dbRef: DbRef, authorizer: Authorizer?): ResultCode
 }

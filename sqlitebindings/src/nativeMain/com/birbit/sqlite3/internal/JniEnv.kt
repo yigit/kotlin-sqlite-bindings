@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google, Inc.
+ * Copyright 2020 Google, LLC.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.birbit.sqlite3.internal
 
 import com.birbit.jni.JNIEnvVar
@@ -25,6 +24,8 @@ import com.birbit.jni.jint
 import com.birbit.jni.jmethodID
 import com.birbit.jni.jobject
 import com.birbit.jni.jstring
+import kotlin.native.concurrent.AtomicReference
+import kotlin.native.concurrent.freeze
 import kotlinx.cinterop.CFunction
 import kotlinx.cinterop.COpaquePointerVar
 import kotlinx.cinterop.CPointer
@@ -39,8 +40,6 @@ import kotlinx.cinterop.pointed
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.reinterpret
 import kotlinx.cinterop.value
-import kotlin.native.concurrent.AtomicReference
-import kotlin.native.concurrent.freeze
 
 typealias AuthParamsConstructor = CFunction<(
     CPointer<JNIEnvVar>,
@@ -53,7 +52,20 @@ typealias AuthParamsConstructor = CFunction<(
     jstring?
 ) -> jobject>
 
+typealias AuthCallbackMethod = CFunction<(CPointer<JNIEnvVar>, jclass, jmethodID, jobject) -> jint>
+typealias DisposeMethod = CFunction<(CPointer<JNIEnvVar>, jclass, jmethodID) -> Unit>
+typealias SqliteExceptionConstructor = CFunction<(CPointer<JNIEnvVar>, jclass, jmethodID, jint, jstring?) -> jobject>
+typealias NewGlobalRefMethod = CFunction<(CPointer<JNIEnvVar>, jobject) -> jobject>
+
 val globalVM = AtomicReference<CPointer<JavaVMVar>?>(null)
+
+internal inline fun CPointer<JNIEnvVar>.nativeInterface() = checkNotNull(this.pointed.pointed) {
+    "there is no JNINativeInterface_ in $this environment"
+}
+
+internal interface JniCache : JniDisposable {
+    fun init(scope: MemScope, env: CPointer<JNIEnvVar>)
+}
 
 private fun CPointer<JavaVMVar>.getEnv(): CPointer<JNIEnvVar> {
     return memScoped {
@@ -78,65 +90,242 @@ private fun obtainEnv(): CPointer<JNIEnvVar> {
     return jvmVar.getEnv()
 }
 
+internal interface JniDisposable {
+    fun dispose(env: CPointer<JNIEnvVar>)
+}
+
 internal class GlobalRef(
     val jobject: jobject
-) {
-    fun dispose(env: CPointer<JNIEnvVar> = obtainEnv()) {
-        env.nativeInterface().NewGlobalRef!!(env, jobject)
+) : JniDisposable {
+    override fun dispose(env: CPointer<JNIEnvVar>) {
+        env.nativeInterface().DeleteGlobalRef!!(env, jobject)
     }
 }
 
-internal class JvmAuthorizerParams(
-    private val jclass: GlobalRef,
-    private val initMethodId: jmethodID
-) {
-    fun createJvmInstance(env: CPointer<JNIEnvVar>, authorizationParams: AuthorizationParams): jobject {
-        val init = env.nativeInterface().NewObject!!.reinterpret<AuthParamsConstructor>()
-        return init.invoke(
-            env, jclass.jobject, initMethodId,
-            authorizationParams.actionCode,
-            authorizationParams.param1?.toJString(env),
-            authorizationParams.param2?.toJString(env),
-            authorizationParams.param3?.toJString(env),
-            authorizationParams.param4?.toJString(env)
-        )
+internal class DisposableAtomicRef<T : JniDisposable> : JniDisposable {
+    private val instance: AtomicReference<T?> = AtomicReference(null)
+    fun value() = checkNotNull(instance.value) {
+        "disposable atomic value is not initialized or disposed"
     }
 
-    companion object {
-        private val _instance = AtomicReference<JvmAuthorizerParams?>(null)
-        fun setInstance(params: JvmAuthorizerParams) {
-            _instance.value = params
+    fun set(env: CPointer<JNIEnvVar>, value: T?) {
+        dispose(env)
+        instance.value = value
+    }
+
+    override fun dispose(env: CPointer<JNIEnvVar>) {
+        var current = instance.value
+        while (current != null) {
+            if (instance.compareAndSet(current, null)) {
+                current.dispose(env)
+                // this does not actually mean much since we are not locking.
+                current = instance.value
+            }
+        }
+    }
+}
+
+internal class JvmAuthorizerCallback private constructor(
+    private val classRef: GlobalRef,
+    private val invokeMethodId: jmethodID,
+    private val disposeMethodId: jmethodID
+) : JniDisposable {
+    override fun dispose(env: CPointer<JNIEnvVar>) {
+        classRef.dispose(env)
+    }
+
+    companion object : JniCache {
+        private val _instance = DisposableAtomicRef<JvmAuthorizerCallback>()
+
+        override fun init(scope: MemScope, env: CPointer<JNIEnvVar>) {
+            scope.run {
+                val classRef = obtainGlobalReference(env, "com/birbit/sqlite3/internal/Authorizer")
+                val jvmAuthCallback = JvmAuthorizerCallback(
+                    classRef = classRef,
+                    invokeMethodId = getMethodId(
+                        env,
+                        classRef.jobject,
+                        "invoke",
+                        "(Lcom/birbit/sqlite3/internal/AuthorizationParams;)I"
+                    ),
+                    disposeMethodId = getMethodId(
+                        env,
+                        classRef.jobject,
+                        "dispose",
+                        "()V"
+                    )
+                )
+                jvmAuthCallback.freeze()
+                _instance.set(env, jvmAuthCallback)
+            }
         }
 
-        val instance: JvmAuthorizerParams
-            get() = checkNotNull(_instance.value) {
-                "AuthorizerParams is not initialized"
+        override fun dispose(env: CPointer<JNIEnvVar>) {
+            _instance.dispose(env)
+        }
+
+        fun createFromJvmInstance(env: CPointer<JNIEnvVar>, jobject: jobject): Authorizer {
+            val globalRef = JvmReferences.getGlobalRef(env, jobject)
+            return JvmAuthCallbackWrapper(
+                globalRef = globalRef
+            )
+        }
+
+        fun invokeCallback(
+            env: CPointer<JNIEnvVar> = obtainEnv(),
+            target: jobject,
+            params: AuthorizationParams
+        ): AuthResult {
+            val callIntMethod = env.nativeInterface().CallIntMethod?.reinterpret<AuthCallbackMethod>()
+                ?: error("cannot get call int method")
+            val jvmParams = JvmAuthorizerParams.createJvmInstance(env, params)
+            val authCode = callIntMethod.invoke(env, target, _instance.value().invokeMethodId, jvmParams)
+            return AuthResult(authCode)
+        }
+
+        fun invokeDispose(
+            env: CPointer<JNIEnvVar> = obtainEnv(),
+            target: jobject
+        ) {
+            val disposeMethod = env.nativeInterface().CallVoidMethod!!.reinterpret<DisposeMethod>()
+                ?: error("cannot find dispose method on authorizer")
+            disposeMethod.invoke(env, target, _instance.value().disposeMethodId)
+        }
+
+        private class JvmAuthCallbackWrapper(
+            private val globalRef: jobject
+        ) : Authorizer {
+
+            override fun invoke(params: AuthorizationParams): AuthResult {
+                return invokeCallback(target = globalRef, params = params)
             }
+
+            override fun dispose() {
+                // first dispose jvm instance
+                invokeDispose(obtainEnv(), globalRef)
+                JvmReferences.dispose(obtainEnv(), globalRef)
+            }
+        }
     }
 }
 
-@Suppress("FunctionName")
+internal class JvmAuthorizerParams private constructor(
+    private val classRef: GlobalRef,
+    private val initMethodId: jmethodID
+) : JniDisposable {
+    override fun dispose(env: CPointer<JNIEnvVar>) {
+        classRef.dispose(env)
+    }
+
+    companion object : JniCache {
+        private val _instance = DisposableAtomicRef<JvmAuthorizerParams>()
+
+        override fun init(scope: MemScope, env: CPointer<JNIEnvVar>) {
+            scope.run {
+                val classRef = obtainGlobalReference(env, "com/birbit/sqlite3/internal/AuthorizationParams")
+                val jvmAuthorizerParams = JvmAuthorizerParams(
+                    classRef = classRef,
+                    initMethodId = getMethodId(
+                        env, classRef.jobject, "<init>",
+                        "(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V"
+                    )
+                )
+                jvmAuthorizerParams.freeze()
+                _instance.set(env, jvmAuthorizerParams)
+            }
+        }
+
+        override fun dispose(env: CPointer<JNIEnvVar>) {
+            _instance.dispose(env)
+        }
+
+        fun createJvmInstance(env: CPointer<JNIEnvVar>, authorizationParams: AuthorizationParams): jobject {
+            val init = env.nativeInterface().NewObject!!.reinterpret<AuthParamsConstructor>()
+            val instance = _instance.value()
+            return init.invoke(
+                env, instance.classRef.jobject, instance.initMethodId,
+                authorizationParams.actionCode,
+                authorizationParams.param1?.toJString(env),
+                authorizationParams.param2?.toJString(env),
+                authorizationParams.param3?.toJString(env),
+                authorizationParams.param4?.toJString(env)
+            )
+        }
+    }
+}
+
+internal class JvmSqliteException private constructor(
+    private val classRef: GlobalRef,
+    private val initMethodId: jmethodID
+) : JniDisposable {
+    companion object : JniCache {
+        val _instance = DisposableAtomicRef<JvmSqliteException>()
+        override fun init(scope: MemScope, env: CPointer<JNIEnvVar>) {
+            val jvmSqliteException = scope.run {
+                val classRef = obtainGlobalReference(env, "com/birbit/sqlite3/internal/SqliteException")
+                JvmSqliteException(
+                    classRef = classRef,
+                    initMethodId = getMethodId(env, classRef.jobject, "<init>", "(ILjava/lang/String;)V")
+                )
+            }
+            jvmSqliteException.freeze()
+            _instance.set(env, jvmSqliteException)
+        }
+
+        override fun dispose(env: CPointer<JNIEnvVar>) {
+            _instance.dispose(env)
+        }
+
+        fun doThrow(env: CPointer<JNIEnvVar>, exception: SqliteException) {
+            val instance = _instance.value()
+            val jvmObject = env.nativeInterface().NewObject!!.reinterpret<SqliteExceptionConstructor>().invoke(
+                env,
+                instance.classRef.jobject,
+                instance.initMethodId,
+                exception.resultCode.value,
+                exception.msg.toJString(env)
+            )
+            env.nativeInterface().Throw!!(env, jvmObject)
+        }
+    }
+
+    override fun dispose(env: CPointer<JNIEnvVar>) {
+        classRef.dispose(env)
+    }
+}
+
+private val jniCache = listOf<JniCache>(
+    JvmAuthorizerParams.Companion,
+    JvmAuthorizerCallback.Companion,
+    JvmSqliteException.Companion
+)
+
+@Suppress("unused")
 @CName("JNI_OnLoad")
 fun jniOnload(vm: CPointer<JavaVMVar>, @Suppress("UNUSED_PARAMETER") reserved: CValuesRef<*>?): jint {
     globalVM.value = vm
     val env = vm.getEnv()
-    val authorizerParams = memScoped {
-        val jmClassRef = obtainGlobalReference(env, "com/birbit/sqlite3/internal/AuthorizationParams")
-        JvmAuthorizerParams(
-            jclass = jmClassRef,
-            initMethodId = getMethodId(
-                env, jmClassRef.jobject, "<init>",
-                "(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V"
-            )
-        )
+    memScoped {
+        jniCache.forEach {
+            it.init(this, env)
+        }
     }
-    authorizerParams.freeze()
-    JvmAuthorizerParams.setInstance(authorizerParams)
+    return JNI_VERSION_1_2
+}
+
+@Suppress("unused")
+@CName("JNI_OnUnload")
+fun jniOnUnload(vm: CPointer<JavaVMVar>, @Suppress("UNUSED_PARAMETER") reserved: CValuesRef<*>?): jint {
+    globalVM.value = vm
+    val env = vm.getEnv()
+    jniCache.forEach {
+        it.dispose(env)
+    }
     return JNI_VERSION_1_2
 }
 
 internal fun MemScope.obtainGlobalReference(env: CPointer<JNIEnvVar>, name: String): GlobalRef {
-    val localClass = env.nativeInterface().FindClass!!(env, name.cstr.ptr) ?: error("cannot find class $name")
+    val localClass = findClass(env, name)
     val globalRef: jobject = env.nativeInterface().NewGlobalRef!!(env, localClass)
         ?: error("cannot obtain global reference to $name")
     env.nativeInterface().DeleteLocalRef!!(env, localClass)
@@ -152,4 +341,15 @@ internal fun MemScope.getMethodId(env: CPointer<JNIEnvVar>, klass: jclass, name:
         ?: error("cannot find method id $name / $signature")
 }
 
-class JvmClass()
+internal object JvmReferences {
+    fun getGlobalRef(env: CPointer<JNIEnvVar>, obj: jobject): jobject {
+        return env.nativeInterface().NewGlobalRef!!.reinterpret<NewGlobalRefMethod>().invoke(
+            env,
+            obj
+        )
+    }
+
+    fun dispose(env: CPointer<JNIEnvVar>, globalRef: jobject) {
+        env.nativeInterface().DeleteGlobalRef!!(env, globalRef)
+    }
+}

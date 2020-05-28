@@ -16,13 +16,14 @@
 package com.birbit.sqlite3
 
 import com.birbit.sqlite3.internal.AuthResult
+import com.birbit.sqlite3.internal.AuthorizationParams
 import com.birbit.sqlite3.internal.ResultCode
 import com.birbit.sqlite3.internal.SqliteException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class OpenDatabaseTest {
+class SqliteConnectionTest {
     @Test
     fun openInMemory() {
         val conn = SqliteConnection.openConnection(":memory:")
@@ -34,10 +35,12 @@ class OpenDatabaseTest {
         val result = kotlin.runCatching {
             SqliteConnection.openConnection("/::")
         }
-        assertEquals(result.exceptionOrNull(), SqliteException(
-            ResultCode.CANTOPEN,
-            "could not open database at path  /::"
-        ))
+        assertEquals(
+            result.exceptionOrNull(), SqliteException(
+                ResultCode.CANTOPEN,
+                "could not open database at path  /::"
+            )
+        )
     }
 
     @Test
@@ -57,10 +60,12 @@ class OpenDatabaseTest {
                 it.prepareStmt("SELECT * FROM nonExistingTable")
             }
 
-            assertEquals(result.exceptionOrNull(), SqliteException(
-                resultCode = ResultCode.ERROR,
-                msg = "no such table: nonExistingTable"
-            ))
+            assertEquals(
+                result.exceptionOrNull(), SqliteException(
+                    resultCode = ResultCode.ERROR,
+                    msg = "no such table: nonExistingTable"
+                )
+            )
             assertEquals(it.lastErrorCode(), ResultCode.ERROR)
             assertEquals(it.lastErrorMessage(), "no such table: nonExistingTable")
         }
@@ -80,17 +85,42 @@ class OpenDatabaseTest {
 
     @Test
     fun authCallback() {
-        val allParams = mutableListOf<Any>()
+        val auth1 = LoggingAuthCallback()
+        val auth2 = LoggingAuthCallback()
         SqliteConnection.openConnection(":memory:").use { conn ->
-            conn.setAuthCallback {
-                allParams.addAll(
-                    listOfNotNull(it.param1, it.param2, it.param3, it.param4)
-                )
-
-                AuthResult.OK
-            }
+            conn.setAuthCallback(auth1::invoke)
             conn.prepareStmt("SELECT * from sqlite_master").use { }
-            assertTrue(allParams.contains("sqlite_master"), "auth callback has not been called")
+            auth1.assertParam("sqlite_master")
+            auth1.clear()
+            conn.setAuthCallback(auth2::invoke)
+            conn.prepareStmt("SELECT * from sqlite_master").use { }
+            auth2.assertParam("sqlite_master")
+            auth1.assertEmpty()
+            conn.clearAuthCallback()
+            auth2.clear()
+            conn.prepareStmt("SELECT * from sqlite_master").use { }
+            auth1.assertEmpty()
+            auth2.assertEmpty()
+        }
+    }
+
+    private class LoggingAuthCallback {
+        val allParams = mutableSetOf<String>()
+        fun invoke(params: AuthorizationParams): AuthResult {
+            allParams.addAll(listOfNotNull(params.param1, params.param2, params.param3, params.param4))
+            return AuthResult.OK
+        }
+
+        fun assertParam(param: String) {
+            assertTrue(allParams.contains(param), "missing $param in $allParams")
+        }
+
+        fun assertEmpty() {
+            assertEquals(allParams, emptySet<String>(), "this should be empty but have $allParams")
+        }
+
+        fun clear() {
+            allParams.clear()
         }
     }
 }
