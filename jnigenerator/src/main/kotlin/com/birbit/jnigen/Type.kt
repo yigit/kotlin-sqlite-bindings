@@ -173,7 +173,7 @@ open class Type(
             toKMethod = "toKByteArray",
             toJMethod = "toJByteArray"
         )
-        val Authorizer = Type(
+        val AUTHORIZER = Type(
             kotlinClass = ClassNames.AUTHORIZER,
             nativeClass = ClassNames.JOBJECT,
             convertFromJni = { type, envParam, inParam, outVar ->
@@ -182,6 +182,11 @@ open class Type(
                 }
             },
             defaultValue = "null"
+        )
+        val COLUMN_TYPE = Type(
+            kotlinClass = ClassNames.COLUMN_TYPE,
+            nativeClass = ClassNames.COLUMN_TYPE,
+            defaultValue = "ColumnType(-1)"
         )
     }
 }

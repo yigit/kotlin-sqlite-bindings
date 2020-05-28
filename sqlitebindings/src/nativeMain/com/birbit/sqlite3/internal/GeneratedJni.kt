@@ -26,6 +26,8 @@ import com.birbit.jni.jint
 import com.birbit.jni.jlong
 import com.birbit.jni.jobject
 import com.birbit.jni.jstring
+import kotlin.Suppress
+import kotlin.native.CName
 import kotlinx.cinterop.CPointer
 
 @CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativeOpenConnection")
@@ -361,6 +363,37 @@ fun setAuthorizer(
         val localP0 = DbRef.fromJni(p0)
         val localP1 = p1.toKAuthorizer(env)
         val callResult = SqliteApi.setAuthorizer(localP0, localP1)
+        callResult
+    }
+}
+
+@CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativeColumnType")
+fun columnType(
+    env: CPointer<JNIEnvVar>,
+    clazz: jclass,
+    p0: jlong,
+    p1: jint
+): ColumnType {
+    initPlatform()
+    return runWithJniExceptionConversion(env, ColumnType(-1)) {
+        val localP0 = StmtRef.fromJni(p0)
+        val callResult = SqliteApi.columnType(localP0, p1)
+        callResult
+    }
+}
+
+@CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativeExec")
+fun exec(
+    env: CPointer<JNIEnvVar>,
+    clazz: jclass,
+    p0: jlong,
+    p1: jstring
+): ResultCode {
+    initPlatform()
+    return runWithJniExceptionConversion(env, ResultCode(-1)) {
+        val localP0 = DbRef.fromJni(p0)
+        val localP1 = checkNotNull(p1.toKString(env))
+        val callResult = SqliteApi.exec(localP0, localP1)
         callResult
     }
 }

@@ -59,6 +59,7 @@ import sqlite3.sqlite3_column_type
 import sqlite3.sqlite3_errcode
 import sqlite3.sqlite3_errmsg
 import sqlite3.sqlite3_errstr
+import sqlite3.sqlite3_exec
 import sqlite3.sqlite3_finalize
 import sqlite3.sqlite3_open
 import sqlite3.sqlite3_prepare_v2
@@ -269,6 +270,23 @@ actual object SqliteApi {
         }
         dbRef.authorizer.value = authRef
         return ResultCode(SQLITE_OK)
+    }
+
+    actual fun columnType(
+        stmtRef: StmtRef,
+        index: Int
+    ): ColumnType {
+        val result = sqlite3_column_type(stmtRef.rawPtr, index)
+        return ColumnType(result)
+    }
+
+    actual fun exec(
+        dbRef: DbRef,
+        query: String
+    ): ResultCode {
+        val resultCode = sqlite3_exec(dbRef.rawPtr, query, null, null, null)
+        checkResultCode(dbRef, resultCode, SQLITE_OK)
+        return ResultCode(resultCode)
     }
 }
 

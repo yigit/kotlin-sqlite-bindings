@@ -115,4 +115,6 @@ class SqliteStmt(
             bindValue(index + 1, value)
         }
     }
+
+    fun columnType(index: Int) = SqliteApi.columnType(stmtRef, index)
 }

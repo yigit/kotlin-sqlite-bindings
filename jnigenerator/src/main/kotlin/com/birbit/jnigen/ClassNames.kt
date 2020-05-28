@@ -39,4 +39,5 @@ object ClassNames {
     val DB_REF = internalType("DbRef")
     val STMT_REF = internalType("StmtRef")
     val AUTHORIZER = internalType("Authorizer")
+    val COLUMN_TYPE = internalType("ColumnType")
 }

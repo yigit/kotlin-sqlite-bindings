@@ -166,4 +166,19 @@ actual object SqliteApi {
     }
 
     external fun nativeSetAuthorizer(dbPtr: Long, authorizer: Authorizer?): ResultCode
+    actual fun columnType(
+        stmtRef: StmtRef,
+        index: Int
+    ): ColumnType {
+        return nativeColumnType(stmtRef.ptr, index)
+    }
+
+    external fun nativeColumnType(stmtPtr: Long, index: Int): ColumnType
+    actual fun exec(
+        dbRef: DbRef,
+        query: String
+    ): ResultCode {
+        return nativeExec(dbRef.ptr, query)
+    }
+    external fun nativeExec(dbPtr: Long, query: String): ResultCode
 }

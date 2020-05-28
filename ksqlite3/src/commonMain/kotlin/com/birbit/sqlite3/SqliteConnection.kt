@@ -37,6 +37,8 @@ class SqliteConnection private constructor(
         }
     }
 
+    fun exec(query: String) = SqliteApi.exec(dbRef, query)
+
     fun lastErrorMessage() = SqliteApi.errorMsg(dbRef)
 
     fun lastErrorCode() = SqliteApi.errorCode(dbRef)

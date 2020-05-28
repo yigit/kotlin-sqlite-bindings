@@ -15,6 +15,9 @@
  */
 package com.birbit.sqlite3
 
+import com.birbit.sqlite3.internal.ColumnType
+import com.birbit.sqlite3.internal.ResultCode
+import com.birbit.sqlite3.internal.SqliteException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -159,6 +162,31 @@ class StatementTest {
 
     @Test
     fun bindValuesInvalid() {
+        query("SELECT ?") {
+            val result = kotlin.runCatching {
+                it.bindValue(0, listOf("a", "b"))
+            }
+            assertEquals(
+                SqliteException(ResultCode.FORMAT, "cannot bind ${listOf("a", "b")}"),
+                result.exceptionOrNull())
+        }
+    }
+
+    @Test
+    fun columnTypes() {
+        query("VALUES(?, ?, ?, ?, ?)") {
+            it.bindNull(1)
+            it.bind(2, 1)
+            it.bind(3, 3.14)
+            it.bind(4, byteArrayOf(0b0, 0b1))
+            it.bind(5, "foo")
+            it.query().first()
+            assertEquals(ColumnType.NULL, it.columnType(0))
+            assertEquals(ColumnType.INTEGER, it.columnType(1))
+            assertEquals(ColumnType.FLOAT, it.columnType(2))
+            assertEquals(ColumnType.BLOB, it.columnType(3))
+            assertEquals(ColumnType.STRING, it.columnType(4))
+        }
     }
 
     private fun oneRowQuery(query: String, block: (Row) -> Unit) {
