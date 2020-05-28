@@ -15,6 +15,8 @@
  */
 package com.birbit.sqlite3
 
+import com.birbit.sqlite3.SqliteStmt.Metadata
+import com.birbit.sqlite3.SqliteStmt.Metadata.ColumnInfo
 import com.birbit.sqlite3.internal.ColumnType
 import com.birbit.sqlite3.internal.ResultCode
 import com.birbit.sqlite3.internal.SqliteException
@@ -168,7 +170,8 @@ class StatementTest {
             }
             assertEquals(
                 SqliteException(ResultCode.FORMAT, "cannot bind ${listOf("a", "b")}"),
-                result.exceptionOrNull())
+                result.exceptionOrNull()
+            )
         }
     }
 
@@ -187,6 +190,70 @@ class StatementTest {
             assertEquals(ColumnType.BLOB, it.columnType(3))
             assertEquals(ColumnType.STRING, it.columnType(4))
         }
+    }
+
+    @Test
+    fun metadata() {
+        val columns = listOf(
+            "colInt" to "Integer",
+            "colString" to "String",
+            "colText" to "Text",
+            "colNumber" to "NUMBER",
+            "colBlob" to "BLOB",
+            "colDouble" to "Double"
+        )
+        val metadata = SqliteConnection.openConnection(":memory:").use {
+            it.exec(
+                """
+                CREATE TABLE Test(
+                    ${columns.joinToString(",") { (name, type) -> "$name $type" }}
+                )
+            """.trimIndent()
+            )
+            it.prepareStmt("SELECT * FROM Test").use {
+                it.obtainMetadata()
+            }
+        }
+        assertEquals(Metadata(
+            columns = columns.map { (name, type) ->
+                ColumnInfo(
+                    databaseName = "main",
+                    tableName = "Test",
+                    originName = name,
+                    declaredType = type,
+                    name = name
+                )
+            }
+        ), metadata)
+    }
+
+    @Test
+    fun metadata_noTable() {
+        val metadata = SqliteConnection.openConnection(":memory:").use {
+            it.prepareStmt("VALUES(1, 3.4)").use {
+                it.obtainMetadata()
+            }
+        }
+        assertEquals(
+            Metadata(
+                columns = listOf(
+                    ColumnInfo(
+                        name = "column1",
+                        databaseName = null,
+                        tableName = null,
+                        declaredType = null,
+                        originName = null
+                    ),
+                    ColumnInfo(
+                        name = "column2",
+                        databaseName = null,
+                        tableName = null,
+                        declaredType = null,
+                        originName = null
+                    )
+                )
+            ), metadata
+        )
     }
 
     private fun oneRowQuery(query: String, block: (Row) -> Unit) {

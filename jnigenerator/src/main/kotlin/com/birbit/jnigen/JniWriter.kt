@@ -21,12 +21,15 @@ import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import java.io.File
+import java.lang.StringBuilder
 
 class JniWriter(
+    val copyright: String,
     val pairs: List<FunctionPair>
 ) {
     fun write(file: File) {
         val spec = FileSpec.builder("com.birbit.sqlite3.internal", "GeneratedJni").apply {
+            indent("    ")
             addAnnotation(
                 AnnotationSpec.builder(Suppress::class).apply {
                     addMember("%S, %S, %S", "unused", "UNUSED_PARAMETER", "UnnecessaryVariable")
@@ -37,7 +40,11 @@ class JniWriter(
                 addFunction(generate(it))
             }
         }.build()
-        spec.writeTo(file)
+        val output = StringBuilder()
+        output.appendln(copyright)
+        spec.writeTo(output)
+        println("will output to ${file.absolutePath}")
+        file.writeText(output.toString(), Charsets.UTF_8)
     }
 
     fun generate(pair: FunctionPair) = FunSpec.builder(pair.actualFun.name).apply {

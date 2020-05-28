@@ -397,3 +397,97 @@ fun exec(
         callResult
     }
 }
+
+@CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativeColumnDeclType")
+fun columnDeclType(
+    env: CPointer<JNIEnvVar>,
+    clazz: jclass,
+    p0: jlong,
+    p1: jint
+): jstring? {
+    initPlatform()
+    return runWithJniExceptionConversion(env, null) {
+        val localP0 = StmtRef.fromJni(p0)
+        val callResult = SqliteApi.columnDeclType(localP0, p1)
+        val localCallResult = callResult?.toJString(env)
+        localCallResult
+    }
+}
+
+@CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativeColumnDatabaseName")
+fun columnDatabaseName(
+    env: CPointer<JNIEnvVar>,
+    clazz: jclass,
+    p0: jlong,
+    p1: jint
+): jstring? {
+    initPlatform()
+    return runWithJniExceptionConversion(env, null) {
+        val localP0 = StmtRef.fromJni(p0)
+        val callResult = SqliteApi.columnDatabaseName(localP0, p1)
+        val localCallResult = callResult?.toJString(env)
+        localCallResult
+    }
+}
+
+@CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativeColumnTableName")
+fun columnTableName(
+    env: CPointer<JNIEnvVar>,
+    clazz: jclass,
+    p0: jlong,
+    p1: jint
+): jstring? {
+    initPlatform()
+    return runWithJniExceptionConversion(env, null) {
+        val localP0 = StmtRef.fromJni(p0)
+        val callResult = SqliteApi.columnTableName(localP0, p1)
+        val localCallResult = callResult?.toJString(env)
+        localCallResult
+    }
+}
+
+@CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativeColumnOriginName")
+fun columnOriginName(
+    env: CPointer<JNIEnvVar>,
+    clazz: jclass,
+    p0: jlong,
+    p1: jint
+): jstring? {
+    initPlatform()
+    return runWithJniExceptionConversion(env, null) {
+        val localP0 = StmtRef.fromJni(p0)
+        val callResult = SqliteApi.columnOriginName(localP0, p1)
+        val localCallResult = callResult?.toJString(env)
+        localCallResult
+    }
+}
+
+@CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativeColumnCount")
+fun columnCount(
+    env: CPointer<JNIEnvVar>,
+    clazz: jclass,
+    p0: jlong
+): jint {
+    initPlatform()
+    return runWithJniExceptionConversion(env, 0) {
+        val localP0 = StmtRef.fromJni(p0)
+        val callResult = SqliteApi.columnCount(localP0)
+        callResult
+    }
+}
+
+@CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativeColumnName")
+fun columnName(
+    env: CPointer<JNIEnvVar>,
+    clazz: jclass,
+    p0: jlong,
+    p1: jint
+): jstring? {
+    initPlatform()
+    return runWithJniExceptionConversion(env, null) {
+        val localP0 = StmtRef.fromJni(p0)
+        val callResult = SqliteApi.columnName(localP0, p1)
+        val localCallResult = callResult?.toJString(env)
+        localCallResult
+    }
+}

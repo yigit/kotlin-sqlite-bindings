@@ -135,4 +135,10 @@ expect object SqliteApi {
     fun setAuthorizer(dbRef: DbRef, authorizer: Authorizer?): ResultCode
     fun columnType(stmtRef: StmtRef, index: Int): ColumnType
     fun exec(dbRef: DbRef, query: String): ResultCode
+    fun columnDeclType(stmtRef: StmtRef, index: Int): String?
+    fun columnDatabaseName(stmtRef: StmtRef, index: Int): String?
+    fun columnTableName(stmtRef: StmtRef, index: Int): String?
+    fun columnOriginName(stmtRef: StmtRef, index: Int): String?
+    fun columnCount(stmtRef: StmtRef): Int
+    fun columnName(stmtRef: StmtRef, index: Int): String?
 }
