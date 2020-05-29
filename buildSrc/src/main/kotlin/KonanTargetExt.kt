@@ -16,17 +16,7 @@
 
 package com.birbit.ksqlite.build
 
-import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
-import org.jetbrains.kotlin.konan.target.Family
+import org.jetbrains.kotlin.konan.target.HostManager
 import org.jetbrains.kotlin.konan.target.KonanTarget
 
-fun KonanTarget.isBuiltOnThisMachine() : Boolean {
-    val os = DefaultNativePlatform.getCurrentOperatingSystem()
-    // TODO there is gotta be a better way to do this
-    return when {
-        os.isLinux -> this.family == Family.LINUX
-        os.isWindows -> this.family == Family.MINGW
-        os.isMacOsX -> this.family.isAppleFamily
-        else -> error("unexpected os")
-    }
-}
+fun KonanTarget.isBuiltOnThisMachine() = HostManager().isEnabled(this)
