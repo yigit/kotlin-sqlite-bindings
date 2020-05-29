@@ -129,9 +129,9 @@ jobs:
           name: windows-latest-dist
           path: artifacts/windows
       - name: test and publish
-        run: DIST_OUTPUTS=artifacts ./gradlew jvmTest publish
+        run: DIST_OUTPUTS=artifacts ./gradlew jvmTest createCombinedRepo
       - name: Upload Repo # upload jvm repo TODO combine other artifacts, make sure metadata aligns
         uses: actions/upload-artifact@v2
         with:
-          name: jvm-repo
-          path: build/dist/repo
+          name: combined-repo
+          path: build/dist/createCombinedRepo

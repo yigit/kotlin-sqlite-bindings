@@ -24,6 +24,7 @@ object BuildOnServer {
             }
         }
         configureCopyNativeLibraries()
+        Publishing.createCombinedRepoTaskIfPossible(rootProject)
     }
     fun getOutRepo(): File {
         return distDir.resolve("repo")

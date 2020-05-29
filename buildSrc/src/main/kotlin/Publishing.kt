@@ -15,19 +15,36 @@
  */
 package com.birbit.ksqlite.build
 
-import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.publish.PublishingExtension
-import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.publish.maven.internal.publication.DefaultMavenPublication
-import org.gradle.api.publish.maven.tasks.AbstractPublishToMaven
+import org.gradle.api.tasks.Copy
 import org.gradle.kotlin.dsl.findByType
 import org.gradle.kotlin.dsl.maven
-import org.gradle.kotlin.dsl.withType
-import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
-import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
+import java.io.File
 
 object Publishing {
+    fun createCombinedRepoTaskIfPossible(
+        rootProject: Project
+    ) {
+        val distOutputsFolder = getDistOutputs() ?: return
+        val repoFolders = distOutputsFolder.walkTopDown().filter {
+            it.name == "repo" && it.isDirectory
+        }
+        rootProject.tasks.register(BUILD_COMBINED_REPO_TASK_NAME, Copy::class.java) { copyTask ->
+            repoFolders.forEach {
+                copyTask.from(it)
+            }
+            copyTask.from(BuildOnServer.getOutRepo())
+            copyTask.destinationDir = rootProject.buildDir.resolve("dist/combinedRepo")
+            rootProject.subprojects { subProject ->
+                if (subProject.pluginManager.hasPlugin("maven-publish")) {
+                    copyTask.dependsOn(subProject.tasks.named("publish"))
+                }
+            }
+        }
+    }
+
     fun setup(project: Project) {
         val publishing = project.extensions.findByType<PublishingExtension>()
             ?: error("cannot find publishing extension")
@@ -50,4 +67,21 @@ object Publishing {
             }
         }
     }
+
+    /**
+     * outputs of other builds in CO
+     */
+    fun getDistOutputs(): File? {
+        return System.getenv(DIST_OUTPUTS_ENV_VAR)?.let {
+            File(it).let {
+                check(it.exists()) {
+                    "invalid $DIST_OUTPUTS_ENV_VAR param"
+                }
+                it.normalize()
+            }
+        }
+    }
+
+    private const val DIST_OUTPUTS_ENV_VAR = "DIST_OUTPUTS"
+    const val BUILD_COMBINED_REPO_TASK_NAME = "createCombinedRepo"
 }

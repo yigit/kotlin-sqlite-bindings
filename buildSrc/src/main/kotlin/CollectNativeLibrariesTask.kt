@@ -101,7 +101,7 @@ abstract class CollectNativeLibrariesTask : DefaultTask() {
                 "cannot find kotlin extension"
             }
             val soFiles = mutableListOf<SoInput>()
-            val distOutputsFolder = getDistOutputsFolder()
+            val distOutputsFolder = Publishing.getDistOutputs()
             if (distOutputsFolder == null) {
                 // obtain from compilations
                 kotlin.targets.withType(KotlinNativeTarget::class.java) {
@@ -143,15 +143,5 @@ abstract class CollectNativeLibrariesTask : DefaultTask() {
             task.soInputs = soFiles
             task.outputDir = outFolder
         }
-
-        fun getDistOutputsFolder() = System.getenv(DIST_OUTPUTS_ENV_VAR)?.let {
-            File(it).also {
-                check(it.exists()) {
-                    "cannot read dist outputs folder"
-                }
-            }
-        }
-
-        private val DIST_OUTPUTS_ENV_VAR = "DIST_OUTPUTS"
     }
 }
