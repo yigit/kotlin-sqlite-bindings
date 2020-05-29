@@ -101,24 +101,57 @@ abstract class CollectNativeLibrariesTask : DefaultTask() {
                 "cannot find kotlin extension"
             }
             val soFiles = mutableListOf<SoInput>()
-            kotlin.targets.withType(KotlinNativeTarget::class.java) {
-                val sharedLib = it.binaries.findSharedLib(
-                    namePrefix = namePrefix,
-                    buildType = NativeBuildType.DEBUG // TODO
-                )
-                checkNotNull(sharedLib) {
-                    "cannot find shared lib in $it"
-                }
-                soFiles.add(
-                    SoInput(
-                        folderName = SoInput.folderName(it.konanTarget),
-                        soFile = sharedLib.outputFile
+            val distOutputsFolder = getDistOutputsFolder()
+            if (distOutputsFolder == null) {
+                // obtain from compilations
+                kotlin.targets.withType(KotlinNativeTarget::class.java) {
+                    val sharedLib = it.binaries.findSharedLib(
+                        namePrefix = namePrefix,
+                        buildType = NativeBuildType.DEBUG // TODO
                     )
-                )
-                task.dependsOn(sharedLib.linkTask)
+                    checkNotNull(sharedLib) {
+                        "cannot find shared lib in $it"
+                    }
+                    soFiles.add(
+                        SoInput(
+                            folderName = SoInput.folderName(it.konanTarget),
+                            soFile = sharedLib.outputFile
+                        )
+                    )
+                    task.dependsOn(sharedLib.linkTask)
+                }
+            } else {
+                // collect from dist output
+                val nativesFolders = distOutputsFolder.walkTopDown().filter {
+                    it.isDirectory && it.name == "natives"
+                }
+                println("native folders: ${nativesFolders.toList()}")
+                val foundSoFiles = nativesFolders.flatMap {
+                    it.listFiles().asSequence().filter { it.isDirectory }.map { target ->
+                        SoInput(
+                            folderName = target.name,
+                            soFile = target.listFiles().first()
+                        )
+                    }
+                }
+                soFiles.addAll(foundSoFiles)
             }
+            check(soFiles.isNotEmpty()) {
+                println("sth is wrong, there should be some so files")
+            }
+            println("found so files:$soFiles")
             task.soInputs = soFiles
             task.outputDir = outFolder
         }
+
+        fun getDistOutputsFolder() = System.getenv(DIST_OUTPUTS_ENV_VAR)?.let {
+            File(it).also {
+                check(it.exists()) {
+                    "cannot read dist outputs folder"
+                }
+            }
+        }
+
+        private val DIST_OUTPUTS_ENV_VAR = "DIST_OUTPUTS"
     }
 }

@@ -127,9 +127,11 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: windows-latest-dist
-          path: artifacts/windows      
-      - name: Upload Dist # upload them back to test if it work fine
+          path: artifacts/windows
+      - name: test and publish
+        run: DIST_OUTPUTS=artifacts ./gradlew jvmTest publish
+      - name: Upload Repo # upload jvm repo TODO combine other artifacts, make sure metadata aligns
         uses: actions/upload-artifact@v2
         with:
-          name: combined-dist
-          path: artifacts
+          name: build/dist/repo
+          path: jvm-repo

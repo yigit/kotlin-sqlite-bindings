@@ -97,4 +97,4 @@ SqliteCompilation.setup(
     )
 )
 
-Publishing.setupNativePublishing(project)
+Publishing.setup(project)

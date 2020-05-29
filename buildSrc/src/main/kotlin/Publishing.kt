@@ -28,7 +28,7 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 
 object Publishing {
-    fun setupNativePublishing(project: Project) {
+    fun setup(project: Project) {
         val publishing = project.extensions.findByType<PublishingExtension>()
             ?: error("cannot find publishing extension")
         publishing.repositories {
@@ -49,21 +49,5 @@ object Publishing {
                 }
             }
         }
-
-        val kotlinExtension = project.extensions.findByType(KotlinMultiplatformExtension::class.java)
-            ?: error("cannot find KMP extension")
-        kotlinExtension.targets.all { target ->
-            target.mavenPublication(Action<MavenPublication> {targetPublication ->
-                project.tasks.withType<AbstractPublishToMaven>()
-                    .matching {
-                        it.publication == targetPublication
-                    }.all {
-                        it.onlyIf {
-                            target.platformType != KotlinPlatformType.jvm
-                        }
-                    }
-            })
-        }
-
     }
 }
