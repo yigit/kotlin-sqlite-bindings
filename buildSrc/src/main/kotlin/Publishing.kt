@@ -52,19 +52,11 @@ object Publishing {
             it.maven("file://${BuildOnServer.getOutRepo().absolutePath}")
         }
         val buildId = System.getenv("GITHUB_RUN_ID")?.padStart(6, '0')
-        publishing.publications {
-            it.all {
-                if (it is DefaultMavenPublication) {
-                    it.groupId = "com.birbit.ksqlite3"
-                    if (buildId != null) {
-                        it.version = "0.1.0.${buildId}"
-                    } else {
-                        it.version = "0.1.0-SNAPSHOT"
-                    }
-                } else {
-                    error("unexpected publication $it")
-                }
-            }
+        project.group = "com.birbit.ksqlite3"
+        project.version = if (buildId != null) {
+            "0.1.0.${buildId}"
+        } else {
+            "0.1.0-SNAPSHOT"
         }
     }
 
