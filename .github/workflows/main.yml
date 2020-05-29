@@ -133,5 +133,5 @@ jobs:
       - name: Upload Repo # upload jvm repo TODO combine other artifacts, make sure metadata aligns
         uses: actions/upload-artifact@v2
         with:
-          name: build/dist/repo
-          path: jvm-repo
+          name: jvm-repo
+          path: build/dist/repo
