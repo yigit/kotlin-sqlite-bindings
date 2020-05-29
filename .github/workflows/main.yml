@@ -134,4 +134,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: combined-repo
-          path: build/dist/createCombinedRepo
+          path: build/dist/combinedRepo
