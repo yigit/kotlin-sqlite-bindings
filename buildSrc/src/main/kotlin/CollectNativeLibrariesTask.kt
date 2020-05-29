@@ -104,7 +104,9 @@ abstract class CollectNativeLibrariesTask : DefaultTask() {
             val distOutputsFolder = Publishing.getDistOutputs()
             if (distOutputsFolder == null) {
                 // obtain from compilations
-                kotlin.targets.withType(KotlinNativeTarget::class.java) {
+                kotlin.targets.withType(KotlinNativeTarget::class.java).filter {
+                    it.konanTarget.isBuiltOnThisMachine()
+                }.forEach {
                     val sharedLib = it.binaries.findSharedLib(
                         namePrefix = namePrefix,
                         buildType = NativeBuildType.DEBUG // TODO

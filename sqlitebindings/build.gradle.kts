@@ -96,5 +96,4 @@ SqliteCompilation.setup(
         version = "3.31.1"
     )
 )
-
 Publishing.setup(project)

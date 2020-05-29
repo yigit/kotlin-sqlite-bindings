@@ -22,6 +22,7 @@ import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.Exec
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.kotlin.dsl.get
+import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.konan.target.Family
@@ -123,7 +124,9 @@ object SqliteCompilation {
         val compiledOutputDir = buildFolder.resolve("output")
         val compileTasks = mutableListOf<TaskProvider<out Task>>()
         val soFiles = mutableListOf<File>()
-        kotlinExt.targets.withType(KotlinNativeTarget::class.java) {
+        kotlinExt.targets.withType(KotlinNativeTarget::class.java).filter { nativeTarget ->
+            nativeTarget.konanTarget.isBuiltOnThisMachine()
+        }.forEach {
             val konanTarget = it.konanTarget
             val targetDir = compiledOutputDir.resolve(konanTarget.presetName)
 

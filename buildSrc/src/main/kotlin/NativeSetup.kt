@@ -26,21 +26,28 @@ fun KotlinMultiplatformExtension.setupNative(
     gradle: Gradle,
     configure: KotlinNativeTarget.() -> Unit
 ) {
-    val os = DefaultNativePlatform.getCurrentOperatingSystem()
-    when {
-        os.isLinux -> {
-            linuxX64(configure = configure)
-            if (!gradle.startParameter.systemPropertiesArgs.containsKey("idea.active")) {
-                linuxArm32Hfp(configure = configure)
+    val runningInIdea = gradle.startParameter.systemPropertiesArgs.containsKey("idea.active")
+    if (runningInIdea) {
+        println("in idea, only setting up current")
+        val os = DefaultNativePlatform.getCurrentOperatingSystem()
+        when {
+            os.isLinux -> {
+                linuxX64(configure = configure)
             }
+            os.isWindows -> {
+                mingwX64(configure = configure)
+            }
+            os.isMacOsX -> {
+                macosX64(configure = configure)
+            }
+            else -> error("OS $os is not supported")
         }
-        os.isWindows -> {
-            mingwX64(configure = configure)
-        }
-        os.isMacOsX -> {
-            macosX64(configure = configure)
-        }
-        else -> error("OS $os is not supported")
+    } else {
+        println("setting up all targets")
+        linuxX64(configure = configure)
+        linuxArm32Hfp(configure = configure)
+        mingwX64(configure = configure)
+        macosX64(configure = configure)
     }
 }
 
