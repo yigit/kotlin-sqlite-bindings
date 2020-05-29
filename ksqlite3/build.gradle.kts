@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import com.birbit.ksqlite.build.Publishing
 import com.birbit.ksqlite.build.setupCommon
 import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform.getCurrentOperatingSystem
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
@@ -41,6 +42,7 @@ fun KotlinMultiplatformExtension.setupNative(
 }
 plugins {
     kotlin("multiplatform") // version "1.3.72"
+    id("maven-publish")
 }
 
 group = "com.birbit"
@@ -82,3 +84,4 @@ kotlin {
         }
     }
 }
+Publishing.setup(project)
