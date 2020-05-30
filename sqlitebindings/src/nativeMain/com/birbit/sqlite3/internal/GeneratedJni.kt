@@ -26,6 +26,8 @@ import com.birbit.jni.jint
 import com.birbit.jni.jlong
 import com.birbit.jni.jobject
 import com.birbit.jni.jstring
+import com.birbit.sqlite3.ColumnType
+import com.birbit.sqlite3.ResultCode
 import kotlin.Suppress
 import kotlin.native.CName
 import kotlinx.cinterop.CPointer

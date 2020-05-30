@@ -15,6 +15,9 @@
  */
 package com.birbit.sqlite3.internal
 
+import com.birbit.sqlite3.Authorizer
+import com.birbit.sqlite3.ColumnType
+import com.birbit.sqlite3.ResultCode
 import org.scijava.nativelib.NativeLoader
 
 open class JvmObjRef(

@@ -24,6 +24,10 @@ import com.birbit.jni.jint
 import com.birbit.jni.jmethodID
 import com.birbit.jni.jobject
 import com.birbit.jni.jstring
+import com.birbit.sqlite3.AuthResult
+import com.birbit.sqlite3.AuthorizationParams
+import com.birbit.sqlite3.Authorizer
+import com.birbit.sqlite3.SqliteException
 import kotlin.native.concurrent.AtomicReference
 import kotlin.native.concurrent.freeze
 import kotlinx.cinterop.CFunction
@@ -139,14 +143,14 @@ internal class JvmAuthorizerCallback private constructor(
 
         override fun init(scope: MemScope, env: CPointer<JNIEnvVar>) {
             scope.run {
-                val classRef = obtainGlobalReference(env, "com/birbit/sqlite3/internal/Authorizer")
+                val classRef = obtainGlobalReference(env, "com/birbit/sqlite3/Authorizer")
                 val jvmAuthCallback = JvmAuthorizerCallback(
                     classRef = classRef,
                     invokeMethodId = getMethodId(
                         env,
                         classRef.jobject,
                         "invoke",
-                        "(Lcom/birbit/sqlite3/internal/AuthorizationParams;)I"
+                        "(Lcom/birbit/sqlite3/AuthorizationParams;)I"
                     ),
                     disposeMethodId = getMethodId(
                         env,
@@ -222,7 +226,7 @@ internal class JvmAuthorizerParams private constructor(
 
         override fun init(scope: MemScope, env: CPointer<JNIEnvVar>) {
             scope.run {
-                val classRef = obtainGlobalReference(env, "com/birbit/sqlite3/internal/AuthorizationParams")
+                val classRef = obtainGlobalReference(env, "com/birbit/sqlite3/AuthorizationParams")
                 val jvmAuthorizerParams = JvmAuthorizerParams(
                     classRef = classRef,
                     initMethodId = getMethodId(
@@ -262,7 +266,7 @@ internal class JvmSqliteException private constructor(
         val _instance = DisposableAtomicRef<JvmSqliteException>()
         override fun init(scope: MemScope, env: CPointer<JNIEnvVar>) {
             val jvmSqliteException = scope.run {
-                val classRef = obtainGlobalReference(env, "com/birbit/sqlite3/internal/SqliteException")
+                val classRef = obtainGlobalReference(env, "com/birbit/sqlite3/SqliteException")
                 JvmSqliteException(
                     classRef = classRef,
                     initMethodId = getMethodId(env, classRef.jobject, "<init>", "(ILjava/lang/String;)V")

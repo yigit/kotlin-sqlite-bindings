@@ -35,6 +35,11 @@ kotlin {
         binaries {
             sharedLib(namePrefix = "sqlite3jni")
         }
+        compilations["main"].defaultSourceSet {
+            dependencies {
+                project(":sqlitebindings-api")
+            }
+        }
         compilations["main"].cinterops.create("jni") {
             // JDK is required here, JRE is not enough
             val javaHome = File(System.getenv("JAVA_HOME") ?: System.getProperty("java.home"))
@@ -59,13 +64,15 @@ kotlin {
 
     val combinedSharedLibsFolder = project.buildDir.resolve("combinedSharedLibs")
     val combineSharedLibsTask =
-        com.birbit.ksqlite.build.CollectNativeLibrariesTask.create(project, "sqlite3jni", combinedSharedLibsFolder)
+        com.birbit.ksqlite.build.CollectNativeLibrariesTask
+            .create(project, "sqlite3jni", combinedSharedLibsFolder)
     jvm().compilations["main"].compileKotlinTask.dependsOn(combineSharedLibsTask)
 
     sourceSets {
         val commonMain by getting {
             dependencies {
                 implementation(kotlin("stdlib-common"))
+                api(project(":sqlitebindings-api"))
             }
         }
         val commonTest by getting {

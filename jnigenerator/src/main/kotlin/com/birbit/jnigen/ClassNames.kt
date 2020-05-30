@@ -19,11 +19,13 @@ import com.squareup.kotlinpoet.ClassName
 
 private inline fun jniType(value: String) = ClassName("com.birbit.jni", value)
 private inline fun internalType(value: String) = ClassName("com.birbit.sqlite3.internal", value)
+private inline fun bindingApiType(value: String) = ClassName("com.birbit.sqlite3", value)
+
 private inline fun interopType(value: String) = ClassName("kotlinx.cinterop", value)
 
 object ClassNames {
     val JBYTEARRAY = jniType("jbyteArray")
-    val RESULT_CODE = internalType("ResultCode")
+    val RESULT_CODE = bindingApiType("ResultCode")
     val JINT = jniType("jint")
     val JLONG = jniType("jlong")
     val JDOUBLE = jniType("jdouble")
@@ -38,6 +40,6 @@ object ClassNames {
     val SQLITE_API = internalType("SqliteApi")
     val DB_REF = internalType("DbRef")
     val STMT_REF = internalType("StmtRef")
-    val AUTHORIZER = internalType("Authorizer")
-    val COLUMN_TYPE = internalType("ColumnType")
+    val AUTHORIZER = bindingApiType("Authorizer")
+    val COLUMN_TYPE = bindingApiType("ColumnType")
 }

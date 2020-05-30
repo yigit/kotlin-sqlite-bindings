@@ -15,9 +15,7 @@
  */
 package com.birbit.sqlite3
 
-import com.birbit.sqlite3.internal.ResultCode
 import com.birbit.sqlite3.internal.SqliteApi
-import com.birbit.sqlite3.internal.SqliteException
 import com.birbit.sqlite3.internal.StmtRef
 
 class SqliteStmt(

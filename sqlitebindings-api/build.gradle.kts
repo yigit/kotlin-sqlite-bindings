@@ -30,31 +30,12 @@ repositories {
 kotlin {
     setupCommon(gradle) {
     }
+    jvm()
 
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation(kotlin("stdlib-common"))
-                implementation(project(":sqlitebindings"))
-                api(project(":sqlitebindings-api"))
-            }
-        }
-        val commonTest by getting {
-            dependencies {
-                implementation(kotlin("test-common"))
-                implementation(kotlin("test-annotations-common"))
-            }
-        }
-        // Default source set for JVM-specific sources and dependencies:
-        jvm().compilations["main"].defaultSourceSet {
-            dependencies {
-                implementation(kotlin("stdlib-jdk8"))
-            }
-        }
-        // JVM-specific tests and their dependencies:
-        jvm().compilations["test"].defaultSourceSet {
-            dependencies {
-                implementation(kotlin("test-junit"))
+                implementation(kotlin("stdlib"))
             }
         }
     }

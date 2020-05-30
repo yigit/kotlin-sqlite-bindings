@@ -13,22 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.birbit.sqlite3.internal
+package com.birbit.sqlite3
 
 class SqliteException(
     val resultCode: ResultCode,
     val msg: String
 ) : Throwable(msg) {
-    companion object {
-        inline fun buildFromConnection(dbRef: DbRef, errorCode: Int?): SqliteException {
-            return SqliteException(
-                resultCode = errorCode?.let { ResultCode(it) } ?: SqliteApi.errorCode(dbRef),
-                msg = SqliteApi.errorMsg(dbRef) ?: errorCode?.let { SqliteApi.errorString(ResultCode(it)) }
-                ?: "unknown error"
-            )
-        }
-    }
-
     override fun toString(): String {
         return "[ResultCode: $resultCode] $msg"
     }
@@ -50,15 +40,6 @@ class SqliteException(
         result = 31 * result + msg.hashCode()
         return result
     }
-}
 
-// TODO trying to use ResultCode here crashed the compiler, hence using Ints
-internal inline fun checkResultCode(
-    dbRef: DbRef,
-    received: Int,
-    expected: Int
-) {
-    if (received != expected) {
-        throw SqliteException.buildFromConnection(dbRef, received)
-    }
+    companion object
 }
