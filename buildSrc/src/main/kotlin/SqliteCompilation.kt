@@ -13,24 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.birbit.ksqlite.build
 
+import java.io.File
+import java.util.concurrent.Callable
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.Exec
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.kotlin.dsl.get
-import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.konan.target.Family
 import org.jetbrains.kotlin.konan.target.HostManager
 import org.jetbrains.kotlin.konan.target.KonanTarget
 import org.jetbrains.kotlin.konan.target.presetName
-import java.io.File
-import java.util.concurrent.Callable
 
 data class SqliteCompilationConfig(
     val version: String
@@ -51,7 +49,7 @@ val toolChainFolderName = when {
     HostManager.hostIsMingw -> "msys2-mingw-w64-x86_64-clang-llvm-lld-compiler_rt-8.0.1"
     else -> error("Unknown host OS")
 }
-val llvmBinFolder = konanDeps.resolve("${toolChainFolderName}/bin")
+val llvmBinFolder = konanDeps.resolve("$toolChainFolderName/bin")
 
 val androidSysRootParent = konanDeps.resolve("target-sysroot-1-android_ndk").resolve("android-21")
 
@@ -143,7 +141,8 @@ object SqliteCompilation {
                     if (HostManager.hostIsMac && konanTarget == KonanTarget.MACOS_X64) {
                         it.environment(
                             "CPATH",
-                            "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include"
+                            "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/" +
+                                    "SDKs/MacOSX.sdk/usr/include"
                         )
                     }
 

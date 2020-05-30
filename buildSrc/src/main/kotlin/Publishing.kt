@@ -15,13 +15,12 @@
  */
 package com.birbit.ksqlite.build
 
+import java.io.File
 import org.gradle.api.Project
 import org.gradle.api.publish.PublishingExtension
-import org.gradle.api.publish.maven.internal.publication.DefaultMavenPublication
 import org.gradle.api.tasks.Copy
 import org.gradle.kotlin.dsl.findByType
 import org.gradle.kotlin.dsl.maven
-import java.io.File
 
 object Publishing {
     fun createCombinedRepoTaskIfPossible(
@@ -51,10 +50,10 @@ object Publishing {
         publishing.repositories {
             it.maven("file://${BuildOnServer.getOutRepo().absolutePath}")
         }
-        val buildId = System.getenv("GITHUB_RUN_ID")?.padStart(6, '0')
+        val buildId = System.getenv("GITHUB_RUN_ID")?.padStart(10, '0')
         project.group = "com.birbit.ksqlite3"
         project.version = if (buildId != null) {
-            "0.1.0.${buildId}"
+            "0.1.0.$buildId"
         } else {
             "0.1.0-SNAPSHOT"
         }
@@ -75,5 +74,5 @@ object Publishing {
     }
 
     private const val DIST_OUTPUTS_ENV_VAR = "DIST_OUTPUTS"
-    const val BUILD_COMBINED_REPO_TASK_NAME = "createCombinedRepo"
+    private const val BUILD_COMBINED_REPO_TASK_NAME = "createCombinedRepo"
 }

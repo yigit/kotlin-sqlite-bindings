@@ -13,15 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.birbit.ksqlite.build
 
+import java.io.File
+import java.nio.file.Paths
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
-import java.io.File
-import java.nio.file.Paths
 
 abstract class CreateDefFileWithLibraryPathTask : DefaultTask() {
     @InputFile
@@ -35,7 +34,7 @@ abstract class CreateDefFileWithLibraryPathTask : DefaultTask() {
 
     @TaskAction
     fun doIt() {
-        println("will copy from ${original} to ${target}")
+        println("will copy from $original to $target")
         target.parentFile.mkdirs()
         val soLocalPath = Paths.get(soFilePath.parentFile.absolutePath)
         val content = original.readText(Charsets.UTF_8) + System.lineSeparator() + "libraryPaths=\"${soLocalPath}\""
