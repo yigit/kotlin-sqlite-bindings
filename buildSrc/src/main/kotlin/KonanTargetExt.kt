@@ -13,16 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.birbit.sqlite3
+package com.birbit.ksqlite.build
 
-import kotlinx.cinterop.convert
-import platform.posix.S_IRUSR
-import platform.posix.S_IWUSR
-import platform.posix.S_IXUSR
-import platform.posix.mkdir
+import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
+import org.jetbrains.kotlin.konan.target.Family
+import org.jetbrains.kotlin.konan.target.HostManager
+import org.jetbrains.kotlin.konan.target.KonanTarget
 
-actual object OsSpecificTestUtils {
-    internal actual fun mkdirForTest(path: String) {
-        mkdir(path, S_IRUSR.or(S_IWUSR).or(S_IXUSR).convert())
-    }
-}
+// build linux & mac targets on mac
+// linux targets on linux
+// windows targets on windows
+fun KonanTarget.isBuiltOnThisMachine() = HostManager().isEnabled(this) &&
+        DefaultNativePlatform.getCurrentOperatingSystem().let { os ->
+            !os.isWindows || this@isBuiltOnThisMachine.family == Family.MINGW
+        }

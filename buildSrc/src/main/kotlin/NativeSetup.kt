@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.birbit.ksqlite.build
 
 import org.gradle.api.invocation.Gradle
@@ -26,21 +25,26 @@ fun KotlinMultiplatformExtension.setupNative(
     gradle: Gradle,
     configure: KotlinNativeTarget.() -> Unit
 ) {
+    val runningInIdea = gradle.startParameter.systemPropertiesArgs.containsKey("idea.active")
     val os = DefaultNativePlatform.getCurrentOperatingSystem()
-    when {
-        os.isLinux -> {
-            linuxX64(configure = configure)
-            if (!gradle.startParameter.systemPropertiesArgs.containsKey("idea.active")) {
-                linuxArm32Hfp(configure = configure)
+    if (runningInIdea || os.isWindows) {
+        when {
+            os.isLinux -> {
+                linuxX64(configure = configure)
             }
+            os.isWindows -> {
+                mingwX64(configure = configure)
+            }
+            os.isMacOsX -> {
+                macosX64(configure = configure)
+            }
+            else -> error("OS $os is not supported")
         }
-        os.isWindows -> {
-            mingwX64(configure = configure)
-        }
-        os.isMacOsX -> {
-            macosX64(configure = configure)
-        }
-        else -> error("OS $os is not supported")
+    } else {
+        linuxX64(configure = configure)
+        linuxArm32Hfp(configure = configure)
+        mingwX64(configure = configure)
+        macosX64(configure = configure)
     }
 }
 

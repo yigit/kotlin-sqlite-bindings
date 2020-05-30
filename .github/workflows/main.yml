@@ -22,7 +22,6 @@ jobs:
     # The type of runner that the job will run on
     runs-on: ${{ matrix.os }}
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     - name: Setup Java environment based on setup-java
       uses: actions/setup-java@v1
@@ -55,6 +54,8 @@ jobs:
       run: ./gradlew allTests
     - name: run spotless
       run: ./gradlew spotlessCheck
+    - name: build dist
+      run: ./gradlew buildOnServer
     - name: Upload test results for sqlitebindings
       if: always()
       uses: actions/upload-artifact@v2
@@ -73,3 +74,63 @@ jobs:
       with:
         name: ksqlite3-jni-errors
         path: ksqlite3/hs_err*
+    - name: Upload Dist
+      if: always()
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${{ matrix.os }}-dist
+        path: build/dist
+  buildFinalArtifacts:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Java environment based on setup-java
+        uses: actions/setup-java@v1
+        with:
+          java-version: '11'
+          java-package: jdk
+          architecture: x64
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      # build cache
+      - name: Cache
+        uses: actions/cache@v1.1.2
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
+          # An ordered list of keys to use for restoring the cache if no cache hit occurred for key
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+      - uses: actions/cache@v1.1.2
+        with:
+          path: ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+      - uses: actions/cache@v1.1.2
+        with:
+          path: ~/.konan
+          key: ${{ runner.os }}-konan
+      # download artifacts
+      # ubuntu-latest, macos-latest, windows-latest -> should match the strategies of build
+      - name: Download linux dist
+        uses: actions/download-artifact@v2
+        with:
+          name: ubuntu-latest-dist
+          path: artifacts/linux
+      - name: Download mac dist
+        uses: actions/download-artifact@v2
+        with:
+          name: macos-latest-dist
+          path: artifacts/mac 
+      - name: Download windows dist
+        uses: actions/download-artifact@v2
+        with:
+          name: windows-latest-dist
+          path: artifacts/windows
+      - name: test and publish
+        run: DIST_OUTPUTS=artifacts ./gradlew jvmTest createCombinedRepo
+      - name: Upload Repo
+        uses: actions/upload-artifact@v2
+        with:
+          name: combined-repo
+          path: build/dist/combinedRepo

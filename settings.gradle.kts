@@ -24,4 +24,5 @@ pluginManagement {
     }
 }
 include("sqlitebindings", "jnigenerator", "ksqlite3")
+enableFeaturePreview("GRADLE_METADATA")
 

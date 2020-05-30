@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.birbit.ksqlite.build
 
+import java.io.File
+import java.io.Serializable
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.Project
@@ -30,8 +31,6 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import org.jetbrains.kotlin.konan.target.Architecture
 import org.jetbrains.kotlin.konan.target.Family
 import org.jetbrains.kotlin.konan.target.KonanTarget
-import java.io.File
-import java.io.Serializable
 
 data class SoInput(
     val folderName: String,
@@ -101,22 +100,47 @@ abstract class CollectNativeLibrariesTask : DefaultTask() {
                 "cannot find kotlin extension"
             }
             val soFiles = mutableListOf<SoInput>()
-            kotlin.targets.withType(KotlinNativeTarget::class.java) {
-                val sharedLib = it.binaries.findSharedLib(
-                    namePrefix = namePrefix,
-                    buildType = NativeBuildType.DEBUG // TODO
-                )
-                checkNotNull(sharedLib) {
-                    "cannot find shared lib in $it"
-                }
-                soFiles.add(
-                    SoInput(
-                        folderName = SoInput.folderName(it.konanTarget),
-                        soFile = sharedLib.outputFile
+            val distOutputsFolder = Publishing.getDistOutputs()
+            if (distOutputsFolder == null) {
+                // obtain from compilations
+                kotlin.targets.withType(KotlinNativeTarget::class.java).filter {
+                    it.konanTarget.isBuiltOnThisMachine()
+                }.forEach {
+                    val sharedLib = it.binaries.findSharedLib(
+                        namePrefix = namePrefix,
+                        buildType = NativeBuildType.DEBUG // TODO
                     )
-                )
-                task.dependsOn(sharedLib.linkTask)
+                    checkNotNull(sharedLib) {
+                        "cannot find shared lib in $it"
+                    }
+                    soFiles.add(
+                        SoInput(
+                            folderName = SoInput.folderName(it.konanTarget),
+                            soFile = sharedLib.outputFile
+                        )
+                    )
+                    task.dependsOn(sharedLib.linkTask)
+                }
+            } else {
+                // collect from dist output
+                val nativesFolders = distOutputsFolder.walkTopDown().filter {
+                    it.isDirectory && it.name == "natives"
+                }
+                println("native folders: ${nativesFolders.toList()}")
+                val foundSoFiles = nativesFolders.flatMap {
+                    it.listFiles().asSequence().filter { it.isDirectory }.map { target ->
+                        SoInput(
+                            folderName = target.name,
+                            soFile = target.listFiles().first()
+                        )
+                    }
+                }
+                soFiles.addAll(foundSoFiles)
             }
+            check(soFiles.isNotEmpty()) {
+                println("sth is wrong, there should be some so files")
+            }
+            println("found so files:$soFiles")
             task.soInputs = soFiles
             task.outputDir = outFolder
         }

@@ -15,15 +15,15 @@
  */
 
 import com.birbit.ksqlite.build.Dependencies
+import com.birbit.ksqlite.build.Publishing
+import com.birbit.ksqlite.build.SqliteCompilation
 import com.birbit.ksqlite.build.SqliteCompilationConfig
 import com.birbit.ksqlite.build.setupCommon
 
 plugins {
     kotlin("multiplatform") // version "1.3.72"
+    id("maven-publish")
 }
-
-group = "com.birbit"
-version = "0.1-SNAPSHOT"
 
 repositories {
     maven("https://teamcity.jetbrains.com/guestAuth/app/rest/builds/buildType:(id:Kotlin_KotlinPublic_Compiler),number:1.4.0-dev-1793,branch:(default:any)/artifacts/content/maven")
@@ -90,9 +90,10 @@ kotlin {
         }
     }
 }
-com.birbit.ksqlite.build.SqliteCompilation.setup(
+SqliteCompilation.setup(
     project,
     SqliteCompilationConfig(
         version = "3.31.1"
     )
 )
+Publishing.setup(project)
