@@ -105,7 +105,7 @@ class SqliteStmt(
         while (SqliteApi.step(stmtRef).also { stepResultCode == it } == ResultCode.ROW) {
             yield(row)
         }
-        check(stepResultCode == ResultCode.DONE) {
+        check(stepResultCode == ResultCode.OK || stepResultCode == ResultCode.DONE) {
             "querying rows ended prematurely $stepResultCode"
         }
     }

@@ -104,6 +104,17 @@ class SqliteConnectionTest {
         }
     }
 
+    @Test
+    fun readEmptyTable() {
+        SqliteConnection.openConnection(":memory:").use {
+            it.exec("CREATE TABLE Test(id Int)")
+            val result = it.prepareStmt("SELECT * FROM Test").use {
+                it.query().toList()
+            }
+            assertEquals(result, emptyList<Row>())
+        }
+    }
+
     private class LoggingAuthCallback {
         val allParams = mutableSetOf<String>()
         fun invoke(params: AuthorizationParams): AuthResult {
