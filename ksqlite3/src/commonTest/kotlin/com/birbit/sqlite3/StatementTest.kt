@@ -17,9 +17,6 @@ package com.birbit.sqlite3
 
 import com.birbit.sqlite3.SqliteStmt.Metadata
 import com.birbit.sqlite3.SqliteStmt.Metadata.ColumnInfo
-import com.birbit.sqlite3.internal.ColumnType
-import com.birbit.sqlite3.internal.ResultCode
-import com.birbit.sqlite3.internal.SqliteException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse

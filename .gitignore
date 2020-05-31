@@ -3,6 +3,7 @@ build
 .gradle
 buildSrc/build
 sqlitebindings/build
+sqlitebindings-api/build
 jnigenerator/build
 #ignore core dump files
 sqlitebindings/core
@@ -10,3 +11,4 @@ sqlitebindings/hs_err_pid*
 ksqlite3/core
 ksqlite3/hs_err_pid*
 ksqlite3/build
+.DS_Store

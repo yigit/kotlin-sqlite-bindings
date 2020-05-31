@@ -14,5 +14,12 @@
  * limitations under the License.
  */
 package com.birbit.sqlite3
-// TODO check if this is enough to make it public API from here
-typealias ResultCode = com.birbit.sqlite3.internal.ResultCode
+
+// see https://www.sqlite.org/c3ref/c_deny.html
+inline class AuthResult(val value: Int) {
+    companion object {
+        val OK = AuthResult(0)
+        val DENY = AuthResult(1)
+        val IGNORE = AuthResult(2)
+    }
+}

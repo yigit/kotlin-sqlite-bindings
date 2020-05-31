@@ -23,6 +23,8 @@ import com.birbit.jni.jboolean
 import com.birbit.jni.jbyteArray
 import com.birbit.jni.jobject
 import com.birbit.jni.jstring
+import com.birbit.sqlite3.Authorizer
+import com.birbit.sqlite3.SqliteException
 import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.cstr

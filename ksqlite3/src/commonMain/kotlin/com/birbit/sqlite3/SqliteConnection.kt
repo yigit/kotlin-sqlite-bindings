@@ -15,11 +15,7 @@
  */
 package com.birbit.sqlite3
 
-import com.birbit.sqlite3.internal.AuthResult
-import com.birbit.sqlite3.internal.AuthorizationParams
-import com.birbit.sqlite3.internal.Authorizer
 import com.birbit.sqlite3.internal.DbRef
-import com.birbit.sqlite3.internal.ResultCode
 import com.birbit.sqlite3.internal.SqliteApi
 
 class SqliteConnection private constructor(

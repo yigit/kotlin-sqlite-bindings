@@ -13,16 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.birbit.sqlite3
 
-pluginManagement {
-    repositories {
-        maven("https://teamcity.jetbrains.com/guestAuth/app/rest/builds/buildType:(id:Kotlin_KotlinPublic_Compiler),number:1.4.0-dev-1793,branch:(default:any)/artifacts/content/maven")
-
-        mavenCentral()
-
-        maven("https://plugins.gradle.org/m2/")
+class AuthorizationParams(
+    val actionCode: Int,
+    val param1: String?,
+    val param2: String?,
+    val param3: String?,
+    val param4: String?
+) {
+    override fun toString(): String {
+        return "AuthorizationParams(actionCode=$actionCode, param1=$param1, param2=$param2, param3=$param3, " +
+            "param4=$param4)"
     }
 }
-include("sqlitebindings", "sqlitebindings-api", "jnigenerator", "ksqlite3")
-enableFeaturePreview("GRADLE_METADATA")
-

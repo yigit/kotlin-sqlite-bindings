@@ -15,6 +15,9 @@
  */
 package com.birbit.sqlite3.internal
 
+import com.birbit.sqlite3.AuthResult
+import com.birbit.sqlite3.AuthorizationParams
+import com.birbit.sqlite3.Authorizer
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
