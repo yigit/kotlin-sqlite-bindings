@@ -49,7 +49,7 @@ class SqliteStmt(
             params = (1..bindParamCount).map {
                 BindParameterMetadata.BindParameter(
                     index = it,
-                    name = SqliteApi.bindParameterName(stmtRef, index = it)
+                    name = SqliteApi.bindParameterName(stmtRef, it)
                 )
             }
         )
