@@ -91,7 +91,8 @@ open class Type(
         kotlinClass: ClassName,
         nativeClass: ClassName,
         toKMethod: String,
-        toJMethod: String
+        toJMethod: String,
+        defaultValue: String
     ) : Type(
         kotlinClass = kotlinClass,
         nativeClass = nativeClass,
@@ -113,7 +114,7 @@ open class Type(
                 }
             }.build()
         },
-        defaultValue = "null" // TODO this is probably NOT null. fix when we need it
+        defaultValue = defaultValue
     )
 
     companion object {
@@ -138,7 +139,8 @@ open class Type(
             kotlinClass = String::class.asClassName(),
             nativeClass = ClassNames.JSTRING,
             toKMethod = "toKString",
-            toJMethod = "toJString"
+            toJMethod = "toJString",
+            defaultValue = "\"<no value>\".toJString(env)!!" // TODO fix this
         )
         val DBREF = BridgeType(ClassNames.DB_REF)
         val STMTREF = BridgeType(ClassNames.STMT_REF)
@@ -171,7 +173,8 @@ open class Type(
             kotlinClass = ByteArray::class.asClassName(),
             nativeClass = ClassNames.JBYTEARRAY,
             toKMethod = "toKByteArray",
-            toJMethod = "toJByteArray"
+            toJMethod = "toJByteArray",
+            defaultValue = "emptyByteArray()"
         )
         val AUTHORIZER = Type(
             kotlinClass = ClassNames.AUTHORIZER,

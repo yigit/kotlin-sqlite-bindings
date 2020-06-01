@@ -129,6 +129,9 @@ class SqliteStmt(
     }
 
     fun columnType(index: Int) = SqliteApi.columnType(stmtRef, index)
+    fun normalizedQuery() = SqliteApi.normalizedSql(stmtRef)
+    fun expandedQuery() = SqliteApi.expandedSql(stmtRef)
+    fun sql() = SqliteApi.sql(stmtRef)
 
     data class Metadata(
         val columns: List<ColumnInfo>

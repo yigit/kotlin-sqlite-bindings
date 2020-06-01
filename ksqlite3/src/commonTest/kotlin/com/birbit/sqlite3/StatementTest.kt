@@ -225,6 +225,32 @@ class StatementTest {
     }
 
     @Test
+    fun normalized() {
+        query("SELECT * FROM sqlite_master WHERE name = ?") { stmt ->
+            val normalized = stmt.normalizedQuery()
+            assertEquals("SELECT*FROM sqlite_master WHERE name=?;", normalized)
+        }
+    }
+
+    @Test
+    fun sql() {
+        query("SELECT * FROM sqlite_master WHERE name = ?") { stmt ->
+            val query = stmt.sql()
+            assertEquals("SELECT * FROM sqlite_master WHERE name = ?", query)
+        }
+    }
+
+    @Test
+    fun expanded() {
+        query("SELECT * FROM sqlite_master WHERE name = ?") { stmt ->
+            stmt.bind(1, "FOO")
+            val normalized = stmt.expandedQuery()
+
+            assertEquals("SELECT * FROM sqlite_master WHERE name = 'FOO'", normalized)
+        }
+    }
+
+    @Test
     fun metadata_noTable() {
         val metadata = SqliteConnection.openConnection(":memory:").use {
             it.prepareStmt("VALUES(1, 3.4)").use {

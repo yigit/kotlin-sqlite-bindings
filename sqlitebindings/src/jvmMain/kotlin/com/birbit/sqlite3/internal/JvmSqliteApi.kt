@@ -218,4 +218,19 @@ actual object SqliteApi {
     }
 
     external fun nativeColumnName(stmtPtr: Long, index: Int): String?
+    actual fun expandedSql(stmtRef: StmtRef): String {
+        return nativeExpandedSql(stmtRef.ptr)
+    }
+
+    external fun nativeExpandedSql(stmtPtr: Long): String
+
+    actual fun normalizedSql(stmtRef: StmtRef): String {
+        return nativeNormalizedSql(stmtRef.ptr)
+    }
+
+    external fun nativeNormalizedSql(ptr: Long): String
+    actual fun sql(stmtRef: StmtRef): String {
+        return nativeSql(stmtRef.ptr)
+    }
+    external fun nativeSql(stmtPtr: Long): String
 }

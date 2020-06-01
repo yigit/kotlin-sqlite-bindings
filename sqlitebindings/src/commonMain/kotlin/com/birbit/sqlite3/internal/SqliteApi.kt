@@ -88,4 +88,7 @@ expect object SqliteApi {
     fun columnOriginName(stmtRef: StmtRef, index: Int): String?
     fun columnCount(stmtRef: StmtRef): Int
     fun columnName(stmtRef: StmtRef, index: Int): String?
+    fun expandedSql(stmtRef: StmtRef): String
+    fun normalizedSql(stmtRef: StmtRef): String
+    fun sql(stmtRef: StmtRef): String
 }

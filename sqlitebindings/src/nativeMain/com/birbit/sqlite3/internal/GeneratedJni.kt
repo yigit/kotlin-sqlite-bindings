@@ -493,3 +493,48 @@ fun columnName(
         localCallResult
     }
 }
+
+@CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativeExpandedSql")
+fun expandedSql(
+    env: CPointer<JNIEnvVar>,
+    clazz: jclass,
+    p0: jlong
+): jstring {
+    initPlatform()
+    return runWithJniExceptionConversion(env, "<no value>".toJString(env)!!) {
+        val localP0 = StmtRef.fromJni(p0)
+        val callResult = SqliteApi.expandedSql(localP0)
+        val localCallResult = checkNotNull(callResult.toJString(env))
+        localCallResult
+    }
+}
+
+@CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativeNormalizedSql")
+fun normalizedSql(
+    env: CPointer<JNIEnvVar>,
+    clazz: jclass,
+    p0: jlong
+): jstring {
+    initPlatform()
+    return runWithJniExceptionConversion(env, "<no value>".toJString(env)!!) {
+        val localP0 = StmtRef.fromJni(p0)
+        val callResult = SqliteApi.normalizedSql(localP0)
+        val localCallResult = checkNotNull(callResult.toJString(env))
+        localCallResult
+    }
+}
+
+@CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativeSql")
+fun sql(
+    env: CPointer<JNIEnvVar>,
+    clazz: jclass,
+    p0: jlong
+): jstring {
+    initPlatform()
+    return runWithJniExceptionConversion(env, "<no value>".toJString(env)!!) {
+        val localP0 = StmtRef.fromJni(p0)
+        val callResult = SqliteApi.sql(localP0)
+        val localCallResult = checkNotNull(callResult.toJString(env))
+        localCallResult
+    }
+}
