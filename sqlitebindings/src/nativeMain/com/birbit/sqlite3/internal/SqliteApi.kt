@@ -52,6 +52,9 @@ import sqlite3.sqlite3_bind_double
 import sqlite3.sqlite3_bind_int
 import sqlite3.sqlite3_bind_int64
 import sqlite3.sqlite3_bind_null
+import sqlite3.sqlite3_bind_parameter_count
+import sqlite3.sqlite3_bind_parameter_index
+import sqlite3.sqlite3_bind_parameter_name
 import sqlite3.sqlite3_bind_text
 import sqlite3.sqlite3_close_v2
 import sqlite3.sqlite3_column_blob
@@ -348,6 +351,18 @@ actual object SqliteApi {
         return checkNotNull(
             sqlite3_sql(stmtRef.rawPtr)?.toKStringFromUtf8()
         )
+    }
+
+    actual fun bindParameterCount(stmtRef: StmtRef): Int {
+        return sqlite3_bind_parameter_count(stmtRef.rawPtr)
+    }
+
+    actual fun bindParameterName(stmtRef: StmtRef, index: Int): String? {
+        return sqlite3_bind_parameter_name(stmtRef.rawPtr, index)?.toKStringFromUtf8()
+    }
+
+    actual fun bindParameterIndex(stmtRef: StmtRef, name: String): Int {
+        return sqlite3_bind_parameter_index(stmtRef.rawPtr, name)
     }
 }
 

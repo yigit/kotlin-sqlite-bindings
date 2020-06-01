@@ -538,3 +538,49 @@ fun sql(
         localCallResult
     }
 }
+
+@CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativeBindParameterCount")
+fun bindParameterCount(
+    env: CPointer<JNIEnvVar>,
+    clazz: jclass,
+    p0: jlong
+): jint {
+    initPlatform()
+    return runWithJniExceptionConversion(env, 0) {
+        val localP0 = StmtRef.fromJni(p0)
+        val callResult = SqliteApi.bindParameterCount(localP0)
+        callResult
+    }
+}
+
+@CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativeBindParameterName")
+fun bindParameterName(
+    env: CPointer<JNIEnvVar>,
+    clazz: jclass,
+    p0: jlong,
+    p1: jint
+): jstring? {
+    initPlatform()
+    return runWithJniExceptionConversion(env, null) {
+        val localP0 = StmtRef.fromJni(p0)
+        val callResult = SqliteApi.bindParameterName(localP0, p1)
+        val localCallResult = callResult?.toJString(env)
+        localCallResult
+    }
+}
+
+@CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativeBindParameterIndex")
+fun bindParameterIndex(
+    env: CPointer<JNIEnvVar>,
+    clazz: jclass,
+    p0: jlong,
+    p1: jstring
+): jint {
+    initPlatform()
+    return runWithJniExceptionConversion(env, 0) {
+        val localP0 = StmtRef.fromJni(p0)
+        val localP1 = checkNotNull(p1.toKString(env))
+        val callResult = SqliteApi.bindParameterIndex(localP0, localP1)
+        callResult
+    }
+}

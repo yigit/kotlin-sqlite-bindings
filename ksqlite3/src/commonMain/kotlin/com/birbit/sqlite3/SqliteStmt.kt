@@ -29,10 +29,10 @@ class SqliteStmt(
         stmtRef.dispose()
     }
 
-    fun obtainMetadata(): Metadata {
+    fun obtainResultMetadata(): ResultMetadata {
         val columnCount = SqliteApi.columnCount(stmtRef)
         val columns = (0 until columnCount).map { columnIndex ->
-            Metadata.ColumnInfo(
+            ResultMetadata.ColumnInfo(
                 databaseName = SqliteApi.columnDatabaseName(stmtRef, columnIndex),
                 tableName = SqliteApi.columnTableName(stmtRef, columnIndex),
                 originName = SqliteApi.columnOriginName(stmtRef, columnIndex),
@@ -40,7 +40,19 @@ class SqliteStmt(
                 name = SqliteApi.columnName(stmtRef, columnIndex)
             )
         }
-        return Metadata(columns)
+        return ResultMetadata(columns)
+    }
+
+    fun obtainBindMetadata(): BindParameterMetadata {
+        val bindParamCount = SqliteApi.bindParameterCount(stmtRef)
+        return BindParameterMetadata(
+            params = (1..bindParamCount).map {
+                BindParameterMetadata.BindParameter(
+                    index = it,
+                    name = SqliteApi.bindParameterName(stmtRef, index = it)
+                )
+            }
+        )
     }
 
     fun <T> use(block: (SqliteStmt) -> T): T {
@@ -122,6 +134,7 @@ class SqliteStmt(
             else -> throw SqliteException(ResultCode.FORMAT, "cannot bind $value")
         }
     }
+
     fun bindValues(args: List<Any?>) {
         args.forEachIndexed { index, value ->
             bindValue(index + 1, value)
@@ -133,7 +146,7 @@ class SqliteStmt(
     fun expandedQuery() = SqliteApi.expandedSql(stmtRef)
     fun sql() = SqliteApi.sql(stmtRef)
 
-    data class Metadata(
+    data class ResultMetadata(
         val columns: List<ColumnInfo>
     ) {
         data class ColumnInfo(
@@ -142,6 +155,15 @@ class SqliteStmt(
             val tableName: String?,
             val originName: String?,
             val declaredType: String?
+        )
+    }
+
+    data class BindParameterMetadata(
+        val params: List<BindParameter>
+    ) {
+        data class BindParameter(
+            val index: Int,
+            val name: String?
         )
     }
 }

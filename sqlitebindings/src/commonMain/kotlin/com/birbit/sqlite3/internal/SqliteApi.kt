@@ -91,4 +91,7 @@ expect object SqliteApi {
     fun expandedSql(stmtRef: StmtRef): String
     fun normalizedSql(stmtRef: StmtRef): String
     fun sql(stmtRef: StmtRef): String
+    fun bindParameterCount(stmtRef: StmtRef): Int
+    fun bindParameterName(stmtRef: StmtRef, index: Int): String?
+    fun bindParameterIndex(stmtRef: StmtRef, name: String): Int
 }
