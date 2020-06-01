@@ -15,8 +15,10 @@
  */
 package com.birbit.sqlite3
 
-import com.birbit.sqlite3.SqliteStmt.Metadata
-import com.birbit.sqlite3.SqliteStmt.Metadata.ColumnInfo
+import com.birbit.sqlite3.SqliteStmt.BindParameterMetadata
+import com.birbit.sqlite3.SqliteStmt.BindParameterMetadata.BindParameter
+import com.birbit.sqlite3.SqliteStmt.ResultMetadata
+import com.birbit.sqlite3.SqliteStmt.ResultMetadata.ColumnInfo
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -208,10 +210,10 @@ class StatementTest {
             """.trimIndent()
             )
             it.prepareStmt("SELECT * FROM Test").use {
-                it.obtainMetadata()
+                it.obtainResultMetadata()
             }
         }
-        assertEquals(Metadata(
+        assertEquals(ResultMetadata(
             columns = columns.map { (name, type) ->
                 ColumnInfo(
                     databaseName = "main",
@@ -254,11 +256,11 @@ class StatementTest {
     fun metadata_noTable() {
         val metadata = SqliteConnection.openConnection(":memory:").use {
             it.prepareStmt("VALUES(1, 3.4)").use {
-                it.obtainMetadata()
+                it.obtainResultMetadata()
             }
         }
         assertEquals(
-            Metadata(
+            ResultMetadata(
                 columns = listOf(
                     ColumnInfo(
                         name = "column1",
@@ -277,6 +279,54 @@ class StatementTest {
                 )
             ), metadata
         )
+    }
+
+    @Test
+    fun bindParametersInfo_unnamed() {
+        query("SELECT ?") {
+            val metadata = it.obtainBindMetadata()
+            assertEquals(
+                BindParameterMetadata(
+                    listOf(
+                        BindParameter(
+                            index = 1,
+                            name = null
+                        )
+                    )
+                ),
+                metadata
+            )
+        }
+    }
+
+    @Test
+    fun bindParameterInfo_named() {
+        query("SELECT :var1, ?, :var3, ?, :var3") {
+            val metadata = it.obtainBindMetadata()
+            assertEquals(
+                BindParameterMetadata(
+                    listOf(
+                        BindParameter(
+                            index = 1,
+                            name = ":var1"
+                        ),
+                        BindParameter(
+                            index = 2,
+                            name = null
+                        ),
+                        BindParameter(
+                            index = 3,
+                            name = ":var3"
+                        ),
+                        BindParameter(
+                            index = 4,
+                            name = null
+                        )
+                    )
+                ),
+                metadata
+            )
+        }
     }
 
     private fun oneRowQuery(query: String, block: (Row) -> Unit) {

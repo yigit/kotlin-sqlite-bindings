@@ -183,6 +183,7 @@ actual object SqliteApi {
     ): ResultCode {
         return nativeExec(dbRef.ptr, query)
     }
+
     external fun nativeExec(dbPtr: Long, query: String): ResultCode
     actual fun columnDeclType(stmtRef: StmtRef, index: Int): String? {
         return nativeColumnDeclType(stmtRef.ptr, index)
@@ -232,5 +233,23 @@ actual object SqliteApi {
     actual fun sql(stmtRef: StmtRef): String {
         return nativeSql(stmtRef.ptr)
     }
+
     external fun nativeSql(stmtPtr: Long): String
+    actual fun bindParameterCount(stmtRef: StmtRef): Int {
+        return nativeBindParameterCount(stmtRef.ptr)
+    }
+
+    external fun nativeBindParameterCount(stmtPtr: Long): Int
+
+    actual fun bindParameterName(stmtRef: StmtRef, index: Int): String? {
+        return nativeBindParameterName(stmtRef.ptr, index)
+    }
+
+    external fun nativeBindParameterName(stmtPtr: Long, index: Int): String?
+
+    actual fun bindParameterIndex(stmtRef: StmtRef, name: String): Int {
+        return nativeBindParameterIndex(stmtRef.ptr, name)
+    }
+
+    external fun nativeBindParameterIndex(stmtPtr: Long, name: String): Int
 }
