@@ -71,11 +71,15 @@ import sqlite3.sqlite3_errcode
 import sqlite3.sqlite3_errmsg
 import sqlite3.sqlite3_errstr
 import sqlite3.sqlite3_exec
+import sqlite3.sqlite3_expanded_sql
 import sqlite3.sqlite3_finalize
+import sqlite3.sqlite3_free
+import sqlite3.sqlite3_normalized_sql
 import sqlite3.sqlite3_open
 import sqlite3.sqlite3_prepare_v2
 import sqlite3.sqlite3_reset
 import sqlite3.sqlite3_set_authorizer
+import sqlite3.sqlite3_sql
 import sqlite3.sqlite3_step
 
 private inline fun <reified T : Any> jlong.castFromJni(): T {
@@ -322,6 +326,28 @@ actual object SqliteApi {
 
     actual fun columnName(stmtRef: StmtRef, index: Int): String? {
         return sqlite3_column_name(stmtRef.rawPtr, index)?.toKStringFromUtf8()
+    }
+
+    actual fun expandedSql(stmtRef: StmtRef): String {
+        return checkNotNull(
+            sqlite3_expanded_sql(stmtRef.rawPtr)?.let {
+                val kstring = it.toKStringFromUtf8()
+                sqlite3_free(it)
+                kstring
+            }
+        )
+    }
+
+    actual fun normalizedSql(stmtRef: StmtRef): String {
+        return checkNotNull(
+            sqlite3_normalized_sql(stmtRef.rawPtr)?.toKStringFromUtf8()
+        )
+    }
+
+    actual fun sql(stmtRef: StmtRef): String {
+        return checkNotNull(
+            sqlite3_sql(stmtRef.rawPtr)?.toKStringFromUtf8()
+        )
     }
 }
 
