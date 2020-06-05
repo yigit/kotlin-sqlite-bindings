@@ -37,13 +37,7 @@ val kotlinVersion = project.extensions.extraProperties["KOTLIN_VERSION"]
 repositories {
     mavenCentral()
     gradlePluginPortal()
-    maven("https://dl.bintray.com/kotlin/kotlin-eap") {
-        metadataSources {
-            this.artifact()
-            gradleMetadata()
-            this.mavenPom()
-        }
-    }
+    maven("https://dl.bintray.com/kotlin/kotlin-eap")
     maven("https://kotlin.bintray.com/kotlinx")
 }
 
