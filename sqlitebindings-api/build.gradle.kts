@@ -18,13 +18,8 @@ import com.birbit.ksqlite.build.Publishing
 import com.birbit.ksqlite.build.setupCommon
 
 plugins {
-    kotlin("multiplatform") // version "1.3.72"
+    kotlin("multiplatform")
     id("maven-publish")
-}
-
-repositories {
-    maven("https://teamcity.jetbrains.com/guestAuth/app/rest/builds/buildType:(id:Kotlin_KotlinPublic_Compiler),number:1.4.0-dev-1793,branch:(default:any)/artifacts/content/maven")
-    mavenCentral()
 }
 
 kotlin {

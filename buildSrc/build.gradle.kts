@@ -17,21 +17,36 @@ import com.diffplug.gradle.spotless.SpotlessExtension
  */
 
 plugins {
-    kotlin("jvm") version "1.3.72"
     id("org.jlleitschuh.gradle.ktlint") version "9.2.1"
     id("com.diffplug.gradle.spotless") version "4.0.1"
 }
 
+// has to be separate while using M2
+apply(plugin = "kotlin-platform-jvm")
+buildscript {
+    val kotlinVersion = "1.3.72"
+    project.extensions.extraProperties["KOTLIN_VERSION"] = kotlinVersion
+    repositories {
+        maven("https://dl.bintray.com/kotlin/kotlin-eap")
+    }
+    dependencies {
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+    }
+}
+val kotlinVersion = project.extensions.extraProperties["KOTLIN_VERSION"]
 repositories {
     mavenCentral()
     gradlePluginPortal()
+    maven("https://dl.bintray.com/kotlin/kotlin-eap")
+    maven("https://kotlin.bintray.com/kotlinx")
 }
 
 dependencies {
     implementation(gradleApi())
     implementation(gradleKotlinDsl())
-    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.72")
-    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin-api:1.3.72")
+    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+    implementation("org.jetbrains.kotlin:kotlin-native-utils:$kotlinVersion")
+    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin-api:$kotlinVersion")
     implementation(kotlin("stdlib-jdk8"))
 }
 
