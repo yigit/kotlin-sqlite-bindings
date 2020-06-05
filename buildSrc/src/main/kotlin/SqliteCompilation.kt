@@ -150,7 +150,7 @@ object SqliteCompilation {
                     it.outputs.file(objFile)
 
                     it.executable(llvmBinFolder.resolve("clang").absolutePath)
-                    it.args("-c", "-Wall")
+                    it.args("--compile", "-Wall")
                     if (konanTarget.family != Family.MINGW) {
                         it.args("-fPIC")
                     }

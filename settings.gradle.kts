@@ -13,16 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 pluginManagement {
     repositories {
-        maven("https://teamcity.jetbrains.com/guestAuth/app/rest/builds/buildType:(id:Kotlin_KotlinPublic_Compiler),number:1.4.0-dev-1793,branch:(default:any)/artifacts/content/maven")
-
         mavenCentral()
-
         maven("https://plugins.gradle.org/m2/")
+        maven ("https://dl.bintray.com/kotlin/kotlin-eap")
     }
 }
+
 include("sqlitebindings", "sqlitebindings-api", "jnigenerator", "ksqlite3")
 enableFeaturePreview("GRADLE_METADATA")
-

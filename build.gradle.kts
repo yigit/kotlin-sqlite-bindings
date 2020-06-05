@@ -22,12 +22,15 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint") version "9.2.1"
 }
 
-repositories {
-    mavenCentral()
-}
 
 BuildOnServer.init(project)
 subprojects {
+    repositories {
+        mavenCentral()
+        google()
+        maven ("https://dl.bintray.com/kotlin/kotlin-eap")
+        maven ("https://kotlin.bintray.com/kotlinx")
+    }
     apply(plugin = "com.diffplug.gradle.spotless")
     this.extensions.getByType(SpotlessExtension::class).apply {
         kotlin {
