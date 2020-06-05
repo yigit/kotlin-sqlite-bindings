@@ -18,6 +18,15 @@ pluginManagement {
         mavenCentral()
         maven("https://plugins.gradle.org/m2/")
         maven ("https://dl.bintray.com/kotlin/kotlin-eap")
+        google()
+    }
+    resolutionStrategy {
+        eachPlugin {
+            if(requested.id.namespace == "com.android") {
+                println("SWAPPING ANDROID")
+                useModule("com.android.tools.build:gradle:${requested.version}")
+            }
+        }
     }
 }
 

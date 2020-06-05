@@ -39,6 +39,7 @@ repositories {
     gradlePluginPortal()
     maven("https://dl.bintray.com/kotlin/kotlin-eap")
     maven("https://kotlin.bintray.com/kotlinx")
+    google()
 }
 
 dependencies {
@@ -48,6 +49,8 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-native-utils:$kotlinVersion")
     implementation("org.jetbrains.kotlin:kotlin-gradle-plugin-api:$kotlinVersion")
     implementation(kotlin("stdlib-jdk8"))
+    // workaround for KMP plugin to find android classes
+    implementation("com.android.tools.build:gradle:4.1.0-alpha10")
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {

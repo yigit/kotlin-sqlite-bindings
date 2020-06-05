@@ -22,7 +22,6 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint") version "9.2.1"
 }
 
-
 BuildOnServer.init(project)
 subprojects {
     repositories {

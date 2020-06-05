@@ -21,10 +21,15 @@ import com.birbit.ksqlite.build.SqliteCompilationConfig
 import com.birbit.ksqlite.build.setupCommon
 
 plugins {
+    id("com.android.library")
     kotlin("multiplatform")
     id("maven-publish")
 }
-
+android {
+    defaultConfig {
+        compileSdkVersion = "android-29"
+    }
+}
 kotlin {
     setupCommon(gradle) {
         binaries {
@@ -62,7 +67,7 @@ kotlin {
         com.birbit.ksqlite.build.CollectNativeLibrariesTask
             .create(project, "sqlite3jni", combinedSharedLibsFolder)
     jvm().compilations["main"].compileKotlinTask.dependsOn(combineSharedLibsTask)
-
+    android()
     sourceSets {
         val commonMain by getting {
             dependencies {
