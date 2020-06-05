@@ -24,7 +24,7 @@ plugins {
 // has to be separate while using M2
 apply(plugin = "kotlin-platform-jvm")
 buildscript {
-    val kotlinVersion = "1.4-M2"
+    val kotlinVersion = "1.3.72"
     project.extensions.extraProperties["KOTLIN_VERSION"] = kotlinVersion
     repositories {
         maven("https://dl.bintray.com/kotlin/kotlin-eap")
