@@ -13,3 +13,4 @@ ksqlite3/hs_err_pid*
 ksqlite3/build
 .DS_Store
 **/*.iml
+local.properties
