@@ -67,7 +67,13 @@ kotlin {
         com.birbit.ksqlite.build.CollectNativeLibrariesTask
             .create(project, "sqlite3jni", combinedSharedLibsFolder)
     jvm().compilations["main"].compileKotlinTask.dependsOn(combineSharedLibsTask)
-    android()
+    android {
+        publishAllLibraryVariants()
+        compilations.all {
+            println("ANDROID $this")
+            compileKotlinTask.dependsOn(combineSharedLibsTask)
+        }
+    }
     sourceSets {
         val commonMain by getting {
             dependencies {
@@ -81,10 +87,28 @@ kotlin {
                 implementation(kotlin("test-annotations-common"))
             }
         }
-        // Default source set for JVM-specific sources and dependencies:
-        jvm().compilations["main"].defaultSourceSet {
+        val commonJvmMain = create("commonJvmMain") {
+            dependsOn(commonMain)
             dependencies {
                 implementation(kotlin("stdlib-jdk8"))
+            }
+        }
+        val androidMain by getting {
+            dependsOn(commonJvmMain)
+            dependencies {
+                implementation(kotlin("stdlib-jdk8"))
+            }
+        }
+        val androidTest by getting {
+            dependencies {
+                implementation(kotlin("test-junit"))
+            }
+        }
+
+        // Default source set for JVM-specific sources and dependencies:
+        jvm().compilations["main"].defaultSourceSet {
+            dependsOn(commonJvmMain)
+            dependencies {
                 implementation(Dependencies.NATIVE_LIB_LOADER)
             }
             resources.srcDir(combinedSharedLibsFolder)

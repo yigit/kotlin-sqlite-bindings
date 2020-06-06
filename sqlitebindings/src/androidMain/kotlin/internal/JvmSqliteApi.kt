@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 package com.birbit.sqlite3.internal
-
-import org.scijava.nativelib.NativeLoader
 internal actual fun loadNativeLibrary() {
-    NativeLoader.loadLibrary("sqlite3jni")
+    //TODO("load for android")
+    //NativeLoader.loadLibrary("sqlite3jni")
 }

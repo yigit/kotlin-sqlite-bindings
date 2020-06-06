@@ -386,3 +386,7 @@ fun callAuthCallback(
         )
     ).value
 }
+
+internal actual fun loadNativeLibrary() {
+    // no-op
+}

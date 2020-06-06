@@ -50,7 +50,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-gradle-plugin-api:$kotlinVersion")
     implementation(kotlin("stdlib-jdk8"))
     // workaround for KMP plugin to find android classes
-    implementation("com.android.tools.build:gradle:4.1.0-alpha10")
+    implementation("com.android.tools.build:gradle:3.6.3")
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
