@@ -46,6 +46,7 @@ fun KotlinMultiplatformExtension.setupNative(
         mingwX64(configure = configure)
         macosX64(configure = configure)
     }
+    androidNativeX86(configure = configure)
 }
 
 fun KotlinMultiplatformExtension.setupCommon(
@@ -69,12 +70,14 @@ fun KotlinMultiplatformExtension.setupCommon(
                 kotlin.srcDir("src/${it}Test")
             }
         }
+
         compilations["main"].defaultSourceSet {
             kotlin.srcDir("src/nativeMain")
         }
         compilations["test"].defaultSourceSet {
             kotlin.srcDir("src/nativeTest")
         }
+
         this.configure()
     }
 }

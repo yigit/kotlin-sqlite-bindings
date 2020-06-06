@@ -17,7 +17,7 @@ import com.diffplug.gradle.spotless.SpotlessExtension
  */
 
 plugins {
-    id("org.jlleitschuh.gradle.ktlint") version "9.2.1"
+    id("org.jlleitschuh.gradle.ktlint") version "9.2.1" apply false
     id("com.diffplug.gradle.spotless") version "4.0.1"
 }
 

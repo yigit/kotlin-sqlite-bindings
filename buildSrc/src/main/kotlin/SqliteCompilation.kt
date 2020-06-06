@@ -87,7 +87,7 @@ val targetInfoMap = mapOf(
     ),
     KonanTarget.ANDROID_X86 to TargetInfo(
         "i686-linux-android",
-        androidSysRootParent.resolve("arch-x86")
+        File("/home/yboyar/android/sdk/ndk-bundle/sysroot") // androidSysRootParent.resolve("arch-x86")
     ),
     KonanTarget.ANDROID_X64 to TargetInfo(
         "x86_64-linux-android",
@@ -142,7 +142,7 @@ object SqliteCompilation {
                         it.environment(
                             "CPATH",
                             "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/" +
-                                    "SDKs/MacOSX.sdk/usr/include"
+                                "SDKs/MacOSX.sdk/usr/include"
                         )
                     }
 
@@ -155,7 +155,7 @@ object SqliteCompilation {
                         it.args("-fPIC")
                     }
                     val targetInfo = targetInfoMap.getValue(konanTarget)
-
+                    println("SYSROOT: ${targetInfo.sysRoot}")
                     it.args("--target=${targetInfo.targetName}", "--sysroot=${targetInfo.sysRoot}")
                     it.args(targetInfo.clangArgs)
                     it.args(

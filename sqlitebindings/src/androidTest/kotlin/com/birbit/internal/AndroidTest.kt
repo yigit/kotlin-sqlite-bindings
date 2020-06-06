@@ -13,8 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.birbit.sqlite3.internal
-internal actual fun loadNativeLibrary() {
-    //TODO("load for android")
-    //NativeLoader.loadLibrary("sqlite3jni")
+package com.birbit.internal
+
+import kotlin.test.Test
+import kotlin.test.assertTrue
+
+// existence of this test prevents connectedCheck task from skipping
+class AndroidTest {
+    @Test
+    fun bar() {
+        assertTrue(false)
+    }
 }

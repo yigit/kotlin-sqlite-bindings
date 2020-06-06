@@ -50,6 +50,7 @@ data class SoInput(
                 }
                 Family.MINGW -> "windows_${konanTarget.architecture.bitness}"
                 Family.OSX -> "osx_${konanTarget.architecture.bitness}"
+                Family.ANDROID -> "android_${konanTarget.architecture.name}"
                 else -> throw GradleException("unsupported architecture family ${konanTarget.family}")
             }
         }
@@ -85,16 +86,31 @@ abstract class CollectNativeLibrariesTask : DefaultTask() {
 
     companion object {
 
-        fun create(project: Project, namePrefix: String, outFolder: File): TaskProvider<CollectNativeLibrariesTask> {
+        fun create(
+            project: Project,
+            namePrefix: String,
+            outFolder: File,
+            forAndroid: Boolean = false
+        ): TaskProvider<CollectNativeLibrariesTask> {
+            val suffix = if (forAndroid) {
+                "ForAndroid"
+            } else {
+                "ForJvm"
+            }
             return project.tasks.register(
-                "collectSharedLibsFor${namePrefix.capitalize()}",
+                "collectSharedLibsFor${namePrefix.capitalize()}$suffix",
                 CollectNativeLibrariesTask::class.java
             ) {
-                configure(it, namePrefix, outFolder)
+                configure(it, namePrefix, outFolder, forAndroid)
             }
         }
 
-        fun configure(task: CollectNativeLibrariesTask, namePrefix: String, outFolder: File) {
+        fun configure(
+            task: CollectNativeLibrariesTask,
+            namePrefix: String,
+            outFolder: File,
+            forAndroid: Boolean
+        ) {
             val kotlin = task.project.extensions.findByType(KotlinMultiplatformExtension::class.java)
             checkNotNull(kotlin) {
                 "cannot find kotlin extension"
@@ -104,7 +120,8 @@ abstract class CollectNativeLibrariesTask : DefaultTask() {
             if (distOutputsFolder == null) {
                 // obtain from compilations
                 kotlin.targets.withType(KotlinNativeTarget::class.java).filter {
-                    it.konanTarget.isBuiltOnThisMachine()
+                    it.konanTarget.isBuiltOnThisMachine() &&
+                        forAndroid == (it.konanTarget.family == Family.ANDROID)
                 }.forEach {
                     val sharedLib = it.binaries.findSharedLib(
                         namePrefix = namePrefix,

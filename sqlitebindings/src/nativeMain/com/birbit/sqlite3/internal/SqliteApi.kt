@@ -17,7 +17,7 @@ package com.birbit.sqlite3.internal
 
 import cnames.structs.sqlite3
 import cnames.structs.sqlite3_stmt
-import com.birbit.jni.jlong
+import platform.android.jlong
 import com.birbit.sqlite3.AuthorizationParams
 import com.birbit.sqlite3.Authorizer
 import com.birbit.sqlite3.ColumnType

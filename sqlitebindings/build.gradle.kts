@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import com.android.build.gradle.internal.tasks.factory.dependsOn
 import com.birbit.ksqlite.build.Dependencies
 import com.birbit.ksqlite.build.Publishing
 import com.birbit.ksqlite.build.SqliteCompilation
@@ -26,8 +27,21 @@ plugins {
     id("maven-publish")
 }
 android {
+    this.compileSdkVersion = "android-29"
     defaultConfig {
+        minSdkVersion(21)
+        targetSdkVersion(29)
         compileSdkVersion = "android-29"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        ndk {
+            // abiFilters("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
+            abiFilters("x86")
+        }
+    }
+    sourceSets {
+        val androidTest by getting {
+            this.java.srcDir(project.file("src/androidTest/kotlin"))
+        }
     }
 }
 kotlin {
@@ -38,41 +52,60 @@ kotlin {
         compilations["main"].defaultSourceSet {
             dependencies {
                 project(":sqlitebindings-api")
+                implementation(kotlin("stdlib-common"))
             }
         }
-        compilations["main"].cinterops.create("jni") {
-            // JDK is required here, JRE is not enough
-            val javaHome = File(System.getenv("JAVA_HOME") ?: System.getProperty("java.home"))
-            println("java home:$javaHome")
-            var include = File(javaHome, "include")
-            if (!include.exists()) {
-                // look upper
-                include = File(javaHome, "../include")
+        if (this.konanTarget.family != org.jetbrains.kotlin.konan.target.Family.ANDROID) {
+            compilations["main"].cinterops.create("jni") {
+                // JDK is required here, JRE is not enough
+                val javaHome = File(System.getenv("JAVA_HOME") ?: System.getProperty("java.home"))
+                println("java home:$javaHome for $this")
+                var include = File(javaHome, "include")
+                if (!include.exists()) {
+                    // look upper
+                    include = File(javaHome, "../include")
+                }
+                if (!include.exists()) {
+                    throw GradleException("cannot find include")
+                }
+                // match the name on android to use the same code for native.
+                // TODO could be abstract this into another module?
+                packageName = "platform.android"
+                includeDirs(
+                    Callable { include },
+                    Callable { File(include, "darwin") },
+                    Callable { File(include, "linux") },
+                    Callable { File(include, "win32") }
+                )
             }
-            if (!include.exists()) {
-                throw GradleException("cannot find include")
-            }
-            packageName = "com.birbit.jni"
-            includeDirs(
-                Callable { include },
-                Callable { File(include, "darwin") },
-                Callable { File(include, "linux") },
-                Callable { File(include, "win32") }
-            )
         }
     }
 
     val combinedSharedLibsFolder = project.buildDir.resolve("combinedSharedLibs")
     val combineSharedLibsTask =
         com.birbit.ksqlite.build.CollectNativeLibrariesTask
-            .create(project, "sqlite3jni", combinedSharedLibsFolder)
+            .create(project, "sqlite3jni", combinedSharedLibsFolder, false)
+
+    val combinedAndroidSharedLibsFolder = project.buildDir.resolve("combinedAndroidSharedLibs")
+    val combineAndroidSharedLibsTask =
+        com.birbit.ksqlite.build.CollectNativeLibrariesTask
+            .create(project, "sqlite3jni", combinedAndroidSharedLibsFolder, true)
+    project.android.sourceSets {
+        val main by getting {
+            println("ADDING $combinedAndroidSharedLibsFolder as native lib")
+            this.jniLibs.srcDir(combinedAndroidSharedLibsFolder.resolve("natives/android_X86"))
+        }
+    }
     jvm().compilations["main"].compileKotlinTask.dependsOn(combineSharedLibsTask)
     android {
         publishAllLibraryVariants()
-        compilations.all {
+        compilations.matching {
+            it.name == "debug" || it.name == "release" || it.name == "main"
+        }.all {
             println("ANDROID $this")
-            compileKotlinTask.dependsOn(combineSharedLibsTask)
+            compileKotlinTask.dependsOn(combineAndroidSharedLibsTask)
         }
+        tasks.preBuild.dependsOn(combineAndroidSharedLibsTask)
     }
     sourceSets {
         val commonMain by getting {
@@ -97,11 +130,16 @@ kotlin {
             dependsOn(commonJvmMain)
             dependencies {
                 implementation(kotlin("stdlib-jdk8"))
+                // implementation("com.getkeepsafe.relinker:relinker:1.4.1")
             }
         }
         val androidTest by getting {
+            println("TEST: ${this.kotlin.srcDirs}")
+            dependsOn(commonTest)
             dependencies {
                 implementation(kotlin("test-junit"))
+                implementation("androidx.test.ext:junit:1.1.1")
+                implementation("androidx.test:runner:1.2.0")
             }
         }
 

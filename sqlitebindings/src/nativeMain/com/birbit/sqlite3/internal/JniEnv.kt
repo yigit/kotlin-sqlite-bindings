@@ -15,15 +15,15 @@
  */
 package com.birbit.sqlite3.internal
 
-import com.birbit.jni.JNIEnvVar
-import com.birbit.jni.JNI_OK
-import com.birbit.jni.JNI_VERSION_1_2
-import com.birbit.jni.JavaVMVar
-import com.birbit.jni.jclass
-import com.birbit.jni.jint
-import com.birbit.jni.jmethodID
-import com.birbit.jni.jobject
-import com.birbit.jni.jstring
+import platform.android.JNIEnvVar
+import platform.android.JNI_OK
+import platform.android.JNI_VERSION_1_2
+import platform.android.JavaVMVar
+import platform.android.jclass
+import platform.android.jint
+import platform.android.jmethodID
+import platform.android.jobject
+import platform.android.jstring
 import com.birbit.sqlite3.AuthResult
 import com.birbit.sqlite3.AuthorizationParams
 import com.birbit.sqlite3.Authorizer
