@@ -59,7 +59,6 @@ kotlin {
             compilations["main"].cinterops.create("jni") {
                 // JDK is required here, JRE is not enough
                 val javaHome = File(System.getenv("JAVA_HOME") ?: System.getProperty("java.home"))
-                println("java home:$javaHome for $this")
                 var include = File(javaHome, "include")
                 if (!include.exists()) {
                     // look upper
@@ -92,20 +91,15 @@ kotlin {
             .create(project, "sqlite3jni", combinedAndroidSharedLibsFolder, true)
     project.android.sourceSets {
         val main by getting {
-            println("ADDING $combinedAndroidSharedLibsFolder as native lib")
             this.jniLibs.srcDir(combinedAndroidSharedLibsFolder)
         }
+    }
+    project.android.libraryVariants.all {
+        this.javaCompileProvider.dependsOn(combineAndroidSharedLibsTask)
     }
     jvm().compilations["main"].compileKotlinTask.dependsOn(combineSharedLibsTask)
     android {
         publishAllLibraryVariants()
-        compilations.matching {
-            it.name == "debug" || it.name == "release" || it.name == "main"
-        }.all {
-            println("ANDROID $this")
-            compileKotlinTask.dependsOn(combineAndroidSharedLibsTask)
-        }
-        tasks.preBuild.dependsOn(combineAndroidSharedLibsTask)
     }
     sourceSets {
         val commonMain by getting {
@@ -134,7 +128,6 @@ kotlin {
             }
         }
         val androidTest by getting {
-            println("TEST: ${this.kotlin.srcDirs}")
             dependsOn(commonTest)
             dependencies {
                 implementation(kotlin("test-junit"))

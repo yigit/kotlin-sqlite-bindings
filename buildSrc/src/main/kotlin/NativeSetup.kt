@@ -25,6 +25,12 @@ fun KotlinMultiplatformExtension.setupNative(
     gradle: Gradle,
     configure: KotlinNativeTarget.() -> Unit
 ) {
+    // keep this on top so that shared code w/ jvm is resolved properly in the IDE.
+    // TODO change this to build only on one target in CI
+    androidNativeArm32(configure = configure)
+    androidNativeArm64(configure = configure)
+    androidNativeX64(configure = configure)
+    androidNativeX86(configure = configure)
     val runningInIdea = gradle.startParameter.systemPropertiesArgs.containsKey("idea.active")
     val os = DefaultNativePlatform.getCurrentOperatingSystem()
     if (runningInIdea || os.isWindows) {
@@ -46,10 +52,6 @@ fun KotlinMultiplatformExtension.setupNative(
         mingwX64(configure = configure)
         macosX64(configure = configure)
     }
-    androidNativeArm32(configure = configure)
-    androidNativeArm64(configure = configure)
-    androidNativeX64(configure = configure)
-    androidNativeX86(configure = configure)
 }
 
 fun KotlinMultiplatformExtension.setupCommon(

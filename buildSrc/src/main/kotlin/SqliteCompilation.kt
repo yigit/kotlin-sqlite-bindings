@@ -51,10 +51,14 @@ val toolChainFolderName = when {
 }
 val llvmBinFolder = konanDeps.resolve("$toolChainFolderName/bin")
 
-// TODO discover this, it does not include *.h files which are needed for sqlite compilation
 val androidSysRootParent = konanDeps.resolve("target-sysroot-1-android_ndk").resolve("android-29")
 
-val ndkSysRoot = konanDeps.resolve("target-toolchain-2-osx-android_ndk/sysroot")
+// sysroot does not include header files which are needed for sqlite to compile so find the folder w/ header files
+// as well. TODO: we probably don't need the other androidSysRootParent ?
+val ndkSysRoot = konanDeps.listFiles { file: File ->
+    file.name.startsWith("target-toolchain-2") && file.name.endsWith("android_ndk")
+}.firstOrNull()?.resolve("sysroot") ?: error("cannot find ndk in konan")
+
 // TODO test these on device, just because it compiles wont mean it works
 val androidIncludes = mapOf(
     KonanTarget.ANDROID_ARM32 to listOf("usr/include", "usr/include/arm-linux-androideabi"),
@@ -62,8 +66,7 @@ val androidIncludes = mapOf(
     KonanTarget.ANDROID_X64 to listOf("usr/include", "usr/include/i686-linux-android"),
     KonanTarget.ANDROID_X86 to listOf("usr/include", "usr/include/x86_64-linux-android")
 )
-// -I/Users/yboyar/Library/Android/sdk/ndk/21.2.6472646/sysroot/usr/include
-// -I/Users/yboyar/Library/Android/sdk/ndk/21.2.6472646/sysroot/usr/include/arm-linux-androideabi
+
 data class TargetInfo(val targetName: String, val sysRoot: File, val clangArgs: List<String> = emptyList())
 
 val targetInfoMap = mapOf(
@@ -158,6 +161,8 @@ object SqliteCompilation {
             val compileSQLite =
                 project.tasks.register("compileSQLite${konanTarget.presetName.capitalize()}", Exec::class.java) {
                     it.onlyIf { HostManager().isEnabled(konanTarget) }
+                    // TODO make this depend on konanDownload, for some reason couldn't find the task
+                    // it.dependsOn(project.tasks.named("checkKonanCompiler"))
 
                     it.dependsOn(unzipTask)
                     it.environment("PATH", "$llvmBinFolder;${System.getenv("PATH")}")

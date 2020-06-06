@@ -63,8 +63,6 @@ data class SoInput(
     }
 }
 
-// TODO
-//  public output of this as a github action output and then have another job that'll merge them into final jar build
 abstract class CollectNativeLibrariesTask : DefaultTask() {
     lateinit var soInputs: List<SoInput>
 
@@ -130,7 +128,7 @@ abstract class CollectNativeLibrariesTask : DefaultTask() {
             }
             val soFiles = mutableListOf<SoInput>()
             val distOutputsFolder = Publishing.getDistOutputs()
-            if (distOutputsFolder == null) {
+            if (distOutputsFolder == null || forAndroid) {
                 // obtain from compilations
                 kotlin.targets.withType(KotlinNativeTarget::class.java).filter {
                     it.konanTarget.isBuiltOnThisMachine() &&
