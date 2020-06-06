@@ -51,8 +51,19 @@ val toolChainFolderName = when {
 }
 val llvmBinFolder = konanDeps.resolve("$toolChainFolderName/bin")
 
-val androidSysRootParent = konanDeps.resolve("target-sysroot-1-android_ndk").resolve("android-21")
+// TODO discover this, it does not include *.h files which are needed for sqlite compilation
+val androidSysRootParent = konanDeps.resolve("target-sysroot-1-android_ndk").resolve("android-29")
 
+val ndkSysRoot = konanDeps.resolve("target-toolchain-2-osx-android_ndk/sysroot")
+// TODO test these on device, just because it compiles wont mean it works
+val androidIncludes = mapOf(
+    KonanTarget.ANDROID_ARM32 to listOf("usr/include", "usr/include/arm-linux-androideabi"),
+    KonanTarget.ANDROID_ARM64 to listOf("usr/include", "usr/include/aarch64-linux-android"),
+    KonanTarget.ANDROID_X64 to listOf("usr/include", "usr/include/i686-linux-android"),
+    KonanTarget.ANDROID_X86 to listOf("usr/include", "usr/include/x86_64-linux-android")
+)
+// -I/Users/yboyar/Library/Android/sdk/ndk/21.2.6472646/sysroot/usr/include
+// -I/Users/yboyar/Library/Android/sdk/ndk/21.2.6472646/sysroot/usr/include/arm-linux-androideabi
 data class TargetInfo(val targetName: String, val sysRoot: File, val clangArgs: List<String> = emptyList())
 
 val targetInfoMap = mapOf(
@@ -79,19 +90,31 @@ val targetInfoMap = mapOf(
     ),
     KonanTarget.ANDROID_ARM32 to TargetInfo(
         "arm-linux-androideabi",
-        androidSysRootParent.resolve("arch-arm")
+        androidSysRootParent.resolve("arch-arm"),
+        androidIncludes[KonanTarget.ANDROID_ARM32]!!.map {
+            "-I${ndkSysRoot.resolve(it).absolutePath}"
+        }
     ),
     KonanTarget.ANDROID_ARM64 to TargetInfo(
         "aarch64-linux-android",
-        androidSysRootParent.resolve("arch-arm64")
+        androidSysRootParent.resolve("arch-arm64"),
+        androidIncludes[KonanTarget.ANDROID_ARM64]!!.map {
+            "-I${ndkSysRoot.resolve(it).absolutePath}"
+        }
     ),
     KonanTarget.ANDROID_X86 to TargetInfo(
         "i686-linux-android",
-        File("/home/yboyar/android/sdk/ndk-bundle/sysroot") // androidSysRootParent.resolve("arch-x86")
+        androidSysRootParent.resolve("arch-x86"),
+        androidIncludes[KonanTarget.ANDROID_X86]!!.map {
+            "-I${ndkSysRoot.resolve(it).absolutePath}"
+        }
     ),
     KonanTarget.ANDROID_X64 to TargetInfo(
         "x86_64-linux-android",
-        androidSysRootParent.resolve("arch-x64")
+        androidSysRootParent.resolve("arch-x86_64"),
+        androidIncludes[KonanTarget.ANDROID_X64]!!.map {
+            "-I${ndkSysRoot.resolve(it).absolutePath}"
+        }
     )
 )
 

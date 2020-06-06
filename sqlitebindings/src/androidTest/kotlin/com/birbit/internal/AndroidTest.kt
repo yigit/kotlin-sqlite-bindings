@@ -21,7 +21,7 @@ import kotlin.test.assertTrue
 // existence of this test prevents connectedCheck task from skipping
 class AndroidTest {
     @Test
-    fun bar() {
-        assertTrue(false)
+    fun ensureGradleDoesNotSkipTestTask() {
+        assertTrue(true)
     }
 }

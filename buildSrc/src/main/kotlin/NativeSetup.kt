@@ -46,6 +46,9 @@ fun KotlinMultiplatformExtension.setupNative(
         mingwX64(configure = configure)
         macosX64(configure = configure)
     }
+    androidNativeArm32(configure = configure)
+    androidNativeArm64(configure = configure)
+    androidNativeX64(configure = configure)
     androidNativeX86(configure = configure)
 }
 

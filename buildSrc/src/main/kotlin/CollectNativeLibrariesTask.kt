@@ -50,7 +50,13 @@ data class SoInput(
                 }
                 Family.MINGW -> "windows_${konanTarget.architecture.bitness}"
                 Family.OSX -> "osx_${konanTarget.architecture.bitness}"
-                Family.ANDROID -> "android_${konanTarget.architecture.name}"
+                Family.ANDROID -> when (konanTarget.architecture) {
+                    Architecture.X86 -> "x86"
+                    Architecture.X64 -> "x86_64"
+                    Architecture.ARM32 -> "armeabi-v7a"
+                    Architecture.ARM64 -> "arm64-v8a"
+                    else -> throw GradleException("add this architecture for android ${konanTarget.architecture}")
+                }
                 else -> throw GradleException("unsupported architecture family ${konanTarget.family}")
             }
         }
@@ -71,11 +77,18 @@ abstract class CollectNativeLibrariesTask : DefaultTask() {
     @InputFiles
     fun getFilePaths() = soInputs.map { it.soFile }
 
+    @Input
+    var forAndroid: Boolean = false
+
     @TaskAction
     fun doIt() {
         outputDir.deleteRecursively()
         outputDir.mkdirs()
-        val nativeDir = outputDir.resolve("natives")
+        val nativeDir = if (forAndroid) {
+            outputDir
+        } else {
+            outputDir.resolve("natives")
+        }
         soInputs.forEach {
             nativeDir.resolve(it.folderName).resolve(it.soFile.name).let { outFile ->
                 outFile.parentFile.mkdirs()
@@ -157,9 +170,10 @@ abstract class CollectNativeLibrariesTask : DefaultTask() {
             check(soFiles.isNotEmpty()) {
                 println("sth is wrong, there should be some so files")
             }
-            println("found so files:$soFiles")
+            println("found so files:$soFiles, for android $forAndroid")
             task.soInputs = soFiles
             task.outputDir = outFolder
+            task.forAndroid = forAndroid
         }
     }
 }

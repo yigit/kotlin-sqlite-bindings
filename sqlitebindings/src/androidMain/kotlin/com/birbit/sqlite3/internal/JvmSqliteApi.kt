@@ -15,6 +15,5 @@
  */
 package com.birbit.sqlite3.internal
 internal actual fun loadNativeLibrary() {
-    // TODO("load for android")
-    // NativeLoader.loadLibrary("sqlite3jni")
+    System.loadLibrary("sqlite3jni")
 }

@@ -34,8 +34,7 @@ android {
         compileSdkVersion = "android-29"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         ndk {
-            // abiFilters("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
-            abiFilters("x86")
+            abiFilters("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
         }
     }
     sourceSets {
@@ -43,6 +42,7 @@ android {
             this.java.srcDir(project.file("src/androidTest/kotlin"))
         }
     }
+    ndkVersion = "21.2.6472646"
 }
 kotlin {
     setupCommon(gradle) {
@@ -93,7 +93,7 @@ kotlin {
     project.android.sourceSets {
         val main by getting {
             println("ADDING $combinedAndroidSharedLibsFolder as native lib")
-            this.jniLibs.srcDir(combinedAndroidSharedLibsFolder.resolve("natives/android_X86"))
+            this.jniLibs.srcDir(combinedAndroidSharedLibsFolder)
         }
     }
     jvm().compilations["main"].compileKotlinTask.dependsOn(combineSharedLibsTask)
