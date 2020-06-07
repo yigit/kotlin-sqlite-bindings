@@ -101,7 +101,7 @@ abstract class CollectNativeLibrariesTask : DefaultTask() {
             project: Project,
             namePrefix: String,
             outFolder: File,
-            forAndroid: Boolean = false
+            forAndroid: Boolean
         ): TaskProvider<CollectNativeLibrariesTask> {
             val suffix = if (forAndroid) {
                 "ForAndroid"

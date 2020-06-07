@@ -20,6 +20,7 @@ import com.birbit.ksqlite.build.Publishing
 import com.birbit.ksqlite.build.SqliteCompilation
 import com.birbit.ksqlite.build.SqliteCompilationConfig
 import com.birbit.ksqlite.build.setupCommon
+import org.jetbrains.kotlin.konan.target.Family.ANDROID
 
 plugins {
     id("com.android.library")
@@ -38,10 +39,12 @@ android {
         }
     }
     sourceSets {
+        @Suppress("UNUSED_VARIABLE")
         val androidTest by getting {
             this.java.srcDir(project.file("src/androidTest/kotlin"))
         }
     }
+    ndkVersion = "21.2.6472646"
 }
 kotlin {
     setupCommon(gradle) {
@@ -54,7 +57,8 @@ kotlin {
                 implementation(kotlin("stdlib-common"))
             }
         }
-        if (this.konanTarget.family != org.jetbrains.kotlin.konan.target.Family.ANDROID) {
+        // jni already exists on android so we don't need it there
+        if (this.konanTarget.family != ANDROID) {
             compilations["main"].cinterops.create("jni") {
                 // JDK is required here, JRE is not enough
                 val javaHome = File(System.getenv("JAVA_HOME") ?: System.getProperty("java.home"))
@@ -82,12 +86,20 @@ kotlin {
     val combinedSharedLibsFolder = project.buildDir.resolve("combinedSharedLibs")
     val combineSharedLibsTask =
         com.birbit.ksqlite.build.CollectNativeLibrariesTask
-            .create(project, "sqlite3jni", combinedSharedLibsFolder, false)
+            .create(
+                project = project,
+                namePrefix = "sqlite3jni",
+                outFolder = combinedSharedLibsFolder,
+                forAndroid = false)
 
     val combinedAndroidSharedLibsFolder = project.buildDir.resolve("combinedAndroidSharedLibs")
     val combineAndroidSharedLibsTask =
         com.birbit.ksqlite.build.CollectNativeLibrariesTask
-            .create(project, "sqlite3jni", combinedAndroidSharedLibsFolder, true)
+            .create(
+                project = project,
+                namePrefix = "sqlite3jni",
+                outFolder = combinedAndroidSharedLibsFolder,
+                forAndroid = true)
     project.android.sourceSets {
         val main by getting {
             this.jniLibs.srcDir(combinedAndroidSharedLibsFolder)
@@ -123,7 +135,6 @@ kotlin {
             dependsOn(commonJvmMain)
             dependencies {
                 implementation(kotlin("stdlib-jdk8"))
-                // implementation("com.getkeepsafe.relinker:relinker:1.4.1")
             }
         }
         val androidTest by getting {
