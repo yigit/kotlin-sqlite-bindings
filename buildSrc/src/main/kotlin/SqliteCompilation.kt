@@ -157,7 +157,7 @@ object SqliteCompilation {
                     it.outputs.file(objFile)
 
                     it.executable(llvmBinFolder.resolve("clang").absolutePath)
-                    it.args("--compile", "-Wall", "-ansi")
+                    it.args("--compile", "-Wall")
                     if (konanTarget.family == Family.ANDROID) {
                         it.args("-Oz") // optimize for size
                     } else {
