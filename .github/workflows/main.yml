@@ -25,10 +25,10 @@ jobs:
     steps:
     - name: Setup Java 8 for sdkmanager
       uses: actions/setup-java@v1
-        with:
-          java-version: '8'
-          java-package: jdk
-          architecture: x64
+      with:
+        java-version: '8'
+        java-package: jdk
+        architecture: x64
     - name: Download ndk
       run: $ANDROID_HOME/tools/bin/sdkmanager 'ndk;21.2.6472646' # TODO read from some config file
     - name: Setup Java environment based on setup-java
