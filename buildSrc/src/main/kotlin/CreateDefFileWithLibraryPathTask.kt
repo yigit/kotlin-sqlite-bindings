@@ -37,7 +37,7 @@ abstract class CreateDefFileWithLibraryPathTask : DefaultTask() {
         println("will copy from $original to $target")
         target.parentFile.mkdirs()
         val soLocalPath = Paths.get(soFilePath.parentFile.absolutePath)
-        val content = original.readText(Charsets.UTF_8) + System.lineSeparator() + "libraryPaths = $soLocalPath" +
+        val content = original.readText(Charsets.UTF_8) + System.lineSeparator() + "libraryPaths = \"$soLocalPath\"" +
             System.lineSeparator()
         println("new content: $content")
         target.writeText(content, Charsets.UTF_8)
