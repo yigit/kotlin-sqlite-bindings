@@ -36,9 +36,9 @@ object AndroidSetup {
             .listFiles()!!
             .filter {
                 it.isDirectory
-            }.sortedBy {
-                it.name
-            }.reversed().first().name
+            }.filter {
+                it.name.startsWith("21")
+            }.firstOrNull()?.name ?: error("cannot find ndk version in ${androidLibrary.ndkDirectory.parentFile}")
         androidLibrary.sourceSets {
             it.getByName("androidTest").java
                 .srcDir(project.file("src/androidTest/kotlin"))

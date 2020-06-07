@@ -51,7 +51,7 @@ jobs:
         key: ${{ runner.os }}-konan
     # Runs a single command using the runners shell
     - name: build and test
-      run: ./gradlew allTests
+      run: ./gradlew allTests --info --stacktrace
     - name: run spotless
       run: ./gradlew spotlessCheck
     - name: build dist
@@ -124,7 +124,7 @@ jobs:
       with:
         api-level: ${{ matrix.api-level }}
         arch: x86_64
-        script: ./gradlew connectedCheck --stacktrace
+        script: ./gradlew connectedCheck --info --stacktrace
     - name: Upload build reports
       if: always()
       uses: actions/upload-artifact@v2
@@ -179,7 +179,7 @@ jobs:
           name: windows-latest-dist
           path: artifacts/windows
       - name: test and publish
-        run: DIST_OUTPUTS=artifacts ./gradlew jvmTest createCombinedRepo
+        run: DIST_OUTPUTS=artifacts ./gradlew jvmTest createCombinedRepo  --info --stacktrace
       - name: Upload Repo
         uses: actions/upload-artifact@v2
         with:
