@@ -36,7 +36,7 @@ kotlin {
         includeAndroidNative = false) {
     }
     android {
-        publishAllLibraryVariants()
+        publishLibraryVariants("release")
     }
 
     sourceSets {

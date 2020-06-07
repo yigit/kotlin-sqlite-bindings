@@ -95,7 +95,7 @@ kotlin {
     }
     jvm().compilations["main"].compileKotlinTask.dependsOn(combineSharedLibsTask)
     android {
-        publishAllLibraryVariants()
+        publishLibraryVariants("release")
     }
     sourceSets {
         val commonMain by getting {

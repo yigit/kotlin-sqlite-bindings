@@ -136,7 +136,7 @@ abstract class CollectNativeLibrariesTask : DefaultTask() {
                 }.forEach {
                     val sharedLib = it.binaries.findSharedLib(
                         namePrefix = namePrefix,
-                        buildType = NativeBuildType.DEBUG // TODO
+                        buildType = NativeBuildType.RELEASE
                     )
                     checkNotNull(sharedLib) {
                         "cannot find shared lib in $it"
