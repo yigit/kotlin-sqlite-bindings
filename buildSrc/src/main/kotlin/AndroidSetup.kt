@@ -31,18 +31,10 @@ object AndroidSetup {
                 it.abiFilters("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
             }
         }
-        // TODO fix this, but for now easy workaround for CI
-        val ndkVersion = androidLibrary.ndkDirectory.parentFile
-            .listFiles()!!
-            .filter {
-                it.isDirectory
-            }.filter {
-                it.name.startsWith("21")
-            }.firstOrNull()?.name ?: error("cannot find ndk version in ${androidLibrary.ndkDirectory.parentFile}")
         androidLibrary.sourceSets {
             it.getByName("androidTest").java
                 .srcDir(project.file("src/androidTest/kotlin"))
         }
-        androidLibrary.ndkVersion = ndkVersion
+        androidLibrary.ndkVersion = "21.2.6472646"
     }
 }
