@@ -15,6 +15,7 @@
  */
 
 import com.android.build.gradle.internal.tasks.factory.dependsOn
+import com.birbit.ksqlite.build.AndroidSetup
 import com.birbit.ksqlite.build.Dependencies
 import com.birbit.ksqlite.build.Publishing
 import com.birbit.ksqlite.build.SqliteCompilation
@@ -27,25 +28,7 @@ plugins {
     kotlin("multiplatform")
     id("maven-publish")
 }
-android {
-    this.compileSdkVersion = "android-29"
-    defaultConfig {
-        minSdkVersion(21)
-        targetSdkVersion(29)
-        compileSdkVersion = "android-29"
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        ndk {
-            abiFilters("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
-        }
-    }
-    sourceSets {
-        @Suppress("UNUSED_VARIABLE")
-        val androidTest by getting {
-            this.java.srcDir(project.file("src/androidTest/kotlin"))
-        }
-    }
-    ndkVersion = "21.2.6472646"
-}
+AndroidSetup.configure(project)
 kotlin {
     setupCommon(gradle) {
         binaries {
