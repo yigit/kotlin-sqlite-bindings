@@ -61,8 +61,9 @@ kotlin {
         val androidTest by getting {
             dependencies {
                 implementation(kotlin("test-junit"))
-                implementation("androidx.test.ext:junit:1.1.1")
-                implementation("androidx.test:runner:1.2.0")
+                com.birbit.ksqlite.build.Dependencies.ANDROID_TEST.forEach {
+                    implementation(it)
+                }
             }
         }
         // Default source set for JVM-specific sources and dependencies:

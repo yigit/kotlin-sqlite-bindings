@@ -126,8 +126,9 @@ kotlin {
             dependsOn(commonTest)
             dependencies {
                 implementation(kotlin("test-junit"))
-                implementation("androidx.test.ext:junit:1.1.1")
-                implementation("androidx.test:runner:1.2.0")
+                Dependencies.ANDROID_TEST.forEach {
+                    implementation(it)
+                }
             }
         }
 
