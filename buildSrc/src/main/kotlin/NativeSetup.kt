@@ -42,7 +42,6 @@ fun KotlinMultiplatformExtension.setupNative(
             }
             else -> error("OS $os is not supported")
         }
-        androidNativeX86(configure = configure)
     } else {
         linuxX64(configure = configure)
         linuxArm32Hfp(configure = configure)
@@ -68,6 +67,7 @@ fun KotlinMultiplatformExtension.setupCommon(
             else -> null
         }
         // TODO we should nest these folders 1 more to be consistent w/ common
+        //  also move them to shared folder once we move to 1.4-M2
         osSpecificFolderPrefix?.let {
             compilations["main"].defaultSourceSet {
                 kotlin.srcDir("src/${it}Main")
