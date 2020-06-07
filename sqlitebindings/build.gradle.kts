@@ -42,7 +42,6 @@ android {
             this.java.srcDir(project.file("src/androidTest/kotlin"))
         }
     }
-    ndkVersion = "21.2.6472646"
 }
 kotlin {
     setupCommon(gradle) {

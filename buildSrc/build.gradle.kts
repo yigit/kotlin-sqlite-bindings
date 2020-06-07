@@ -21,11 +21,29 @@ plugins {
     id("com.diffplug.gradle.spotless") version "4.0.1"
 }
 
+data class BuildVersions(
+    private val data: Map<String, String>
+) {
+    val kotlin = data["kotlin"] ?: error("cannot find kotlin version")
+    val agp = data["agp"] ?: error("cannot find agp version")
+}
+
+fun buildDepVersions(): BuildVersions {
+    val data = extensions.extraProperties["BUILD_DEP_VERSIONS"] as? Map<String, String>
+        ?: error("build versions are not defined")
+    return BuildVersions(data)
+}
+
 // has to be separate while using M2
 apply(plugin = "kotlin-platform-jvm")
 buildscript {
     val kotlinVersion = "1.3.72"
-    project.extensions.extraProperties["KOTLIN_VERSION"] = kotlinVersion
+    val agpVersion = "3.6.3"
+    project.extensions.extraProperties["BUILD_DEP_VERSIONS"] = mapOf(
+        "kotlin" to kotlinVersion,
+        "agp" to agpVersion
+    )
+
     repositories {
         maven("https://dl.bintray.com/kotlin/kotlin-eap")
     }
@@ -33,7 +51,7 @@ buildscript {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
     }
 }
-val kotlinVersion = project.extensions.extraProperties["KOTLIN_VERSION"]
+
 repositories {
     mavenCentral()
     gradlePluginPortal()
@@ -45,12 +63,12 @@ repositories {
 dependencies {
     implementation(gradleApi())
     implementation(gradleKotlinDsl())
-    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
-    implementation("org.jetbrains.kotlin:kotlin-native-utils:$kotlinVersion")
-    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin-api:$kotlinVersion")
+    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:${buildDepVersions().kotlin}")
+    implementation("org.jetbrains.kotlin:kotlin-native-utils:${buildDepVersions().kotlin}")
+    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin-api:${buildDepVersions().kotlin}")
     implementation(kotlin("stdlib-jdk8"))
     // workaround for KMP plugin to find android classes
-    implementation("com.android.tools.build:gradle:3.6.3")
+    implementation("com.android.tools.build:gradle:${buildDepVersions().agp}")
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {

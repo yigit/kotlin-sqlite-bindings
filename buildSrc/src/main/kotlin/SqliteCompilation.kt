@@ -15,6 +15,7 @@
  */
 package com.birbit.ksqlite.build
 
+import com.android.build.gradle.LibraryExtension
 import java.io.File
 import java.util.concurrent.Callable
 import org.gradle.api.Project
@@ -34,11 +35,13 @@ data class SqliteCompilationConfig(
     val version: String
 )
 
-data class SqliteCompilationOutputs(
-    val srcDir: File,
-    val compileTasks: List<TaskProvider<out Task>>,
-    val soFiles: List<File>
-)
+fun Project.ndkSysrootDir(): File {
+    val ndkDir = project.extensions.getByType(LibraryExtension::class.java).ndkDirectory.resolve("sysroot")
+    check(ndkDir.exists()) {
+        println("NDK directory is missing")
+    }
+    return ndkDir
+}
 
 // taken from https://github.com/Dominaezzz/kotlin-sqlite
 val konanUserDir = File(System.getenv("KONAN_DATA_DIR") ?: "${System.getProperty("user.home")}/.konan")
@@ -51,73 +54,49 @@ val toolChainFolderName = when {
 }
 val llvmBinFolder = konanDeps.resolve("$toolChainFolderName/bin")
 
-val androidSysRootParent = konanDeps.resolve("target-sysroot-1-android_ndk").resolve("android-29")
-
-// sysroot does not include header files which are needed for sqlite to compile so find the folder w/ header files
-// as well. TODO: we probably don't need the other androidSysRootParent ?
-val ndkSysRoot = konanDeps.listFiles { file: File ->
-    file.name.startsWith("target-toolchain-2") && file.name.endsWith("android_ndk")
-}.firstOrNull()?.resolve("sysroot") ?: error("cannot find ndk in konan")
-
-// TODO test these on device, just because it compiles wont mean it works
-val androidIncludes = mapOf(
-    KonanTarget.ANDROID_ARM32 to listOf("usr/include", "usr/include/arm-linux-androideabi"),
-    KonanTarget.ANDROID_ARM64 to listOf("usr/include", "usr/include/aarch64-linux-android"),
-    KonanTarget.ANDROID_X64 to listOf("usr/include", "usr/include/i686-linux-android"),
-    KonanTarget.ANDROID_X86 to listOf("usr/include", "usr/include/x86_64-linux-android")
+class TargetInfo(
+    val targetName: String,
+    val sysRoot: (Project) -> File,
+    val clangArgs: List<String> = emptyList()
 )
-
-data class TargetInfo(val targetName: String, val sysRoot: File, val clangArgs: List<String> = emptyList())
 
 val targetInfoMap = mapOf(
     KonanTarget.LINUX_X64 to TargetInfo(
         "x86_64-unknown-linux-gnu",
-        konanDeps.resolve("target-gcc-toolchain-3-linux-x86-64/x86_64-unknown-linux-gnu/sysroot")
+        { konanDeps.resolve("target-gcc-toolchain-3-linux-x86-64/x86_64-unknown-linux-gnu/sysroot") }
     ),
     KonanTarget.MACOS_X64 to TargetInfo(
         "x86_64-apple-darwin10", // Not sure about this but it doesn't matter yet.
-        konanDeps.resolve("target-sysroot-10-macos_x64")
+        { konanDeps.resolve("target-sysroot-10-macos_x64") }
     ),
     KonanTarget.MINGW_X64 to TargetInfo(
         "x86_64-w64-mingw32",
-        konanDeps.resolve("msys2-mingw-w64-x86_64-clang-llvm-lld-compiler_rt-8.0.1")
+        { konanDeps.resolve("msys2-mingw-w64-x86_64-clang-llvm-lld-compiler_rt-8.0.1") }
     ),
     KonanTarget.MINGW_X86 to TargetInfo(
         "i686-w64-mingw32",
-        konanDeps.resolve("msys2-mingw-w64-i686-clang-llvm-lld-compiler_rt-8.0.1")
+        { konanDeps.resolve("msys2-mingw-w64-i686-clang-llvm-lld-compiler_rt-8.0.1") }
     ),
     KonanTarget.LINUX_ARM32_HFP to TargetInfo(
         "armv6-unknown-linux-gnueabihf",
-        konanDeps.resolve("target-sysroot-2-raspberrypi"),
+        { konanDeps.resolve("target-sysroot-2-raspberrypi") },
         listOf("-mfpu=vfp", "-mfloat-abi=hard")
     ),
     KonanTarget.ANDROID_ARM32 to TargetInfo(
         "arm-linux-androideabi",
-        androidSysRootParent.resolve("arch-arm"),
-        androidIncludes[KonanTarget.ANDROID_ARM32]!!.map {
-            "-I${ndkSysRoot.resolve(it).absolutePath}"
-        }
+        { it.ndkSysrootDir() }
     ),
     KonanTarget.ANDROID_ARM64 to TargetInfo(
         "aarch64-linux-android",
-        androidSysRootParent.resolve("arch-arm64"),
-        androidIncludes[KonanTarget.ANDROID_ARM64]!!.map {
-            "-I${ndkSysRoot.resolve(it).absolutePath}"
-        }
+        { it.ndkSysrootDir() }
     ),
     KonanTarget.ANDROID_X86 to TargetInfo(
         "i686-linux-android",
-        androidSysRootParent.resolve("arch-x86"),
-        androidIncludes[KonanTarget.ANDROID_X86]!!.map {
-            "-I${ndkSysRoot.resolve(it).absolutePath}"
-        }
+        { it.ndkSysrootDir() }
     ),
     KonanTarget.ANDROID_X64 to TargetInfo(
         "x86_64-linux-android",
-        androidSysRootParent.resolve("arch-x86_64"),
-        androidIncludes[KonanTarget.ANDROID_X64]!!.map {
-            "-I${ndkSysRoot.resolve(it).absolutePath}"
-        }
+        { it.ndkSysrootDir() }
     )
 )
 
@@ -178,23 +157,29 @@ object SqliteCompilation {
                     it.outputs.file(objFile)
 
                     it.executable(llvmBinFolder.resolve("clang").absolutePath)
-                    it.args("--compile", "-Wall")
+                    it.args("--compile", "-Wall", "-ansi")
+                    if (konanTarget.family == Family.ANDROID) {
+                        it.args("-Oz") // optimize for size
+                    } else {
+                        it.args("-O3")
+                    }
+
                     if (konanTarget.family != Family.MINGW) {
                         it.args("-fPIC")
                     }
                     val targetInfo = targetInfoMap.getValue(konanTarget)
-                    println("SYSROOT: ${targetInfo.sysRoot}")
-                    it.args("--target=${targetInfo.targetName}", "--sysroot=${targetInfo.sysRoot}")
+                    it.args("--target=${targetInfo.targetName}")
+                    it.args("--sysroot=${targetInfo.sysRoot(project).absolutePath}")
                     it.args(targetInfo.clangArgs)
                     it.args(
                         "-DSQLITE_ENABLE_COLUMN_METADATA=1",
                         "-DSQLITE_ENABLE_NORMALIZE=1",
-//                        "-DSQLITE_ENABLE_EXPLAIN_COMMENTS=1",
-//                        "-DSQLITE_ENABLE_DBSTAT_VTAB=1",
+                        // "-DSQLITE_ENABLE_EXPLAIN_COMMENTS=1",
+                        // "-DSQLITE_ENABLE_DBSTAT_VTAB=1",
                         "-DSQLITE_ENABLE_LOAD_EXTENSION=1",
-//                        "-DSQLITE_HAVE_ISNAN=1",
+                        // "-DSQLITE_HAVE_ISNAN=1",
                         "-DHAVE_USLEEP=1",
-//                        "-DSQLITE_CORE=1",
+                        // "-DSQLITE_CORE=1",
                         "-DSQLITE_ENABLE_FTS3=1",
                         "-DSQLITE_ENABLE_FTS3_PARENTHESIS=1",
                         "-DSQLITE_ENABLE_FTS4=1",

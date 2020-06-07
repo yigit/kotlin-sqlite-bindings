@@ -23,7 +23,6 @@ pluginManagement {
     resolutionStrategy {
         eachPlugin {
             if(requested.id.namespace == "com.android") {
-                println("SWAPPING ANDROID")
                 useModule("com.android.tools.build:gradle:${requested.version}")
             }
         }
