@@ -6,7 +6,7 @@ name: CI
 # events but only for the master branch
 on:
   push:
-    branches: [ master ]
+    branches: [ master, android-target ]
   pull_request:
     branches: [ master ]
 
@@ -80,6 +80,57 @@ jobs:
       with:
         name: ${{ matrix.os }}-dist
         path: build/dist
+  androidTests:
+    needs: build
+    runs-on: macosx-latest
+    strategy:
+      matrix:
+        api-level: [21, 24, 27, 29]
+    steps:
+    - name: Setup Java environment based on setup-java
+      uses: actions/setup-java@v1
+      with:
+        java-version: '11'
+        java-package: jdk
+        architecture: x64
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v2
+
+    # build cache
+    - name: Cache
+      uses: actions/cache@v1.1.2
+      with:
+        path: ~/.gradle/caches
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
+      # An ordered list of keys to use for restoring the cache if no cache hit occurred for key
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+    - uses: actions/cache@v1.1.2
+      with:
+        path: ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
+    - uses: actions/cache@v1.1.2
+      with:
+        path: ~/.konan
+        key: ${{ runner.os }}-konan
+    - name: Run Integration Tests - x86
+      uses: ReactiveCircus/android-emulator-runner@v2.9.0
+      with:
+        api-level: ${{ matrix.api-level }}
+        arch: x86
+        script: ./gradlew connectedCheck --stacktrace
+    - name: Run Integration Tests - x86_64
+      uses: ReactiveCircus/android-emulator-runner@v2.9.0
+      with:
+        api-level: ${{ matrix.api-level }}
+        arch: x86_64
+        script: ./gradlew connectedCheck --stacktrace
+    - name: Upload build reports
+      if: always()
+      uses: actions/upload-artifact@v2
+      with:
+        name: android test results
+        path: ./**/build/reports
   buildFinalArtifacts:
     needs: build
     runs-on: ubuntu-latest
