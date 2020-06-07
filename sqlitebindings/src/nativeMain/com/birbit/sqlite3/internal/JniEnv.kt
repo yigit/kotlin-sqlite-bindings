@@ -15,15 +15,6 @@
  */
 package com.birbit.sqlite3.internal
 
-import platform.android.JNIEnvVar
-import platform.android.JNI_OK
-import platform.android.JNI_VERSION_1_2
-import platform.android.JavaVMVar
-import platform.android.jclass
-import platform.android.jint
-import platform.android.jmethodID
-import platform.android.jobject
-import platform.android.jstring
 import com.birbit.sqlite3.AuthResult
 import com.birbit.sqlite3.AuthorizationParams
 import com.birbit.sqlite3.Authorizer
@@ -44,6 +35,15 @@ import kotlinx.cinterop.pointed
 import kotlinx.cinterop.ptr
 import kotlinx.cinterop.reinterpret
 import kotlinx.cinterop.value
+import platform.android.JNIEnvVar
+import platform.android.JNI_OK
+import platform.android.JNI_VERSION_1_2
+import platform.android.JavaVMVar
+import platform.android.jclass
+import platform.android.jint
+import platform.android.jmethodID
+import platform.android.jobject
+import platform.android.jstring
 
 typealias AuthParamsConstructor = CFunction<(
     CPointer<JNIEnvVar>,

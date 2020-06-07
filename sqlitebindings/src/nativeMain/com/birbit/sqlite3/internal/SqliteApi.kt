@@ -17,7 +17,6 @@ package com.birbit.sqlite3.internal
 
 import cnames.structs.sqlite3
 import cnames.structs.sqlite3_stmt
-import platform.android.jlong
 import com.birbit.sqlite3.AuthorizationParams
 import com.birbit.sqlite3.Authorizer
 import com.birbit.sqlite3.ColumnType
@@ -44,6 +43,7 @@ import kotlinx.cinterop.toLong
 import kotlinx.cinterop.usePinned
 import kotlinx.cinterop.utf8
 import kotlinx.cinterop.value
+import platform.android.jlong
 import sqlite3.SQLITE_NULL
 import sqlite3.SQLITE_OK
 import sqlite3.SQLITE_TRANSIENT
