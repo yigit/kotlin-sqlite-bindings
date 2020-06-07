@@ -33,8 +33,8 @@ jobs:
       run:   |
              if [ "$RUNNER_OS" == "Windows" ]; then
                   C:\Program Files (x86)\Android\android-sdk\tools\bin\sdkmanager.bat --install "ndk;21.2.6472646" --sdk_root=%ANDROID_SDK_ROOT%
-             else [ "$RUNNER_OS" == "Windows" ]; then
-                  apt install important_linux_software
+             else
+                  echo "y" | sudo $ANDROID_HOME/tools/bin/sdkmanager --install "ndk;21.2.6472646" --sdk_root=${ANDROID_SDK_ROOT}
              fi
       shell: bash
     - name: Setup Java environment based on setup-java
