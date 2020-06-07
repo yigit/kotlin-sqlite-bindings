@@ -30,7 +30,9 @@ plugins {
 }
 AndroidSetup.configure(project)
 kotlin {
-    setupCommon(gradle) {
+    setupCommon(
+        gradle = gradle,
+        includeAndroidNative = true) {
         binaries {
             sharedLib(namePrefix = "sqlite3jni")
         }

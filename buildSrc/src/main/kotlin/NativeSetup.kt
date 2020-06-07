@@ -21,13 +21,18 @@ import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
+fun runningInIdea(gradle: Gradle): Boolean {
+    return gradle.startParameter.systemPropertiesArgs.containsKey("idea.active")
+}
+
 fun KotlinMultiplatformExtension.setupNative(
     gradle: Gradle,
+    includeAndroidNative: Boolean,
     configure: KotlinNativeTarget.() -> Unit
 ) {
     // keep this on top so that shared code w/ jvm is resolved properly in the IDE.
     // TODO change this to build only on one target in CI
-    val runningInIdea = gradle.startParameter.systemPropertiesArgs.containsKey("idea.active")
+    val runningInIdea = runningInIdea(gradle)
     val os = DefaultNativePlatform.getCurrentOperatingSystem()
     if (runningInIdea || os.isWindows) {
         when {
@@ -47,18 +52,21 @@ fun KotlinMultiplatformExtension.setupNative(
         linuxArm32Hfp(configure = configure)
         mingwX64(configure = configure)
         macosX64(configure = configure)
-        androidNativeArm32(configure = configure)
-        androidNativeArm64(configure = configure)
-        androidNativeX64(configure = configure)
-        androidNativeX86(configure = configure)
+        if (includeAndroidNative) {
+            androidNativeArm32(configure = configure)
+            androidNativeArm64(configure = configure)
+            androidNativeX64(configure = configure)
+            androidNativeX86(configure = configure)
+        }
     }
 }
 
 fun KotlinMultiplatformExtension.setupCommon(
     gradle: Gradle,
+    includeAndroidNative: Boolean,
     configure: KotlinNativeTarget.() -> Unit
 ) {
-    setupNative(gradle) {
+    setupNative(gradle, includeAndroidNative) {
         val os = DefaultNativePlatform.getCurrentOperatingSystem()
         val osSpecificFolderPrefix = when {
             os.isLinux -> "linux"

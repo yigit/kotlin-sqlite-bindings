@@ -13,28 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.birbit.sqlite3
 
-import com.birbit.ksqlite.build.Publishing
-import com.birbit.ksqlite.build.setupCommon
+import java.io.File
 
-plugins {
-    kotlin("multiplatform")
-    id("maven-publish")
-}
-
-kotlin {
-    setupCommon(
-        gradle = gradle,
-        includeAndroidNative = true) {
-    }
-    jvm()
-
-    sourceSets {
-        val commonMain by getting {
-            dependencies {
-                implementation(kotlin("stdlib"))
-            }
-        }
+actual object OsSpecificTestUtils {
+    internal actual fun mkdirForTest(path: String) {
+        File(path).mkdirs()
     }
 }
-Publishing.setup(project)
