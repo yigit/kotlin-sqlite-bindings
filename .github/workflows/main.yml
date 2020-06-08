@@ -131,12 +131,12 @@ jobs:
         # An ordered list of keys to use for restoring the cache if no cache hit occurred for key
         restore-keys: |
           ${{ runner.os }}-konan-cache-
-    - name: Run Integration Tests - x86_64
-      uses: ReactiveCircus/android-emulator-runner@v2.9.0
+    - name: Run Integration Tests
+      uses: ReactiveCircus/android-emulator-runner@v2.8.0
       with:
         api-level: ${{ matrix.api-level }}
         arch: x86_64
-        script: ./gradlew connectedCheck --info --stacktrace
+        script: ./gradlew connectedCheck --stacktrace
     - name: Upload build reports
       if: always()
       uses: actions/upload-artifact@v2
