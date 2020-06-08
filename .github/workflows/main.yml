@@ -42,22 +42,27 @@ jobs:
     - uses: actions/checkout@v2
 
     # build cache
-    - name: Cache
+    - name: Cache Gradle Cache
       uses: actions/cache@v1.1.2
       with:
         path: ~/.gradle/caches
         key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
-      # An ordered list of keys to use for restoring the cache if no cache hit occurred for key
+        # An ordered list of keys to use for restoring the cache if no cache hit occurred for key
         restore-keys: |
           ${{ runner.os }}-gradle-
-    - uses: actions/cache@v1.1.2
+    - name: Cache gradle wrapper
+      uses: actions/cache@v1.1.2
       with:
         path: ~/.gradle/wrapper
         key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
-    - uses: actions/cache@v1.1.2
+    - name: Cache konan
+      uses: actions/cache@v1.1.2
       with:
         path: ~/.konan
-        key: ${{ runner.os }}-konan
+        key: ${{ runner.os }}-konan-cache-${{ hashFiles('buildSrc/build.gradle.kts') }}
+        # An ordered list of keys to use for restoring the cache if no cache hit occurred for key
+        restore-keys: |
+          ${{ runner.os }}-konan-cache-
     # Runs a single command using the runners shell
     - name: build and test
       run: ./gradlew allTests --info --stacktrace
@@ -90,7 +95,6 @@ jobs:
         name: ${{ matrix.os }}-dist
         path: build/dist
   androidTests:
-    needs: build
     runs-on: macos-latest
     strategy:
       matrix:
@@ -106,28 +110,27 @@ jobs:
     - uses: actions/checkout@v2
 
     # build cache
-    - name: Cache
+    - name: Cache Gradle Cache
       uses: actions/cache@v1.1.2
       with:
         path: ~/.gradle/caches
         key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
-      # An ordered list of keys to use for restoring the cache if no cache hit occurred for key
+        # An ordered list of keys to use for restoring the cache if no cache hit occurred for key
         restore-keys: |
           ${{ runner.os }}-gradle-
-    - uses: actions/cache@v1.1.2
+    - name: Cache gradle wrapper
+      uses: actions/cache@v1.1.2
       with:
         path: ~/.gradle/wrapper
         key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
-    - uses: actions/cache@v1.1.2
+    - name: Cache konan
+      uses: actions/cache@v1.1.2
       with:
         path: ~/.konan
-        key: ${{ runner.os }}-konan
-    - name: Run Integration Tests - x86
-      uses: ReactiveCircus/android-emulator-runner@v2.9.0
-      with:
-        api-level: ${{ matrix.api-level }}
-        arch: x86
-        script: ./gradlew connectedCheck --info --stacktrace
+        key: ${{ runner.os }}-konan-cache-${{ hashFiles('buildSrc/build.gradle.kts') }}
+        # An ordered list of keys to use for restoring the cache if no cache hit occurred for key
+        restore-keys: |
+          ${{ runner.os }}-konan-cache-
     - name: Run Integration Tests - x86_64
       uses: ReactiveCircus/android-emulator-runner@v2.9.0
       with:
@@ -162,7 +165,7 @@ jobs:
       - uses: actions/checkout@v2
 
       # build cache
-      - name: Cache
+      - name: Cache Gradle Cache
         uses: actions/cache@v1.1.2
         with:
           path: ~/.gradle/caches
@@ -170,14 +173,19 @@ jobs:
           # An ordered list of keys to use for restoring the cache if no cache hit occurred for key
           restore-keys: |
             ${{ runner.os }}-gradle-
-      - uses: actions/cache@v1.1.2
+      - name: Cache gradle wrapper
+        uses: actions/cache@v1.1.2
         with:
           path: ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
-      - uses: actions/cache@v1.1.2
+      - name: Cache konan
+        uses: actions/cache@v1.1.2
         with:
           path: ~/.konan
-          key: ${{ runner.os }}-konan
+          key: ${{ runner.os }}-konan-cache-${{ hashFiles('buildSrc/build.gradle.kts') }}
+          # An ordered list of keys to use for restoring the cache if no cache hit occurred for key
+          restore-keys: |
+            ${{ runner.os }}-konan-cache-
       # download artifacts
       # ubuntu-latest, macos-latest, windows-latest -> should match the strategies of build
       - name: Download linux dist
