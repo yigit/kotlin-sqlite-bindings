@@ -29,9 +29,9 @@ jobs:
         java-version: '8'
         java-package: jdk
         architecture: x64
-    - name:  Install NDK
+    - name: Install NDK
       if: runner.os != 'Windows'
-      run:  yes | sudo $ANDROID_HOME/tools/bin/sdkmanager --install "ndk;21.2.6472646" --sdk_root=${ANDROID_SDK_ROOT}
+      run: yes | sudo $ANDROID_HOME/tools/bin/sdkmanager --install "ndk;21.2.6472646" --sdk_root=${ANDROID_SDK_ROOT}
     - name: Setup Java environment based on setup-java
       uses: actions/setup-java@v1
       with:
@@ -62,9 +62,9 @@ jobs:
     - name: build and test
       run: ./gradlew allTests --info --stacktrace
     - name: run spotless
-      run: ./gradlew spotlessCheck
+      run: ./gradlew spotlessCheck --stacktrace
     - name: build dist
-      run: ./gradlew buildOnServer
+      run: ./gradlew buildOnServer --stacktrace
     - name: Upload test results for sqlitebindings
       if: always()
       uses: actions/upload-artifact@v2
@@ -96,7 +96,15 @@ jobs:
       matrix:
         api-level: [21, 24, 27, 29]
     steps:
-    - name: Setup Java environment based on setup-java
+    - name: Setup Java environment to java 8
+      uses: actions/setup-java@v1
+      with:
+        java-version: '8'
+        java-package: jdk
+        architecture: x64
+    - name: Install NDK
+      run: yes | sudo $ANDROID_HOME/tools/bin/sdkmanager --install "ndk;21.2.6472646" --sdk_root=${ANDROID_SDK_ROOT}
+    - name: Setup Java environment to j11
       uses: actions/setup-java@v1
       with:
         java-version: '11'
@@ -127,7 +135,7 @@ jobs:
       with:
         api-level: ${{ matrix.api-level }}
         arch: x86
-        script: ./gradlew connectedCheck --stacktrace
+        script: ./gradlew connectedCheck --info --stacktrace
     - name: Run Integration Tests - x86_64
       uses: ReactiveCircus/android-emulator-runner@v2.9.0
       with:

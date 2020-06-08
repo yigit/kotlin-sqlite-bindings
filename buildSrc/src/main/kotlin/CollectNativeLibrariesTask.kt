@@ -166,7 +166,13 @@ abstract class CollectNativeLibrariesTask : DefaultTask() {
                 soFiles.addAll(foundSoFiles)
             }
 
-            check(soFiles.isNotEmpty() || runningInIdea(task.project.gradle)) {
+            // soFiles shouldn't be empty unless we are in idea or this is created for android and android native
+            // is disabled
+            check(
+                soFiles.isNotEmpty() ||
+                    runningInIdea(task.project.gradle) ||
+                    (forAndroid && !shouldBuildAndroidNative(task.project.gradle))
+            ) {
                 println("sth is wrong, there should be some so files")
             }
             println("found so files:$soFiles, for android $forAndroid")

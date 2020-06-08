@@ -25,12 +25,22 @@ fun runningInIdea(gradle: Gradle): Boolean {
     return gradle.startParameter.systemPropertiesArgs.containsKey("idea.active")
 }
 
+fun runningInCI() = System.getenv("CI") != null
+
+// TODO cleanup these functions
+fun shouldBuildAndroidNative(gradle: Gradle): Boolean {
+    val os = DefaultNativePlatform.getCurrentOperatingSystem()
+    return !runningInIdea(gradle) && when {
+        os.isWindows -> !runningInCI()
+        else -> true
+    }
+}
+
 fun KotlinMultiplatformExtension.setupNative(
     gradle: Gradle,
     includeAndroidNative: Boolean,
     configure: KotlinNativeTarget.() -> Unit
 ) {
-    // keep this on top so that shared code w/ jvm is resolved properly in the IDE.
     // TODO change this to build only on one target in CI
     val runningInIdea = runningInIdea(gradle)
     val os = DefaultNativePlatform.getCurrentOperatingSystem()
@@ -52,7 +62,7 @@ fun KotlinMultiplatformExtension.setupNative(
         linuxArm32Hfp(configure = configure)
         mingwX64(configure = configure)
         macosX64(configure = configure)
-        if (includeAndroidNative) {
+        if (shouldBuildAndroidNative(gradle) && includeAndroidNative) {
             androidNativeArm32(configure = configure)
             androidNativeArm64(configure = configure)
             androidNativeX64(configure = configure)
