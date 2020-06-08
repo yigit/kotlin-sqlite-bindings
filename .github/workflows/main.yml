@@ -91,7 +91,7 @@ jobs:
         path: build/dist
   androidTests:
     needs: build
-    runs-on: macosx-latest
+    runs-on: macos-latest
     strategy:
       matrix:
         api-level: [21, 24, 27, 29]
