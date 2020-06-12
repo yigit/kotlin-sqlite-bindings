@@ -13,23 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-pluginManagement {
-    repositories {
-        mavenCentral()
-        maven("https://plugins.gradle.org/m2/")
-        maven("https://dl.bintray.com/kotlin/kotlin-eap")
-        google()
 
-        maven("https://dl.bintray.com/kotlin/kotlin-eap")
+import com.birbit.ksqlite.build.AndroidSetup
+import com.birbit.ksqlite.build.setupCommon
+
+plugins {
+    id("com.android.library")
+    kotlin("multiplatform")
+}
+AndroidSetup.configure(project)
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().all {
+    kotlinOptions.freeCompilerArgs = listOf("-Xopt-in=kotlin.RequiresOptIn")
+}
+
+kotlin {
+    setupCommon(
+        gradle = gradle,
+        includeAndroidNative = true) {
     }
-    resolutionStrategy {
-        eachPlugin {
-            if (requested.id.namespace == "com.android") {
-                useModule("com.android.tools.build:gradle:${requested.version}")
+    android()
+    sourceSets {
+        val commonMain by getting {
+            dependencies {
+                implementation(kotlin("stdlib-common"))
             }
         }
     }
 }
-
-include("konan-warmup", "sqlitebindings", "sqlitebindings-api", "jnigenerator", "ksqlite3")
-enableFeaturePreview("GRADLE_METADATA")

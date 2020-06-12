@@ -140,8 +140,9 @@ object SqliteCompilation {
             val compileSQLite =
                 project.tasks.register("compileSQLite${konanTarget.presetName.capitalize()}", Exec::class.java) {
                     it.onlyIf { HostManager().isEnabled(konanTarget) }
-                    // TODO make this depend on konanDownload, for some reason couldn't find the task
-                    // it.dependsOn(project.tasks.named("checkKonanCompiler"))
+                    // we need konan executables downloaded and this is a nice hacky way to get them :)
+                    // TODO figure out how to get these download dependencies properly
+                    it.dependsOn(project.rootProject.findProject(":konan-warmup")!!.tasks.named("allTests"))
 
                     it.dependsOn(unzipTask)
                     it.environment("PATH", "$llvmBinFolder;${System.getenv("PATH")}")

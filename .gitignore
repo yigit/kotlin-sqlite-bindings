@@ -5,6 +5,7 @@ buildSrc/build
 sqlitebindings/build
 sqlitebindings-api/build
 jnigenerator/build
+konan-warmup/build
 #ignore core dump files
 sqlitebindings/core
 sqlitebindings/hs_err_pid*

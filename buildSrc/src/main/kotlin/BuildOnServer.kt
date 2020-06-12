@@ -28,7 +28,7 @@ object BuildOnServer {
         distDir = rootProject.buildDir.resolve("dist")
         val buildOnServerTask = rootProject.tasks.register(TASK_NAME)
         rootProject.subprojects { subProject ->
-            if (subProject.name != "jnigenerator") {
+            if (subProject.name != "jnigenerator" && subProject.name != "konan-warmup") {
                 buildOnServerTask.configure {
                     it.dependsOn(subProject.tasks.named("spotlessCheck"))
                     it.dependsOn(subProject.tasks.named("allTests"))
