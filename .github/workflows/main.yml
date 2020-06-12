@@ -24,6 +24,7 @@ jobs:
 
     steps:
     - name: Setup Java environment to java 8
+      if: runner.os == 'Linux'
       uses: actions/setup-java@v1
       with:
         java-version: '8'
