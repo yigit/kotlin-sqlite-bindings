@@ -6,7 +6,7 @@ name: CI
 # events but only for the master branch
 on:
   push:
-    branches: [ master, android-target ]
+    branches: [ master, android-target, android-windows-build-fix ]
   pull_request:
     branches: [ master ]
 
@@ -17,13 +17,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [windows-latest]
 
     # The type of runner that the job will run on
     runs-on: ${{ matrix.os }}
 
     steps:
     - name: Setup Java environment to java 8
+      if: runner.os == 'Linux' # only need this on linux, for now.
       uses: actions/setup-java@v1
       with:
         java-version: '8'
@@ -94,119 +95,3 @@ jobs:
       with:
         name: ${{ matrix.os }}-dist
         path: build/dist
-  androidTests:
-    runs-on: macos-latest
-    strategy:
-      matrix:
-        api-level: [21, 24, 27, 29]
-    steps:
-    - name: Setup Java environment to j11
-      uses: actions/setup-java@v1
-      with:
-        java-version: '11'
-        java-package: jdk
-        architecture: x64
-    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-    - uses: actions/checkout@v2
-
-    # build cache
-    - name: Cache Gradle Cache
-      uses: actions/cache@v1.1.2
-      with:
-        path: ~/.gradle/caches
-        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
-        # An ordered list of keys to use for restoring the cache if no cache hit occurred for key
-        restore-keys: |
-          ${{ runner.os }}-gradle-
-    - name: Cache gradle wrapper
-      uses: actions/cache@v1.1.2
-      with:
-        path: ~/.gradle/wrapper
-        key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
-    - name: Cache konan
-      uses: actions/cache@v1.1.2
-      with:
-        path: ~/.konan
-        key: ${{ runner.os }}-konan-cache-${{ hashFiles('buildSrc/build.gradle.kts') }}
-        # An ordered list of keys to use for restoring the cache if no cache hit occurred for key
-        restore-keys: |
-          ${{ runner.os }}-konan-cache-
-    - name: Run Integration Tests
-      uses: ReactiveCircus/android-emulator-runner@v2.8.0
-      with:
-        api-level: ${{ matrix.api-level }}
-        arch: x86_64
-        script: ./gradlew connectedCheck --stacktrace
-    - name: Upload build reports
-      if: always()
-      uses: actions/upload-artifact@v2
-      with:
-        name: android test results
-        path: ./**/build/reports
-  buildFinalArtifacts:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Setup Java environment to java 8
-        uses: actions/setup-java@v1
-        with:
-          java-version: '8'
-          java-package: jdk
-          architecture: x64
-      - name: Install NDK
-        run: yes | sudo $ANDROID_HOME/tools/bin/sdkmanager --install "ndk;21.2.6472646" --sdk_root=${ANDROID_SDK_ROOT}
-      - name: Setup Java environment based on setup-java
-        uses: actions/setup-java@v1
-        with:
-          java-version: '11'
-          java-package: jdk
-          architecture: x64
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
-
-      # build cache
-      - name: Cache Gradle Cache
-        uses: actions/cache@v1.1.2
-        with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
-          # An ordered list of keys to use for restoring the cache if no cache hit occurred for key
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-      - name: Cache gradle wrapper
-        uses: actions/cache@v1.1.2
-        with:
-          path: ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
-      - name: Cache konan
-        uses: actions/cache@v1.1.2
-        with:
-          path: ~/.konan
-          key: ${{ runner.os }}-konan-cache-${{ hashFiles('buildSrc/build.gradle.kts') }}
-          # An ordered list of keys to use for restoring the cache if no cache hit occurred for key
-          restore-keys: |
-            ${{ runner.os }}-konan-cache-
-      # download artifacts
-      # ubuntu-latest, macos-latest, windows-latest -> should match the strategies of build
-      - name: Download linux dist
-        uses: actions/download-artifact@v2
-        with:
-          name: ubuntu-latest-dist
-          path: artifacts/linux
-      - name: Download mac dist
-        uses: actions/download-artifact@v2
-        with:
-          name: macos-latest-dist
-          path: artifacts/mac 
-      - name: Download windows dist
-        uses: actions/download-artifact@v2
-        with:
-          name: windows-latest-dist
-          path: artifacts/windows
-      - name: test and publish
-        run: DIST_OUTPUTS=artifacts ./gradlew jvmTest createCombinedRepo  --info --stacktrace
-      - name: Upload Repo
-        uses: actions/upload-artifact@v2
-        with:
-          name: combined-repo
-          path: build/dist/combinedRepo
