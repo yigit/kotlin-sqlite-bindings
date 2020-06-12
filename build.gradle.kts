@@ -25,11 +25,11 @@ plugins {
 BuildOnServer.init(project)
 subprojects {
     repositories {
-        mavenCentral()
         google()
+        jcenter()
+        mavenCentral()
         maven ("https://dl.bintray.com/kotlin/kotlin-eap")
         maven ("https://kotlin.bintray.com/kotlinx")
-        jcenter()
     }
     apply(plugin = "com.diffplug.gradle.spotless")
     this.extensions.getByType(SpotlessExtension::class).apply {
