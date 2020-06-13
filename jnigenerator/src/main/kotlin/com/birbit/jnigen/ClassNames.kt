@@ -17,7 +17,8 @@ package com.birbit.jnigen
 
 import com.squareup.kotlinpoet.ClassName
 
-private inline fun jniType(value: String) = ClassName("com.birbit.jni", value)
+// match android for JNI types so that we can use the same native code in both JVM and Android
+private inline fun jniType(value: String) = ClassName("platform.android", value)
 private inline fun internalType(value: String) = ClassName("com.birbit.sqlite3.internal", value)
 private inline fun bindingApiType(value: String) = ClassName("com.birbit.sqlite3", value)
 

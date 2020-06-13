@@ -23,7 +23,9 @@ plugins {
 }
 
 kotlin {
-    setupCommon(gradle) {
+    setupCommon(
+        gradle = gradle,
+        includeAndroidNative = true) {
     }
     jvm()
 

@@ -23,7 +23,7 @@ import org.jetbrains.kotlin.spec.grammar.tools.parseKotlinCode
  * TODO: should we make this part of the build?
  */
 fun main() {
-    val srcFile = File("./sqlitebindings/src/jvmMain/kotlin/com/birbit/sqlite3/internal/JvmSqliteApi.kt")
+    val srcFile = File("./sqlitebindings/src/commonJvmMain/kotlin/com/birbit/sqlite3/internal/JvmCommonSqliteApi.kt")
     val targetFile = File("./sqlitebindings/src/nativeMain/com/birbit/sqlite3/internal/GeneratedJni.kt")
     println("hello ${File(".").absolutePath}")
     val tokens = parseKotlinCode(srcFile.readText(Charsets.UTF_8))

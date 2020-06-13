@@ -15,6 +15,7 @@
  */
 package com.birbit.ksqlite.build
 
+import com.android.build.gradle.LibraryExtension
 import java.io.File
 import java.util.concurrent.Callable
 import org.gradle.api.Project
@@ -34,11 +35,13 @@ data class SqliteCompilationConfig(
     val version: String
 )
 
-data class SqliteCompilationOutputs(
-    val srcDir: File,
-    val compileTasks: List<TaskProvider<out Task>>,
-    val soFiles: List<File>
-)
+fun Project.ndkSysrootDir(): File {
+    val ndkDir = project.extensions.getByType(LibraryExtension::class.java).ndkDirectory.resolve("sysroot")
+    check(ndkDir.exists()) {
+        println("NDK directory is missing")
+    }
+    return ndkDir
+}
 
 // taken from https://github.com/Dominaezzz/kotlin-sqlite
 val konanUserDir = File(System.getenv("KONAN_DATA_DIR") ?: "${System.getProperty("user.home")}/.konan")
@@ -51,47 +54,49 @@ val toolChainFolderName = when {
 }
 val llvmBinFolder = konanDeps.resolve("$toolChainFolderName/bin")
 
-val androidSysRootParent = konanDeps.resolve("target-sysroot-1-android_ndk").resolve("android-21")
-
-data class TargetInfo(val targetName: String, val sysRoot: File, val clangArgs: List<String> = emptyList())
+class TargetInfo(
+    val targetName: String,
+    val sysRoot: (Project) -> File,
+    val clangArgs: List<String> = emptyList()
+)
 
 val targetInfoMap = mapOf(
     KonanTarget.LINUX_X64 to TargetInfo(
         "x86_64-unknown-linux-gnu",
-        konanDeps.resolve("target-gcc-toolchain-3-linux-x86-64/x86_64-unknown-linux-gnu/sysroot")
+        { konanDeps.resolve("target-gcc-toolchain-3-linux-x86-64/x86_64-unknown-linux-gnu/sysroot") }
     ),
     KonanTarget.MACOS_X64 to TargetInfo(
         "x86_64-apple-darwin10", // Not sure about this but it doesn't matter yet.
-        konanDeps.resolve("target-sysroot-10-macos_x64")
+        { konanDeps.resolve("target-sysroot-10-macos_x64") }
     ),
     KonanTarget.MINGW_X64 to TargetInfo(
         "x86_64-w64-mingw32",
-        konanDeps.resolve("msys2-mingw-w64-x86_64-clang-llvm-lld-compiler_rt-8.0.1")
+        { konanDeps.resolve("msys2-mingw-w64-x86_64-clang-llvm-lld-compiler_rt-8.0.1") }
     ),
     KonanTarget.MINGW_X86 to TargetInfo(
         "i686-w64-mingw32",
-        konanDeps.resolve("msys2-mingw-w64-i686-clang-llvm-lld-compiler_rt-8.0.1")
+        { konanDeps.resolve("msys2-mingw-w64-i686-clang-llvm-lld-compiler_rt-8.0.1") }
     ),
     KonanTarget.LINUX_ARM32_HFP to TargetInfo(
         "armv6-unknown-linux-gnueabihf",
-        konanDeps.resolve("target-sysroot-2-raspberrypi"),
+        { konanDeps.resolve("target-sysroot-2-raspberrypi") },
         listOf("-mfpu=vfp", "-mfloat-abi=hard")
     ),
     KonanTarget.ANDROID_ARM32 to TargetInfo(
         "arm-linux-androideabi",
-        androidSysRootParent.resolve("arch-arm")
+        { it.ndkSysrootDir() }
     ),
     KonanTarget.ANDROID_ARM64 to TargetInfo(
         "aarch64-linux-android",
-        androidSysRootParent.resolve("arch-arm64")
+        { it.ndkSysrootDir() }
     ),
     KonanTarget.ANDROID_X86 to TargetInfo(
         "i686-linux-android",
-        androidSysRootParent.resolve("arch-x86")
+        { it.ndkSysrootDir() }
     ),
     KonanTarget.ANDROID_X64 to TargetInfo(
         "x86_64-linux-android",
-        androidSysRootParent.resolve("arch-x64")
+        { it.ndkSysrootDir() }
     )
 )
 
@@ -135,6 +140,9 @@ object SqliteCompilation {
             val compileSQLite =
                 project.tasks.register("compileSQLite${konanTarget.presetName.capitalize()}", Exec::class.java) {
                     it.onlyIf { HostManager().isEnabled(konanTarget) }
+                    // we need konan executables downloaded and this is a nice hacky way to get them :)
+                    // TODO figure out how to get these download dependencies properly
+                    it.dependsOn(project.rootProject.findProject(":konan-warmup")!!.tasks.named("allTests"))
 
                     it.dependsOn(unzipTask)
                     it.environment("PATH", "$llvmBinFolder;${System.getenv("PATH")}")
@@ -142,7 +150,7 @@ object SqliteCompilation {
                         it.environment(
                             "CPATH",
                             "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/" +
-                                    "SDKs/MacOSX.sdk/usr/include"
+                                "SDKs/MacOSX.sdk/usr/include"
                         )
                     }
 
@@ -151,22 +159,28 @@ object SqliteCompilation {
 
                     it.executable(llvmBinFolder.resolve("clang").absolutePath)
                     it.args("--compile", "-Wall")
+                    if (konanTarget.family == Family.ANDROID) {
+                        it.args("-Oz") // optimize for size
+                    } else {
+                        it.args("-O3")
+                    }
+
                     if (konanTarget.family != Family.MINGW) {
                         it.args("-fPIC")
                     }
                     val targetInfo = targetInfoMap.getValue(konanTarget)
-
-                    it.args("--target=${targetInfo.targetName}", "--sysroot=${targetInfo.sysRoot}")
+                    it.args("--target=${targetInfo.targetName}")
+                    it.args("--sysroot=${targetInfo.sysRoot(project).absolutePath}")
                     it.args(targetInfo.clangArgs)
                     it.args(
                         "-DSQLITE_ENABLE_COLUMN_METADATA=1",
                         "-DSQLITE_ENABLE_NORMALIZE=1",
-//                        "-DSQLITE_ENABLE_EXPLAIN_COMMENTS=1",
-//                        "-DSQLITE_ENABLE_DBSTAT_VTAB=1",
+                        // "-DSQLITE_ENABLE_EXPLAIN_COMMENTS=1",
+                        // "-DSQLITE_ENABLE_DBSTAT_VTAB=1",
                         "-DSQLITE_ENABLE_LOAD_EXTENSION=1",
-//                        "-DSQLITE_HAVE_ISNAN=1",
+                        // "-DSQLITE_HAVE_ISNAN=1",
                         "-DHAVE_USLEEP=1",
-//                        "-DSQLITE_CORE=1",
+                        // "-DSQLITE_CORE=1",
                         "-DSQLITE_ENABLE_FTS3=1",
                         "-DSQLITE_ENABLE_FTS3_PARENTHESIS=1",
                         "-DSQLITE_ENABLE_FTS4=1",

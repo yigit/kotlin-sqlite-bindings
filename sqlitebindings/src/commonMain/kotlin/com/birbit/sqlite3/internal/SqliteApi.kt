@@ -20,6 +20,8 @@ import com.birbit.sqlite3.ColumnType
 import com.birbit.sqlite3.ResultCode
 import com.birbit.sqlite3.SqliteException
 
+// only needed jvm and android
+internal expect fun loadNativeLibrary()
 // TODO trying to use ResultCode here crashed the compiler, hence using Ints
 internal inline fun checkResultCode(
     dbRef: DbRef,

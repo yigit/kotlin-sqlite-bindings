@@ -17,20 +17,20 @@
 
 package com.birbit.sqlite3.internal
 
-import com.birbit.jni.JNIEnvVar
-import com.birbit.jni.jboolean
-import com.birbit.jni.jbyteArray
-import com.birbit.jni.jclass
-import com.birbit.jni.jdouble
-import com.birbit.jni.jint
-import com.birbit.jni.jlong
-import com.birbit.jni.jobject
-import com.birbit.jni.jstring
 import com.birbit.sqlite3.ColumnType
 import com.birbit.sqlite3.ResultCode
 import kotlin.Suppress
 import kotlin.native.CName
 import kotlinx.cinterop.CPointer
+import platform.android.JNIEnvVar
+import platform.android.jboolean
+import platform.android.jbyteArray
+import platform.android.jclass
+import platform.android.jdouble
+import platform.android.jint
+import platform.android.jlong
+import platform.android.jobject
+import platform.android.jstring
 
 @CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativeOpenConnection")
 fun openConnection(

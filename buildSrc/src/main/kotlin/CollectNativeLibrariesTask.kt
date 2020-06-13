@@ -50,14 +50,19 @@ data class SoInput(
                 }
                 Family.MINGW -> "windows_${konanTarget.architecture.bitness}"
                 Family.OSX -> "osx_${konanTarget.architecture.bitness}"
+                Family.ANDROID -> when (konanTarget.architecture) {
+                    Architecture.X86 -> "x86"
+                    Architecture.X64 -> "x86_64"
+                    Architecture.ARM32 -> "armeabi-v7a"
+                    Architecture.ARM64 -> "arm64-v8a"
+                    else -> throw GradleException("add this architecture for android ${konanTarget.architecture}")
+                }
                 else -> throw GradleException("unsupported architecture family ${konanTarget.family}")
             }
         }
     }
 }
 
-// TODO
-//  public output of this as a github action output and then have another job that'll merge them into final jar build
 abstract class CollectNativeLibrariesTask : DefaultTask() {
     lateinit var soInputs: List<SoInput>
 
@@ -70,11 +75,18 @@ abstract class CollectNativeLibrariesTask : DefaultTask() {
     @InputFiles
     fun getFilePaths() = soInputs.map { it.soFile }
 
+    @Input
+    var forAndroid: Boolean = false
+
     @TaskAction
     fun doIt() {
         outputDir.deleteRecursively()
         outputDir.mkdirs()
-        val nativeDir = outputDir.resolve("natives")
+        val nativeDir = if (forAndroid) {
+            outputDir
+        } else {
+            outputDir.resolve("natives")
+        }
         soInputs.forEach {
             nativeDir.resolve(it.folderName).resolve(it.soFile.name).let { outFile ->
                 outFile.parentFile.mkdirs()
@@ -85,30 +97,46 @@ abstract class CollectNativeLibrariesTask : DefaultTask() {
 
     companion object {
 
-        fun create(project: Project, namePrefix: String, outFolder: File): TaskProvider<CollectNativeLibrariesTask> {
+        fun create(
+            project: Project,
+            namePrefix: String,
+            outFolder: File,
+            forAndroid: Boolean
+        ): TaskProvider<CollectNativeLibrariesTask> {
+            val suffix = if (forAndroid) {
+                "ForAndroid"
+            } else {
+                "ForJvm"
+            }
             return project.tasks.register(
-                "collectSharedLibsFor${namePrefix.capitalize()}",
+                "collectSharedLibsFor${namePrefix.capitalize()}$suffix",
                 CollectNativeLibrariesTask::class.java
             ) {
-                configure(it, namePrefix, outFolder)
+                configure(it, namePrefix, outFolder, forAndroid)
             }
         }
 
-        fun configure(task: CollectNativeLibrariesTask, namePrefix: String, outFolder: File) {
+        fun configure(
+            task: CollectNativeLibrariesTask,
+            namePrefix: String,
+            outFolder: File,
+            forAndroid: Boolean
+        ) {
             val kotlin = task.project.extensions.findByType(KotlinMultiplatformExtension::class.java)
             checkNotNull(kotlin) {
                 "cannot find kotlin extension"
             }
             val soFiles = mutableListOf<SoInput>()
             val distOutputsFolder = Publishing.getDistOutputs()
-            if (distOutputsFolder == null) {
+            if (distOutputsFolder == null || forAndroid) {
                 // obtain from compilations
                 kotlin.targets.withType(KotlinNativeTarget::class.java).filter {
-                    it.konanTarget.isBuiltOnThisMachine()
+                    it.konanTarget.isBuiltOnThisMachine() &&
+                        forAndroid == (it.konanTarget.family == Family.ANDROID)
                 }.forEach {
                     val sharedLib = it.binaries.findSharedLib(
                         namePrefix = namePrefix,
-                        buildType = NativeBuildType.DEBUG // TODO
+                        buildType = NativeBuildType.RELEASE
                     )
                     checkNotNull(sharedLib) {
                         "cannot find shared lib in $it"
@@ -137,12 +165,20 @@ abstract class CollectNativeLibrariesTask : DefaultTask() {
                 }
                 soFiles.addAll(foundSoFiles)
             }
-            check(soFiles.isNotEmpty()) {
+
+            // soFiles shouldn't be empty unless we are in idea or this is created for android and android native
+            // is disabled
+            check(
+                soFiles.isNotEmpty() ||
+                    runningInIdea(task.project.gradle) ||
+                    (forAndroid && !shouldBuildAndroidNative(task.project.gradle))
+            ) {
                 println("sth is wrong, there should be some so files")
             }
-            println("found so files:$soFiles")
+            println("found so files:$soFiles, for android $forAndroid")
             task.soInputs = soFiles
             task.outputDir = outFolder
+            task.forAndroid = forAndroid
         }
     }
 }

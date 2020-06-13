@@ -22,12 +22,12 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint") version "9.2.1"
 }
 
-
 BuildOnServer.init(project)
 subprojects {
     repositories {
-        mavenCentral()
         google()
+        jcenter()
+        mavenCentral()
         maven ("https://dl.bintray.com/kotlin/kotlin-eap")
         maven ("https://kotlin.bintray.com/kotlinx")
     }

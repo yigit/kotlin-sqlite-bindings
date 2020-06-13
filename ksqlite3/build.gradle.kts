@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
+import com.birbit.ksqlite.build.AndroidSetup
 import com.birbit.ksqlite.build.Publishing
 import com.birbit.ksqlite.build.setupCommon
 
 plugins {
+    id("com.android.library")
     kotlin("multiplatform")
     id("maven-publish")
 }
+AndroidSetup.configure(project)
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().all {
     kotlinOptions.freeCompilerArgs = listOf("-Xopt-in=kotlin.RequiresOptIn")
@@ -28,7 +31,12 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().all {
 
 kotlin {
 
-    setupCommon(gradle) {
+    setupCommon(
+        gradle = gradle,
+        includeAndroidNative = false) {
+    }
+    android {
+        publishLibraryVariants("release")
     }
 
     sourceSets {
@@ -43,6 +51,19 @@ kotlin {
             dependencies {
                 implementation(kotlin("test-common"))
                 implementation(kotlin("test-annotations-common"))
+            }
+        }
+        val androidMain by getting {
+            dependencies {
+                implementation(kotlin("stdlib-jdk8"))
+            }
+        }
+        val androidTest by getting {
+            dependencies {
+                implementation(kotlin("test-junit"))
+                com.birbit.ksqlite.build.Dependencies.ANDROID_TEST.forEach {
+                    implementation(it)
+                }
             }
         }
         // Default source set for JVM-specific sources and dependencies:

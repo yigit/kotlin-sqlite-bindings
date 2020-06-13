@@ -17,9 +17,19 @@ pluginManagement {
     repositories {
         mavenCentral()
         maven("https://plugins.gradle.org/m2/")
-        maven ("https://dl.bintray.com/kotlin/kotlin-eap")
+        maven("https://dl.bintray.com/kotlin/kotlin-eap")
+        google()
+
+        maven("https://dl.bintray.com/kotlin/kotlin-eap")
+    }
+    resolutionStrategy {
+        eachPlugin {
+            if (requested.id.namespace == "com.android") {
+                useModule("com.android.tools.build:gradle:${requested.version}")
+            }
+        }
     }
 }
 
-include("sqlitebindings", "sqlitebindings-api", "jnigenerator", "ksqlite3")
+include("konan-warmup", "sqlitebindings", "sqlitebindings-api", "jnigenerator", "ksqlite3")
 enableFeaturePreview("GRADLE_METADATA")

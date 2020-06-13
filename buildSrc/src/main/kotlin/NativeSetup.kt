@@ -21,11 +21,28 @@ import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
+fun runningInIdea(gradle: Gradle): Boolean {
+    return gradle.startParameter.systemPropertiesArgs.containsKey("idea.active")
+}
+
+fun runningInCI() = System.getenv("CI") != null
+
+// TODO cleanup these functions
+fun shouldBuildAndroidNative(gradle: Gradle): Boolean {
+    val os = DefaultNativePlatform.getCurrentOperatingSystem()
+    return !runningInIdea(gradle) && when {
+        os.isWindows -> !runningInCI()
+        else -> true
+    }
+}
+
 fun KotlinMultiplatformExtension.setupNative(
     gradle: Gradle,
+    includeAndroidNative: Boolean,
     configure: KotlinNativeTarget.() -> Unit
 ) {
-    val runningInIdea = gradle.startParameter.systemPropertiesArgs.containsKey("idea.active")
+    // TODO change this to build only on one target in CI
+    val runningInIdea = runningInIdea(gradle)
     val os = DefaultNativePlatform.getCurrentOperatingSystem()
     if (runningInIdea || os.isWindows) {
         when {
@@ -45,14 +62,21 @@ fun KotlinMultiplatformExtension.setupNative(
         linuxArm32Hfp(configure = configure)
         mingwX64(configure = configure)
         macosX64(configure = configure)
+        if (shouldBuildAndroidNative(gradle) && includeAndroidNative) {
+            androidNativeArm32(configure = configure)
+            androidNativeArm64(configure = configure)
+            androidNativeX64(configure = configure)
+            androidNativeX86(configure = configure)
+        }
     }
 }
 
 fun KotlinMultiplatformExtension.setupCommon(
     gradle: Gradle,
+    includeAndroidNative: Boolean,
     configure: KotlinNativeTarget.() -> Unit
 ) {
-    setupNative(gradle) {
+    setupNative(gradle, includeAndroidNative) {
         val os = DefaultNativePlatform.getCurrentOperatingSystem()
         val osSpecificFolderPrefix = when {
             os.isLinux -> "linux"
@@ -61,6 +85,7 @@ fun KotlinMultiplatformExtension.setupCommon(
             else -> null
         }
         // TODO we should nest these folders 1 more to be consistent w/ common
+        //  also move them to shared folder once we move to 1.4-M2
         osSpecificFolderPrefix?.let {
             compilations["main"].defaultSourceSet {
                 kotlin.srcDir("src/${it}Main")
@@ -69,12 +94,14 @@ fun KotlinMultiplatformExtension.setupCommon(
                 kotlin.srcDir("src/${it}Test")
             }
         }
+
         compilations["main"].defaultSourceSet {
             kotlin.srcDir("src/nativeMain")
         }
         compilations["test"].defaultSourceSet {
             kotlin.srcDir("src/nativeTest")
         }
+
         this.configure()
     }
 }

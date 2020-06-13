@@ -17,12 +17,6 @@
 
 package com.birbit.sqlite3.internal
 
-import com.birbit.jni.JNIEnvVar
-import com.birbit.jni.JNI_ABORT
-import com.birbit.jni.jboolean
-import com.birbit.jni.jbyteArray
-import com.birbit.jni.jobject
-import com.birbit.jni.jstring
 import com.birbit.sqlite3.Authorizer
 import com.birbit.sqlite3.SqliteException
 import kotlinx.cinterop.CPointer
@@ -35,6 +29,12 @@ import kotlinx.cinterop.pointed
 import kotlinx.cinterop.readValues
 import kotlinx.cinterop.toKStringFromUtf8
 import kotlinx.cinterop.usePinned
+import platform.android.JNIEnvVar
+import platform.android.JNI_ABORT
+import platform.android.jboolean
+import platform.android.jbyteArray
+import platform.android.jobject
+import platform.android.jstring
 
 internal fun initPlatform() {
     initRuntimeIfNeeded()
