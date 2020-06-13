@@ -13,25 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.birbit.ksqlite.build
 
-plugins {
-    kotlin("multiplatform")
-    id("maven-publish")
-    id("ksqlite-build")
-}
+import org.gradle.api.Plugin
+import org.gradle.api.Project
+import org.gradle.kotlin.dsl.create
 
-ksqliteBuild {
-    native(includeAndroidNative = false)
-    publish()
-}
-kotlin {
-    jvm()
-
-    sourceSets {
-        val commonMain by getting {
-            dependencies {
-                implementation(kotlin("stdlib"))
-            }
-        }
+class KSqliteBuildPlugin : Plugin<Project> {
+    override fun apply(target: Project) {
+        target.extensions.create<KSqliteBuildExtension>(
+            "ksqliteBuild",
+            target
+        )
     }
 }

@@ -15,24 +15,21 @@
  */
 
 import com.android.build.gradle.internal.tasks.factory.dependsOn
-import com.birbit.ksqlite.build.AndroidSetup
 import com.birbit.ksqlite.build.Dependencies
-import com.birbit.ksqlite.build.Publishing
 import com.birbit.ksqlite.build.SqliteCompilation
 import com.birbit.ksqlite.build.SqliteCompilationConfig
-import com.birbit.ksqlite.build.setupCommon
 import org.jetbrains.kotlin.konan.target.Family.ANDROID
 
 plugins {
     id("com.android.library")
     kotlin("multiplatform")
     id("maven-publish")
+    id("ksqlite-build")
 }
-AndroidSetup.configure(project)
-kotlin {
-    setupCommon(
-        gradle = gradle,
-        includeAndroidNative = true) {
+ksqliteBuild {
+    native(
+        includeAndroidNative = true
+    ) {
         binaries {
             sharedLib(namePrefix = "sqlite3jni")
         }
@@ -67,7 +64,11 @@ kotlin {
             }
         }
     }
+    android()
+    publish()
+}
 
+kotlin {
     val combinedSharedLibsFolder = project.buildDir.resolve("combinedSharedLibs")
     val combineSharedLibsTask =
         com.birbit.ksqlite.build.CollectNativeLibrariesTask
@@ -154,4 +155,3 @@ SqliteCompilation.setup(
         version = "3.31.1"
     )
 )
-Publishing.setup(project)

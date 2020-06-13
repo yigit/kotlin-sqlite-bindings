@@ -22,6 +22,7 @@ import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.TaskProvider
@@ -64,6 +65,7 @@ data class SoInput(
 }
 
 abstract class CollectNativeLibrariesTask : DefaultTask() {
+    @Internal
     lateinit var soInputs: List<SoInput>
 
     @OutputDirectory

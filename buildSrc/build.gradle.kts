@@ -19,6 +19,7 @@ import com.diffplug.gradle.spotless.SpotlessExtension
 plugins {
     id("org.jlleitschuh.gradle.ktlint") version "9.2.1" apply false
     id("com.diffplug.gradle.spotless") version "4.0.1"
+    `java-gradle-plugin`
 }
 
 data class BuildVersions(
@@ -69,6 +70,15 @@ dependencies {
     implementation(kotlin("stdlib-jdk8"))
     // workaround for KMP plugin to find android classes
     implementation("com.android.tools.build:gradle:${buildDepVersions().agp}")
+}
+
+configure<GradlePluginDevelopmentExtension> {
+    plugins {
+        create("ksqliteBuild") {
+            id = "ksqlite-build"
+            implementationClass = "com.birbit.ksqlite.build.KSqliteBuildPlugin"
+        }
+    }
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {

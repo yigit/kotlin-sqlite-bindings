@@ -22,6 +22,8 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint") version "9.2.1"
 }
 
+project("sqlitebindings").evaluationDependsOn(":konan-warmup")
+
 BuildOnServer.init(project)
 subprojects {
     repositories {
