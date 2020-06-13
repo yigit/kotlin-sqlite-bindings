@@ -66,6 +66,7 @@ ksqliteBuild {
     }
     android()
     publish()
+    buildOnServer()
 }
 
 kotlin {

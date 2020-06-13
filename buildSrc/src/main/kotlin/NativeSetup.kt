@@ -21,14 +21,14 @@ import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
-fun runningInIdea(gradle: Gradle): Boolean {
+internal fun runningInIdea(gradle: Gradle): Boolean {
     return gradle.startParameter.systemPropertiesArgs.containsKey("idea.active")
 }
 
-fun runningInCI() = System.getenv("CI") != null
+internal fun runningInCI() = System.getenv("CI") != null
 
 // TODO cleanup these functions
-fun shouldBuildAndroidNative(gradle: Gradle): Boolean {
+internal fun shouldBuildAndroidNative(gradle: Gradle): Boolean {
     val os = DefaultNativePlatform.getCurrentOperatingSystem()
     return !runningInIdea(gradle) && when {
         os.isWindows -> !runningInCI()
@@ -36,7 +36,7 @@ fun shouldBuildAndroidNative(gradle: Gradle): Boolean {
     }
 }
 
-fun KotlinMultiplatformExtension.setupNative(
+internal fun KotlinMultiplatformExtension.setupNative(
     gradle: Gradle,
     includeAndroidNative: Boolean,
     configure: KotlinNativeTarget.() -> Unit
@@ -71,7 +71,7 @@ fun KotlinMultiplatformExtension.setupNative(
     }
 }
 
-fun KotlinMultiplatformExtension.setupCommon(
+internal fun KotlinMultiplatformExtension.setupCommon(
     gradle: Gradle,
     includeAndroidNative: Boolean,
     configure: KotlinNativeTarget.() -> Unit

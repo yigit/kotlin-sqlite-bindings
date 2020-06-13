@@ -42,4 +42,8 @@ open class KSqliteBuildExtension(
             configure = configure
         )
     }
+
+    fun buildOnServer() {
+        BuildOnServer.register(project)
+    }
 }

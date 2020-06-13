@@ -17,36 +17,44 @@ package com.birbit.ksqlite.build
 
 import java.io.File
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.tasks.Copy
+import org.gradle.api.tasks.TaskProvider
 
 object BuildOnServer {
-    private lateinit var rootProject: Project
     private lateinit var distDir: File
     val TASK_NAME = "buildOnServer"
-    fun init(project: Project) {
-        rootProject = project.rootProject
-        distDir = rootProject.buildDir.resolve("dist")
-        val buildOnServerTask = rootProject.tasks.register(TASK_NAME)
-        rootProject.subprojects { subProject ->
-            if (subProject.name != "jnigenerator" && subProject.name != "konan-warmup") {
-                buildOnServerTask.configure {
-                    it.dependsOn(subProject.tasks.named("spotlessCheck"))
-                    it.dependsOn(subProject.tasks.named("allTests"))
-                    if (subProject.pluginManager.hasPlugin("maven-publish")) {
-                        it.dependsOn(subProject.tasks.named("publish"))
-                    }
-                }
+    private fun buildOnServerTask(project: Project): TaskProvider<Task> {
+        val rootProject = project.rootProject
+        if (rootProject.tasks.findByPath(TASK_NAME) == null) {
+            distDir = rootProject.buildDir.resolve("dist")
+            rootProject.tasks.register(TASK_NAME)
+            configureCopyNativeLibraries(rootProject)
+            Publishing.createCombinedRepoTaskIfPossible(rootProject)
+        }
+        return rootProject.tasks.named(TASK_NAME)
+    }
+
+    fun initIfNecessary(project: Project) {
+        buildOnServerTask(project)
+    }
+
+    fun register(project: Project) {
+        val rootTask = buildOnServerTask(project)
+        rootTask.configure {
+            it.dependsOn(project.tasks.named("spotlessCheck"))
+            it.dependsOn(project.tasks.named("allTests"))
+            if (project.pluginManager.hasPlugin("maven-publish")) {
+                it.dependsOn(project.tasks.named("publish"))
             }
         }
-        configureCopyNativeLibraries()
-        Publishing.createCombinedRepoTaskIfPossible(rootProject)
     }
 
     fun getOutRepo(): File {
         return distDir.resolve("repo")
     }
 
-    private fun configureCopyNativeLibraries() {
+    private fun configureCopyNativeLibraries(rootProject: Project) {
         val copyNativeLibsTask = rootProject.tasks.register("copyNativeLibs", Copy::class.java) { copyTask ->
             rootProject.childProjects["sqlitebindings"]!!.tasks.withType(CollectNativeLibrariesTask::class.java)
                 .all {

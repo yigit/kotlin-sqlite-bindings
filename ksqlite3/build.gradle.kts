@@ -25,6 +25,7 @@ ksqliteBuild {
     native(includeAndroidNative = false)
     android()
     publish()
+    buildOnServer()
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().all {

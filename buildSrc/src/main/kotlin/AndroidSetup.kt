@@ -18,7 +18,7 @@ package com.birbit.ksqlite.build
 import com.android.build.gradle.LibraryExtension
 import org.gradle.api.Project
 
-object AndroidSetup {
+internal object AndroidSetup {
     fun configure(project: Project) {
         val androidLibrary = project.extensions.findByType(LibraryExtension::class.java)
             ?: error("cannot find library extension on $project")

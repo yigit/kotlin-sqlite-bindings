@@ -22,7 +22,7 @@ import org.gradle.api.tasks.Copy
 import org.gradle.kotlin.dsl.findByType
 import org.gradle.kotlin.dsl.maven
 
-object Publishing {
+internal object Publishing {
     fun createCombinedRepoTaskIfPossible(
         rootProject: Project
     ) {

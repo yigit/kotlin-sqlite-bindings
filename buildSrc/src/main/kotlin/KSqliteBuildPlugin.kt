@@ -21,6 +21,7 @@ import org.gradle.kotlin.dsl.create
 
 class KSqliteBuildPlugin : Plugin<Project> {
     override fun apply(target: Project) {
+        BuildOnServer.initIfNecessary(target)
         target.extensions.create<KSqliteBuildExtension>(
             "ksqliteBuild",
             target

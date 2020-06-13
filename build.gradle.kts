@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import com.birbit.ksqlite.build.BuildOnServer
 import com.diffplug.gradle.spotless.SpotlessExtension
 
 plugins {
@@ -24,7 +23,6 @@ plugins {
 
 project("sqlitebindings").evaluationDependsOn(":konan-warmup")
 
-BuildOnServer.init(project)
 subprojects {
     repositories {
         google()

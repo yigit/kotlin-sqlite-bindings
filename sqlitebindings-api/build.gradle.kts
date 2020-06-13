@@ -21,8 +21,9 @@ plugins {
 }
 
 ksqliteBuild {
-    native(includeAndroidNative = false)
+    native(includeAndroidNative = true)
     publish()
+    buildOnServer()
 }
 kotlin {
     jvm()

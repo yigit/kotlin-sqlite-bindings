@@ -23,7 +23,7 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 
-abstract class DownloadSqliteTask : DefaultTask() {
+internal abstract class DownloadSqliteTask : DefaultTask() {
     @Input
     lateinit var version: String
 
