@@ -73,28 +73,28 @@ jobs:
       # we duplicate test tasks to avoid the overhead of getting a build machine.
     - name: Run Integration Tests - 21
       if: runner.os == 'macOS'
-      uses: yigit/android-emulator-runner@custom2
+      uses: yigit/android-emulator-runner@custom1
       with:
         api-level: 21
         arch: x86_64
         script: ./gradlew connectedCheck --stacktrace
     - name: Run Integration Tests - 24
       if: runner.os == 'macOS'
-      uses: yigit/android-emulator-runner@custom2
+      uses: yigit/android-emulator-runner@custom1
       with:
         api-level: 24
         arch: x86_64
         script: ./gradlew connectedCheck --stacktrace
     - name: Run Integration Tests - 27
       if: runner.os == 'macOS'
-      uses: yigit/android-emulator-runner@custom2
+      uses: yigit/android-emulator-runner@custom1
       with:
         api-level: 27
         arch: x86_64
         script: ./gradlew connectedCheck --stacktrace
     - name: Run Integration Tests - 29
       if: runner.os == 'macOS'
-      uses: yigit/android-emulator-runner@custom2
+      uses: yigit/android-emulator-runner@custom1
       with:
         api-level: 29
         arch: x86_64
