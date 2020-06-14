@@ -20,9 +20,13 @@ pluginManagement {
         maven("https://dl.bintray.com/kotlin/kotlin-eap")
         google()
     }
-    val spotlessVersion: String by settings
-    val ktlintVersion: String by settings
-    val kotlinVersion: String by settings
+    val properties = java.util.Properties()
+    rootDir.resolve("../gradle.properties").inputStream().use {
+        properties.load(it)
+    }
+    val spotlessVersion: String by properties
+    val ktlintVersion: String by properties
+    val kotlinVersion: String by properties
     plugins {
         id("com.diffplug.gradle.spotless") version spotlessVersion
         id("org.jlleitschuh.gradle.ktlint") version ktlintVersion

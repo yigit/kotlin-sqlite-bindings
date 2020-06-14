@@ -15,7 +15,6 @@
  */
 package com.birbit.ksqlite.build.internal
 
-import com.android.build.gradle.LibraryExtension
 import com.birbit.ksqlite.build.CreateDefFileWithLibraryPathTask
 import com.birbit.ksqlite.build.SqliteCompilationConfig
 import java.io.File
@@ -29,16 +28,7 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.konan.target.presetName
 
-internal fun Project.ndkSysrootDir(): File {
-    val ndkDir = project.extensions.getByType(LibraryExtension::class.java).ndkDirectory.resolve("sysroot")
-    check(ndkDir.exists()) {
-        println("NDK directory is missing")
-    }
-    return ndkDir
-}
-
-// TODO: could be a plugin instead?
-object SqliteCompilation {
+internal object SqliteCompilation {
     fun setup(project: Project, config: SqliteCompilationConfig) {
         val buildFolder = project.buildDir.resolve("sqlite-compilation")
         val generatedDefFileFolder = project.buildDir.resolve("sqlite-def-files")

@@ -15,6 +15,7 @@
  */
 package com.birbit.ksqlite.build.internal
 
+import com.android.build.gradle.LibraryExtension
 import java.io.File
 import org.gradle.api.Project
 import org.gradle.api.tasks.Exec
@@ -148,4 +149,12 @@ internal object KonanUtil {
             { it.ndkSysrootDir() }
         )
     )
+
+    private fun Project.ndkSysrootDir(): File {
+        val ndkDir = project.extensions.getByType(LibraryExtension::class.java).ndkDirectory.resolve("sysroot")
+        check(ndkDir.exists()) {
+            println("NDK directory is missing")
+        }
+        return ndkDir
+    }
 }

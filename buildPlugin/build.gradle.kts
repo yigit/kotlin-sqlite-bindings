@@ -24,6 +24,13 @@ plugins {
 // has to be separate while using M2
 apply(plugin = "kotlin-platform-jvm")
 buildscript {
+    val properties = java.util.Properties()
+    rootDir.resolve("../gradle.properties").inputStream().use {
+        properties.load(it)
+    }
+    properties.forEach {
+        rootProject.extra.set(it.key as String, it.value)
+    }
     val kotlinVersion: String by rootProject
     repositories {
         maven("https://dl.bintray.com/kotlin/kotlin-eap")
