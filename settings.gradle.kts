@@ -19,17 +19,6 @@ pluginManagement {
         maven("https://plugins.gradle.org/m2/")
         maven("https://dl.bintray.com/kotlin/kotlin-eap")
         google()
-
-        maven("https://dl.bintray.com/kotlin/kotlin-eap")
-    }
-    resolutionStrategy {
-        println("RES STRA")
-        eachPlugin {
-            println("requested: ${requested}")
-            if (requested.id.namespace == "com.android.library") {
-                useModule("com.android.tools.build:gradle:${requested.version}")
-            }
-        }
     }
 }
 includeBuild("buildPlugin")
