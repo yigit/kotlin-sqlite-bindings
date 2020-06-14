@@ -77,22 +77,21 @@ internal fun KotlinMultiplatformExtension.setupCommon(
             os.isWindows -> "windows"
             else -> null
         }
-        // TODO we should nest these folders 1 more to be consistent w/ common
-        //  also move them to shared folder once we move to 1.4-M2
+        //  TODO move them to shared folder once we move to 1.4-M3
         osSpecificFolderPrefix?.let {
             compilations["main"].defaultSourceSet {
-                kotlin.srcDir("src/${it}Main")
+                kotlin.srcDir("src/${it}Main/kotlin")
             }
             compilations["test"].defaultSourceSet {
-                kotlin.srcDir("src/${it}Test")
+                kotlin.srcDir("src/${it}Test/kotlin")
             }
         }
 
         compilations["main"].defaultSourceSet {
-            kotlin.srcDir("src/nativeMain")
+            kotlin.srcDir("src/nativeMain/kotlin")
         }
         compilations["test"].defaultSourceSet {
-            kotlin.srcDir("src/nativeTest")
+            kotlin.srcDir("src/nativeTest/kotlin")
         }
 
         this.configure()
