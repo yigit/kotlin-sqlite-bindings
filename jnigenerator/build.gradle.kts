@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import com.birbit.ksqlite.build.Dependencies.KOTLIN_POET
+import com.birbit.ksqlite.build.Dependencies
 
 plugins {
     kotlin("jvm")
+    id("ksqlite-dependencies")
 }
 
 dependencies {
@@ -25,7 +25,7 @@ dependencies {
     implementation(project.fileTree("libs") {
         include("*.jar")
     })
-    implementation(KOTLIN_POET)
+    implementation(Dependencies.KOTLIN_POET)
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {

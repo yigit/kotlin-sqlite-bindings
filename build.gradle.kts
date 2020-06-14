@@ -19,6 +19,14 @@ import com.diffplug.gradle.spotless.SpotlessExtension
 plugins {
     id("com.diffplug.gradle.spotless") version "4.0.1" apply false
     id("org.jlleitschuh.gradle.ktlint") version "9.2.1"
+    kotlin("multiplatform") version "1.3.72" apply false
+}
+
+buildscript {
+    dependencies {
+        // workaround for KMP plugin to find android classes
+        classpath("com.android.tools.build:gradle:3.6.3")
+    }
 }
 
 project("sqlitebindings").evaluationDependsOn(":konan-warmup")

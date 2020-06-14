@@ -23,13 +23,15 @@ pluginManagement {
         maven("https://dl.bintray.com/kotlin/kotlin-eap")
     }
     resolutionStrategy {
+        println("RES STRA")
         eachPlugin {
-            if (requested.id.namespace == "com.android") {
+            println("requested: ${requested}")
+            if (requested.id.namespace == "com.android.library") {
                 useModule("com.android.tools.build:gradle:${requested.version}")
             }
         }
     }
 }
-
+includeBuild("buildPlugin")
 include("konan-warmup", "sqlitebindings", "sqlitebindings-api", "jnigenerator", "ksqlite3")
 enableFeaturePreview("GRADLE_METADATA")
