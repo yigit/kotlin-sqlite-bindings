@@ -13,9 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.birbit.ksqlite.build
+package com.birbit.ksqlite.build.internal
 
 import com.android.build.gradle.LibraryExtension
+import com.birbit.ksqlite.build.CreateDefFileWithLibraryPathTask
+import com.birbit.ksqlite.build.SqliteCompilationConfig
 import java.io.File
 import java.util.concurrent.Callable
 import org.gradle.api.Project
@@ -26,10 +28,6 @@ import org.gradle.kotlin.dsl.get
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.konan.target.presetName
-
-data class SqliteCompilationConfig(
-    val version: String
-)
 
 internal fun Project.ndkSysrootDir(): File {
     val ndkDir = project.extensions.getByType(LibraryExtension::class.java).ndkDirectory.resolve("sysroot")

@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.birbit.ksqlite.build
+package com.birbit.ksqlite.build.internal
 
+import com.birbit.ksqlite.build.CollectNativeLibrariesTask
 import java.io.File
 import org.gradle.api.Project
 import org.gradle.api.Task

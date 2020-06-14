@@ -13,18 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.birbit.ksqlite.build
+package com.birbit.ksqlite.build.internal
 
-import org.gradle.api.Plugin
-import org.gradle.api.Project
-import org.gradle.kotlin.dsl.create
+import org.gradle.api.invocation.Gradle
 
-class KSqliteBuildPlugin : Plugin<Project> {
-    override fun apply(target: Project) {
-        BuildOnServer.initIfNecessary(target)
-        target.extensions.create<KSqliteBuildExtension>(
-            "ksqliteBuild",
-            target
-        )
-    }
+internal fun Gradle.runningInIdea(): Boolean {
+    return gradle.startParameter.systemPropertiesArgs.containsKey("idea.active")
 }
+
+internal fun runningInCI() = System.getenv("CI") != null

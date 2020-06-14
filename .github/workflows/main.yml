@@ -68,7 +68,7 @@ jobs:
     - name: build and test
       run: ./gradlew allTests --info --stacktrace
     - name: run spotless on build plugin
-      run: cd buildPlugin && ./gradlew spotlessCheck --stacktrace && cd ..
+      run: ./gradlew -p buildPlugin spotlessCheck --stacktrace
     - name: run spotless
       run: ./gradlew spotlessCheck --stacktrace
     - name: build dist

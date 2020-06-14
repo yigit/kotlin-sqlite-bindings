@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.birbit.ksqlite.build
+package com.birbit.ksqlite.build.internal
 
 import java.io.File
 import org.gradle.api.Project
@@ -64,7 +64,7 @@ internal object KonanUtil {
                 "rc", output.absolutePath,
                 input.absolutePath
             )
-            it.environment("PATH", "${KonanUtil.llvmBinFolder};${System.getenv("PATH")}")
+            it.environment("PATH", "$llvmBinFolder;${System.getenv("PATH")}")
             configure(it)
         }
     }
@@ -101,7 +101,7 @@ internal object KonanUtil {
             if (konanTarget.family != Family.MINGW) {
                 it.args("-fPIC")
             }
-            val targetInfo = KonanUtil.targetInfoMap.getValue(konanTarget)
+            val targetInfo = targetInfoMap.getValue(konanTarget)
             it.args("--target=${targetInfo.targetName}")
             it.args("--sysroot=${targetInfo.sysRoot(project).absolutePath}")
             it.args(targetInfo.clangArgs)

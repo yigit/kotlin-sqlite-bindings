@@ -15,8 +15,13 @@
  */
 package com.birbit.ksqlite.build
 
+import com.birbit.ksqlite.build.internal.AndroidSetup
+import com.birbit.ksqlite.build.internal.BuildOnServer
+import com.birbit.ksqlite.build.internal.JniSetup
+import com.birbit.ksqlite.build.internal.Publishing
+import com.birbit.ksqlite.build.internal.SqliteCompilation
+import com.birbit.ksqlite.build.internal.setupCommon
 import org.gradle.api.Project
-import org.gradle.kotlin.dsl.get
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 

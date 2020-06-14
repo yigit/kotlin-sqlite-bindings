@@ -1,5 +1,5 @@
 .idea
-build
+/build
 .gradle
 buildPlugin/build
 sqlitebindings/build

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.birbit.ksqlite.build
+package com.birbit.ksqlite.build.internal
 
 import org.gradle.api.invocation.Gradle
 import org.gradle.kotlin.dsl.get
@@ -21,16 +21,9 @@ import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
-internal fun runningInIdea(gradle: Gradle): Boolean {
-    return gradle.startParameter.systemPropertiesArgs.containsKey("idea.active")
-}
-
-internal fun runningInCI() = System.getenv("CI") != null
-
-// TODO cleanup these functions
 internal fun shouldBuildAndroidNative(gradle: Gradle): Boolean {
     val os = DefaultNativePlatform.getCurrentOperatingSystem()
-    return !runningInIdea(gradle) && when {
+    return !gradle.runningInIdea() && when {
         os.isWindows -> !runningInCI()
         else -> true
     }
@@ -42,7 +35,7 @@ internal fun KotlinMultiplatformExtension.setupNative(
     configure: KotlinNativeTarget.() -> Unit
 ) {
     // TODO change this to build only on one target in CI
-    val runningInIdea = runningInIdea(gradle)
+    val runningInIdea = gradle.runningInIdea()
     val os = DefaultNativePlatform.getCurrentOperatingSystem()
     if (runningInIdea || os.isWindows) {
         when {

@@ -24,7 +24,7 @@ plugins {
 // has to be separate while using M2
 apply(plugin = "kotlin-platform-jvm")
 buildscript {
-    val kotlinVersion :String by rootProject
+    val kotlinVersion: String by rootProject
     repositories {
         maven("https://dl.bintray.com/kotlin/kotlin-eap")
     }
@@ -41,8 +41,8 @@ repositories {
     google()
 }
 
-val kotlinVersion :String by rootProject
-val agpVersion :String by rootProject
+val kotlinVersion: String by rootProject
+val agpVersion: String by rootProject
 
 dependencies {
     implementation(gradleApi())
