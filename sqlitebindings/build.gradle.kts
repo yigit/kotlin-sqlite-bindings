@@ -38,7 +38,6 @@ ksqliteBuild {
                 implementation(kotlin("stdlib-common"))
             }
         }
-
     }
     android()
     includeSqlite(SqliteCompilationConfig(

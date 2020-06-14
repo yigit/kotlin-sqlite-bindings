@@ -28,10 +28,6 @@ ksqliteBuild {
     buildOnServer()
 }
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().all {
-    kotlinOptions.freeCompilerArgs = listOf("-Xopt-in=kotlin.RequiresOptIn")
-}
-
 kotlin {
     android {
         publishLibraryVariants("release")

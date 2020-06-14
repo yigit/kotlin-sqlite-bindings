@@ -17,9 +17,9 @@
 import com.diffplug.gradle.spotless.SpotlessExtension
 
 plugins {
-    id("com.diffplug.gradle.spotless") version "4.0.1" apply false
-    id("org.jlleitschuh.gradle.ktlint") version "9.2.1"
-    kotlin("multiplatform") version "1.3.72" apply false
+    id("com.diffplug.gradle.spotless")
+    id("org.jlleitschuh.gradle.ktlint")
+    kotlin("multiplatform")
 }
 
 buildscript {
@@ -39,19 +39,25 @@ subprojects {
         maven ("https://dl.bintray.com/kotlin/kotlin-eap")
         maven ("https://kotlin.bintray.com/kotlinx")
     }
-    apply(plugin = "com.diffplug.gradle.spotless")
-    this.extensions.getByType(SpotlessExtension::class).apply {
-        kotlin {
-            target("**/*.kt")
-            ktlint().userData(
-                mapOf(
-                    "max_line_length" to "120"
+
+    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().all {
+        kotlinOptions.freeCompilerArgs = listOf("-Xopt-in=kotlin.RequiresOptIn")
+    }
+    if (this.path != ":konan-warmup") {
+        apply(plugin = "com.diffplug.gradle.spotless")
+        this.extensions.getByType(SpotlessExtension::class).apply {
+            kotlin {
+                target("src/**/*.kt")
+                ktlint().userData(
+                    mapOf(
+                        "max_line_length" to "120"
+                    )
                 )
-            )
-            licenseHeaderFile(project.rootProject.file("scripts/copyright.txt"))
-        }
-        kotlinGradle {
-            ktlint()
+                licenseHeaderFile(project.rootProject.file("scripts/copyright.txt"))
+            }
+            kotlinGradle {
+                ktlint()
+            }
         }
     }
 }

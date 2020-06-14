@@ -23,13 +23,14 @@ import org.gradle.api.Project
  */
 class Dependencies : Plugin<Project> {
     override fun apply(target: Project) {
-
     }
+
     companion object {
         val NATIVE_LIB_LOADER = "org.scijava:native-lib-loader:2.3.4"
         val KOTLIN_POET = "com.squareup:kotlinpoet:1.5.0"
         val ANDROID_TEST = listOf(
-                "androidx.test.ext:junit:1.1.1",
-                "androidx.test:runner:1.2.0")
+            "androidx.test.ext:junit:1.1.1",
+            "androidx.test:runner:1.2.0"
+        )
     }
 }

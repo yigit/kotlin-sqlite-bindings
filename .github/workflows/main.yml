@@ -67,6 +67,8 @@ jobs:
     # Runs a single command using the runners shell
     - name: build and test
       run: ./gradlew allTests --info --stacktrace
+    - name: run spotless on build plugin
+      run: cd buildPlugin && ./gradlew spotlessCheck --stacktrace && cd ..
     - name: run spotless
       run: ./gradlew spotlessCheck --stacktrace
     - name: build dist

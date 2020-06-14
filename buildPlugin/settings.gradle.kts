@@ -29,6 +29,5 @@ pluginManagement {
         kotlin("multiplatform") version kotlinVersion
     }
 }
-includeBuild("buildPlugin")
-include("konan-warmup", "sqlitebindings", "sqlitebindings-api", "jnigenerator", "ksqlite3")
+include("buildPlugin")
 enableFeaturePreview("GRADLE_METADATA")
