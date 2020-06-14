@@ -17,33 +17,21 @@ import com.diffplug.gradle.spotless.SpotlessExtension
  */
 
 plugins {
-    id("org.jlleitschuh.gradle.ktlint") version "9.2.1" apply false
-    id("com.diffplug.gradle.spotless") version "4.0.1"
+    id("org.jlleitschuh.gradle.ktlint")
+    id("com.diffplug.gradle.spotless")
+    `java-gradle-plugin`
 }
-
-data class BuildVersions(
-    private val data: Map<String, String>
-) {
-    val kotlin = data["kotlin"] ?: error("cannot find kotlin version")
-    val agp = data["agp"] ?: error("cannot find agp version")
-}
-
-fun buildDepVersions(): BuildVersions {
-    val data = extensions.extraProperties["BUILD_DEP_VERSIONS"] as? Map<String, String>
-        ?: error("build versions are not defined")
-    return BuildVersions(data)
-}
-
 // has to be separate while using M2
 apply(plugin = "kotlin-platform-jvm")
 buildscript {
-    val kotlinVersion = "1.3.72"
-    val agpVersion = "3.6.3"
-    project.extensions.extraProperties["BUILD_DEP_VERSIONS"] = mapOf(
-        "kotlin" to kotlinVersion,
-        "agp" to agpVersion
-    )
-
+    val properties = java.util.Properties()
+    rootDir.resolve("../gradle.properties").inputStream().use {
+        properties.load(it)
+    }
+    properties.forEach {
+        rootProject.extra.set(it.key as String, it.value)
+    }
+    val kotlinVersion: String by rootProject
     repositories {
         maven("https://dl.bintray.com/kotlin/kotlin-eap")
     }
@@ -60,15 +48,31 @@ repositories {
     google()
 }
 
+val kotlinVersion: String by rootProject
+val agpVersion: String by rootProject
+
 dependencies {
     implementation(gradleApi())
     implementation(gradleKotlinDsl())
-    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:${buildDepVersions().kotlin}")
-    implementation("org.jetbrains.kotlin:kotlin-native-utils:${buildDepVersions().kotlin}")
-    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin-api:${buildDepVersions().kotlin}")
+    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+    implementation("org.jetbrains.kotlin:kotlin-native-utils:$kotlinVersion")
+    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin-api:$kotlinVersion")
     implementation(kotlin("stdlib-jdk8"))
     // workaround for KMP plugin to find android classes
-    implementation("com.android.tools.build:gradle:${buildDepVersions().agp}")
+    implementation("com.android.tools.build:gradle:$agpVersion")
+}
+
+configure<GradlePluginDevelopmentExtension> {
+    plugins {
+        create("ksqliteBuild") {
+            id = "ksqlite-build"
+            implementationClass = "com.birbit.ksqlite.build.KSqliteBuildPlugin"
+        }
+        create("ksqliteDependencies") {
+            id = "ksqlite-dependencies"
+            implementationClass = "com.birbit.ksqlite.build.Dependencies"
+        }
+    }
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {

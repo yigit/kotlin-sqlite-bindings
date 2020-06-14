@@ -15,24 +15,20 @@
  */
 
 import com.android.build.gradle.internal.tasks.factory.dependsOn
-import com.birbit.ksqlite.build.AndroidSetup
 import com.birbit.ksqlite.build.Dependencies
-import com.birbit.ksqlite.build.Publishing
-import com.birbit.ksqlite.build.SqliteCompilation
 import com.birbit.ksqlite.build.SqliteCompilationConfig
-import com.birbit.ksqlite.build.setupCommon
-import org.jetbrains.kotlin.konan.target.Family.ANDROID
 
 plugins {
     id("com.android.library")
     kotlin("multiplatform")
     id("maven-publish")
+    id("ksqlite-build")
 }
-AndroidSetup.configure(project)
-kotlin {
-    setupCommon(
-        gradle = gradle,
-        includeAndroidNative = true) {
+ksqliteBuild {
+    native(
+        includeAndroidNative = true,
+        includeJni = true
+    ) {
         binaries {
             sharedLib(namePrefix = "sqlite3jni")
         }
@@ -42,32 +38,16 @@ kotlin {
                 implementation(kotlin("stdlib-common"))
             }
         }
-        // jni already exists on android so we don't need it there
-        if (this.konanTarget.family != ANDROID) {
-            compilations["main"].cinterops.create("jni") {
-                // JDK is required here, JRE is not enough
-                val javaHome = File(System.getenv("JAVA_HOME") ?: System.getProperty("java.home"))
-                var include = File(javaHome, "include")
-                if (!include.exists()) {
-                    // look upper
-                    include = File(javaHome, "../include")
-                }
-                if (!include.exists()) {
-                    throw GradleException("cannot find include")
-                }
-                // match the name on android to use the same code for native.
-                // TODO could be abstract this into another module?
-                packageName = "platform.android"
-                includeDirs(
-                    Callable { include },
-                    Callable { File(include, "darwin") },
-                    Callable { File(include, "linux") },
-                    Callable { File(include, "win32") }
-                )
-            }
-        }
     }
+    android()
+    includeSqlite(SqliteCompilationConfig(
+        version = "3.31.1"
+    ))
+    publish()
+    buildOnServer()
+}
 
+kotlin {
     val combinedSharedLibsFolder = project.buildDir.resolve("combinedSharedLibs")
     val combineSharedLibsTask =
         com.birbit.ksqlite.build.CollectNativeLibrariesTask
@@ -148,10 +128,3 @@ kotlin {
         }
     }
 }
-SqliteCompilation.setup(
-    project,
-    SqliteCompilationConfig(
-        version = "3.31.1"
-    )
-)
-Publishing.setup(project)

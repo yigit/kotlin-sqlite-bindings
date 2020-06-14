@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.birbit.ksqlite.build
+package com.birbit.ksqlite.build.internal
 
 import java.io.File
 import java.io.FileOutputStream
@@ -23,7 +23,7 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 
-abstract class DownloadSqliteTask : DefaultTask() {
+internal abstract class DownloadSqliteTask : DefaultTask() {
     @Input
     lateinit var version: String
 

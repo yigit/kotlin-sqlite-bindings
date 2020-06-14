@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.birbit.ksqlite.build
+package com.birbit.ksqlite.build.internal
 
 import org.gradle.api.invocation.Gradle
 import org.gradle.kotlin.dsl.get
@@ -21,28 +21,21 @@ import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
-fun runningInIdea(gradle: Gradle): Boolean {
-    return gradle.startParameter.systemPropertiesArgs.containsKey("idea.active")
-}
-
-fun runningInCI() = System.getenv("CI") != null
-
-// TODO cleanup these functions
-fun shouldBuildAndroidNative(gradle: Gradle): Boolean {
+internal fun shouldBuildAndroidNative(gradle: Gradle): Boolean {
     val os = DefaultNativePlatform.getCurrentOperatingSystem()
-    return !runningInIdea(gradle) && when {
+    return !gradle.runningInIdea() && when {
         os.isWindows -> !runningInCI()
         else -> true
     }
 }
 
-fun KotlinMultiplatformExtension.setupNative(
+internal fun KotlinMultiplatformExtension.setupNative(
     gradle: Gradle,
     includeAndroidNative: Boolean,
     configure: KotlinNativeTarget.() -> Unit
 ) {
     // TODO change this to build only on one target in CI
-    val runningInIdea = runningInIdea(gradle)
+    val runningInIdea = gradle.runningInIdea()
     val os = DefaultNativePlatform.getCurrentOperatingSystem()
     if (runningInIdea || os.isWindows) {
         when {
@@ -71,7 +64,7 @@ fun KotlinMultiplatformExtension.setupNative(
     }
 }
 
-fun KotlinMultiplatformExtension.setupCommon(
+internal fun KotlinMultiplatformExtension.setupCommon(
     gradle: Gradle,
     includeAndroidNative: Boolean,
     configure: KotlinNativeTarget.() -> Unit
@@ -84,22 +77,21 @@ fun KotlinMultiplatformExtension.setupCommon(
             os.isWindows -> "windows"
             else -> null
         }
-        // TODO we should nest these folders 1 more to be consistent w/ common
-        //  also move them to shared folder once we move to 1.4-M2
+        //  TODO move them to shared folder once we move to 1.4-M3
         osSpecificFolderPrefix?.let {
             compilations["main"].defaultSourceSet {
-                kotlin.srcDir("src/${it}Main")
+                kotlin.srcDir("src/${it}Main/kotlin")
             }
             compilations["test"].defaultSourceSet {
-                kotlin.srcDir("src/${it}Test")
+                kotlin.srcDir("src/${it}Test/kotlin")
             }
         }
 
         compilations["main"].defaultSourceSet {
-            kotlin.srcDir("src/nativeMain")
+            kotlin.srcDir("src/nativeMain/kotlin")
         }
         compilations["test"].defaultSourceSet {
-            kotlin.srcDir("src/nativeTest")
+            kotlin.srcDir("src/nativeTest/kotlin")
         }
 
         this.configure()

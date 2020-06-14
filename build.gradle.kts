@@ -14,15 +14,23 @@
  * limitations under the License.
  */
 
-import com.birbit.ksqlite.build.BuildOnServer
 import com.diffplug.gradle.spotless.SpotlessExtension
 
 plugins {
-    id("com.diffplug.gradle.spotless") version "4.0.1" apply false
-    id("org.jlleitschuh.gradle.ktlint") version "9.2.1"
+    id("com.diffplug.gradle.spotless")
+    id("org.jlleitschuh.gradle.ktlint")
+    kotlin("multiplatform")
 }
 
-BuildOnServer.init(project)
+buildscript {
+    dependencies {
+        // workaround for KMP plugin to find android classes
+        classpath("com.android.tools.build:gradle:3.6.3")
+    }
+}
+
+project("sqlitebindings").evaluationDependsOn(":konan-warmup")
+
 subprojects {
     repositories {
         google()
@@ -31,19 +39,25 @@ subprojects {
         maven ("https://dl.bintray.com/kotlin/kotlin-eap")
         maven ("https://kotlin.bintray.com/kotlinx")
     }
-    apply(plugin = "com.diffplug.gradle.spotless")
-    this.extensions.getByType(SpotlessExtension::class).apply {
-        kotlin {
-            target("**/*.kt")
-            ktlint().userData(
-                mapOf(
-                    "max_line_length" to "120"
+
+    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().all {
+        kotlinOptions.freeCompilerArgs = listOf("-Xopt-in=kotlin.RequiresOptIn")
+    }
+    if (this.path != ":konan-warmup") {
+        apply(plugin = "com.diffplug.gradle.spotless")
+        this.extensions.getByType(SpotlessExtension::class).apply {
+            kotlin {
+                target("src/**/*.kt")
+                ktlint().userData(
+                    mapOf(
+                        "max_line_length" to "120"
+                    )
                 )
-            )
-            licenseHeaderFile(project.rootProject.file("scripts/copyright.txt"))
-        }
-        kotlinGradle {
-            ktlint()
+                licenseHeaderFile(project.rootProject.file("scripts/copyright.txt"))
+            }
+            kotlinGradle {
+                ktlint()
+            }
         }
     }
 }

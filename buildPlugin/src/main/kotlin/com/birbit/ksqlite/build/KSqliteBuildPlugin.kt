@@ -15,15 +15,17 @@
  */
 package com.birbit.ksqlite.build
 
-import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
-import org.jetbrains.kotlin.konan.target.Family
-import org.jetbrains.kotlin.konan.target.HostManager
-import org.jetbrains.kotlin.konan.target.KonanTarget
+import com.birbit.ksqlite.build.internal.BuildOnServer
+import org.gradle.api.Plugin
+import org.gradle.api.Project
+import org.gradle.kotlin.dsl.create
 
-// build linux & mac targets on mac
-// linux targets on linux
-// windows targets on windows
-fun KonanTarget.isBuiltOnThisMachine() = HostManager().isEnabled(this) &&
-        DefaultNativePlatform.getCurrentOperatingSystem().let { os ->
-            !os.isWindows || this@isBuiltOnThisMachine.family == Family.MINGW
-        }
+class KSqliteBuildPlugin : Plugin<Project> {
+    override fun apply(target: Project) {
+        BuildOnServer.initIfNecessary(target)
+        target.extensions.create<KSqliteBuildExtension>(
+            "ksqliteBuild",
+            target
+        )
+    }
+}

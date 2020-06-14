@@ -13,24 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.birbit.ksqlite.build.internal
 
-plugins {
-    id("com.android.library")
-    kotlin("multiplatform")
-    id("ksqlite-build")
-}
-ksqliteBuild {
-    native(includeAndroidNative = true)
-    android()
-}
+import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
+import org.jetbrains.kotlin.konan.target.Family
+import org.jetbrains.kotlin.konan.target.HostManager
+import org.jetbrains.kotlin.konan.target.KonanTarget
 
-kotlin {
-    android()
-    sourceSets {
-        val commonMain by getting {
-            dependencies {
-                implementation(kotlin("stdlib-common"))
-            }
+// build linux & mac targets on mac
+// linux targets on linux
+// windows targets on windows
+internal fun KonanTarget.isBuiltOnThisMachine() = HostManager().isEnabled(this) &&
+        DefaultNativePlatform.getCurrentOperatingSystem().let { os ->
+            !os.isWindows || this@isBuiltOnThisMachine.family == Family.MINGW
         }
-    }
-}

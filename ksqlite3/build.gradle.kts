@@ -14,27 +14,21 @@
  * limitations under the License.
  */
 
-import com.birbit.ksqlite.build.AndroidSetup
-import com.birbit.ksqlite.build.Publishing
-import com.birbit.ksqlite.build.setupCommon
-
 plugins {
     id("com.android.library")
     kotlin("multiplatform")
     id("maven-publish")
+    id("ksqlite-build")
 }
-AndroidSetup.configure(project)
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().all {
-    kotlinOptions.freeCompilerArgs = listOf("-Xopt-in=kotlin.RequiresOptIn")
+ksqliteBuild {
+    native(includeAndroidNative = false)
+    android()
+    publish()
+    buildOnServer()
 }
 
 kotlin {
-
-    setupCommon(
-        gradle = gradle,
-        includeAndroidNative = false) {
-    }
     android {
         publishLibraryVariants("release")
     }
@@ -80,4 +74,3 @@ kotlin {
         }
     }
 }
-Publishing.setup(project)

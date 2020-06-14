@@ -1,7 +1,7 @@
 .idea
-build
+/build
 .gradle
-buildSrc/build
+buildPlugin/build
 sqlitebindings/build
 sqlitebindings-api/build
 jnigenerator/build

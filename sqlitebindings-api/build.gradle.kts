@@ -14,21 +14,19 @@
  * limitations under the License.
  */
 
-import com.birbit.ksqlite.build.Publishing
-import com.birbit.ksqlite.build.setupCommon
-
 plugins {
     kotlin("multiplatform")
     id("maven-publish")
+    id("ksqlite-build")
 }
 
+ksqliteBuild {
+    native(includeAndroidNative = true)
+    publish()
+    buildOnServer()
+}
 kotlin {
-    setupCommon(
-        gradle = gradle,
-        includeAndroidNative = true) {
-    }
     jvm()
-
     sourceSets {
         val commonMain by getting {
             dependencies {
@@ -37,4 +35,3 @@ kotlin {
         }
     }
 }
-Publishing.setup(project)

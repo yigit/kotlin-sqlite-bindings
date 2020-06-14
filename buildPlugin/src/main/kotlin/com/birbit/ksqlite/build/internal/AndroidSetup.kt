@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.birbit.ksqlite.build
+package com.birbit.ksqlite.build.internal
 
 import com.android.build.gradle.LibraryExtension
 import org.gradle.api.Project
 
-object AndroidSetup {
+internal object AndroidSetup {
     fun configure(project: Project) {
         val androidLibrary = project.extensions.findByType(LibraryExtension::class.java)
             ?: error("cannot find library extension on $project")
