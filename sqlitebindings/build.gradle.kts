@@ -16,9 +16,7 @@
 
 import com.android.build.gradle.internal.tasks.factory.dependsOn
 import com.birbit.ksqlite.build.Dependencies
-import com.birbit.ksqlite.build.SqliteCompilation
 import com.birbit.ksqlite.build.SqliteCompilationConfig
-import org.jetbrains.kotlin.konan.target.Family.ANDROID
 
 plugins {
     id("com.android.library")
@@ -28,7 +26,8 @@ plugins {
 }
 ksqliteBuild {
     native(
-        includeAndroidNative = true
+        includeAndroidNative = true,
+        includeJni = true
     ) {
         binaries {
             sharedLib(namePrefix = "sqlite3jni")
@@ -39,32 +38,12 @@ ksqliteBuild {
                 implementation(kotlin("stdlib-common"))
             }
         }
-        // jni already exists on android so we don't need it there
-        if (this.konanTarget.family != ANDROID) {
-            compilations["main"].cinterops.create("jni") {
-                // JDK is required here, JRE is not enough
-                val javaHome = File(System.getenv("JAVA_HOME") ?: System.getProperty("java.home"))
-                var include = File(javaHome, "include")
-                if (!include.exists()) {
-                    // look upper
-                    include = File(javaHome, "../include")
-                }
-                if (!include.exists()) {
-                    throw GradleException("cannot find include")
-                }
-                // match the name on android to use the same code for native.
-                // TODO could be abstract this into another module?
-                packageName = "platform.android"
-                includeDirs(
-                    Callable { include },
-                    Callable { File(include, "darwin") },
-                    Callable { File(include, "linux") },
-                    Callable { File(include, "win32") }
-                )
-            }
-        }
+
     }
     android()
+    includeSqlite(SqliteCompilationConfig(
+        version = "3.31.1"
+    ))
     publish()
     buildOnServer()
 }
@@ -150,9 +129,3 @@ kotlin {
         }
     }
 }
-SqliteCompilation.setup(
-    project,
-    SqliteCompilationConfig(
-        version = "3.31.1"
-    )
-)

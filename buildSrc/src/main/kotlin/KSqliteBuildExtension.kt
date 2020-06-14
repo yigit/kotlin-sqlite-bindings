@@ -16,6 +16,7 @@
 package com.birbit.ksqlite.build
 
 import org.gradle.api.Project
+import org.gradle.kotlin.dsl.get
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
@@ -32,6 +33,7 @@ open class KSqliteBuildExtension(
 
     fun native(
         includeAndroidNative: Boolean = false,
+        includeJni: Boolean = false,
         configure: KotlinNativeTarget.() -> Unit = {}
     ) {
         val kmpExt = project.extensions.findByType(KotlinMultiplatformExtension::class.java)
@@ -39,8 +41,17 @@ open class KSqliteBuildExtension(
         kmpExt.setupCommon(
             gradle = project.gradle,
             includeAndroidNative = includeAndroidNative,
-            configure = configure
+            configure = {
+                if (includeJni) {
+                    JniSetup.configure(this)
+                }
+                this.configure()
+            }
         )
+    }
+
+    fun includeSqlite(config: SqliteCompilationConfig) {
+        SqliteCompilation.setup(project, config)
     }
 
     fun buildOnServer() {
