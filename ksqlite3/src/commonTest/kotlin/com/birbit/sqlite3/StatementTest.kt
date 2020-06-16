@@ -329,6 +329,26 @@ class StatementTest {
         }
     }
 
+    @Test
+    fun execute() {
+        SqliteConnection.openConnection(":memory:").use { conn ->
+            assertEquals(ResultCode.OK, conn.exec("CREATE TABLE Foo(text TEXT)"))
+            val rc = conn.prepareStmt("INSERT INTO Foo VALUES(?)").use {
+                it.bind(1, "x")
+                it.execute()
+                it.bind(1, "y")
+                it.execute()
+            }
+            assertEquals(rc, ResultCode.DONE)
+            val results = conn.prepareStmt("SELECT * FROM Foo").use {
+                it.query().map {
+                    it.readString(0)
+                }.toList()
+            }
+            assertEquals(results, listOf("x", "y"))
+        }
+    }
+
     private fun oneRowQuery(query: String, block: (Row) -> Unit) {
         return query(query) {
             block(it.query().first())

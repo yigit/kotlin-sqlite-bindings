@@ -73,7 +73,7 @@ class SqliteStmt(
     fun bind(index: Int, value: String) {
         val resultCode = SqliteApi.bindText(stmtRef, index, value)
         check(ResultCode.OK == resultCode) {
-            "unable to bind value $value to index $index"
+            "unable to bind value $value to index $index. Result code: $resultCode"
         }
     }
 
@@ -118,6 +118,12 @@ class SqliteStmt(
         check(stepResultCode == ResultCode.OK || stepResultCode == ResultCode.DONE) {
             "querying rows ended prematurely $stepResultCode"
         }
+    }
+
+    fun execute(): ResultCode {
+        val rc = SqliteApi.step(stmtRef)
+        SqliteApi.reset(stmtRef)
+        return rc
     }
 
     fun bindValue(index: Int, value: Any?) {
