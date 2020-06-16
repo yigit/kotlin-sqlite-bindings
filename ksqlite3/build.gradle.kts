@@ -29,10 +29,6 @@ ksqliteBuild {
 }
 
 kotlin {
-    android {
-        publishLibraryVariants("release")
-    }
-
     sourceSets {
         val commonMain by getting {
             dependencies {

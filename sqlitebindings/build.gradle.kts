@@ -74,9 +74,6 @@ kotlin {
         this.javaCompileProvider.dependsOn(combineAndroidSharedLibsTask)
     }
     jvm().compilations["main"].compileKotlinTask.dependsOn(combineSharedLibsTask)
-    android {
-        publishLibraryVariants("release")
-    }
     sourceSets {
         val commonMain by getting {
             dependencies {
