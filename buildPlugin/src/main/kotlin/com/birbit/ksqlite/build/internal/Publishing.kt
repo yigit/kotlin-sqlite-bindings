@@ -15,12 +15,14 @@
  */
 package com.birbit.ksqlite.build.internal
 
+import com.android.build.gradle.LibraryExtension
 import java.io.File
 import org.gradle.api.Project
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.tasks.Copy
 import org.gradle.kotlin.dsl.findByType
 import org.gradle.kotlin.dsl.maven
+import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
 internal object Publishing {
     fun createCombinedRepoTaskIfPossible(
@@ -56,6 +58,15 @@ internal object Publishing {
             "0.1.0.$buildId"
         } else {
             "0.1.0-SNAPSHOT"
+        }
+        // if it is android, enable publishing for debug & release
+        val android = project.extensions.findByType<LibraryExtension>()
+        if (android != null) {
+            val kotlin = project.extensions.findByType<KotlinMultiplatformExtension>()
+                ?: error("must apply KMP extension")
+            kotlin.android {
+                publishLibraryVariants("debug", "release")
+            }
         }
     }
 
