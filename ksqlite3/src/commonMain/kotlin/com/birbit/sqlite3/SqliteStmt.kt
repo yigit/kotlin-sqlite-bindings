@@ -120,7 +120,7 @@ class SqliteStmt(
         }
     }
 
-    fun execute() : ResultCode {
+    fun execute(): ResultCode {
         val rc = SqliteApi.step(stmtRef)
         SqliteApi.reset(stmtRef)
         return rc
