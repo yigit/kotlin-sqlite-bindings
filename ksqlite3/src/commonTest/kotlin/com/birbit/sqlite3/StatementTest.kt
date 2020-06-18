@@ -349,6 +349,36 @@ class StatementTest {
         }
     }
 
+    @Test
+    fun interleavedStatements() {
+        SqliteConnection.openConnection(":memory:").use { conn ->
+            conn.exec("CREATE TABLE Letters(value TEXT)")
+            val insertStmt = conn.prepareStmt("INSERT INTO Letters VALUES(?)")
+            ('a' until 'e').forEach {
+                insertStmt.bind(1, it.toString())
+                insertStmt.execute()
+            }
+            val readAsc = conn.prepareStmt("SELECT * FROM Letters ORDER BY value ASC")
+            val readDesc = conn.prepareStmt("SELECT * FROM Letters ORDER BY value DESC")
+            val lateStep = conn.prepareStmt("SELECT * FROM Letters ORDER BY value ASC")
+            val asc = firstColumnCollector(readAsc.query())
+            val desc = firstColumnCollector(readDesc.query())
+            val late = firstColumnCollector(lateStep.query())
+            // don't include late here as we don't want it to run the first step
+            while (asc.hasNext() || desc.hasNext()) {
+                asc.collectNext()
+                desc.collectNext()
+                check(ResultCode.OK == conn.exec("DELETE FROM Letters WHERE value > 'b'")) {
+                    "deleted all"
+                }
+                late.collectNext()
+            }
+            assertEquals(asc.result, listOf("a", "b", "c", "d"))
+            assertEquals(desc.result, listOf("d", "c", "b", "a"))
+            assertEquals(late.result, listOf("a", "b"))
+        }
+    }
+
     private fun oneRowQuery(query: String, block: (Row) -> Unit) {
         return query(query) {
             block(it.query().first())
@@ -361,6 +391,25 @@ class StatementTest {
             val stmt = conn.prepareStmt(query)
             stmt.use {
                 block(stmt)
+            }
+        }
+    }
+
+    private fun firstColumnCollector(rows: Sequence<Row>) = Collector(rows.iterator()) {
+        it.readString(0)
+    }
+
+    private class Collector<T>(
+        private val stmt: Iterator<Row>,
+        private val block: (Row) -> T
+    ) {
+        val _result = mutableListOf<T>()
+        val result: List<T>
+            get() = _result
+        fun hasNext() = stmt.hasNext()
+        fun collectNext() {
+            if (stmt.hasNext()) {
+                _result.add(block(stmt.next()))
             }
         }
     }
