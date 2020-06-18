@@ -56,17 +56,17 @@ internal object AndroidSetup {
         val rootProject = project.rootProject
         val buildDir = rootProject.buildDir.resolve("android-cmd-line-tools")
         val toolsZip = buildDir.resolve("tools.zip")
-        val downloadTask = project.tasks.register("downloadAndroidCmdLineTools", DownloadTask::class.java) {
+        val downloadTask = rootProject.tasks.register("downloadAndroidCmdLineTools", DownloadTask::class.java) {
             it.downlodUrl = buildCommandLineToolsUrl()
             it.downloadTargetFile = toolsZip
         }
         val cmdLineToolsFolder = buildDir.resolve("tools")
-        val unzipCommandLineToolsTask = project.tasks.register("unzipCommandLineTools", Copy::class.java) {
+        val unzipCommandLineToolsTask = rootProject.tasks.register("unzipCommandLineTools", Copy::class.java) {
             it.from(project.zipTree(toolsZip))
             it.into(cmdLineToolsFolder)
             it.dependsOn(downloadTask)
         }
-        project.rootProject.tasks.register("downloadNdk", Exec::class.java) {
+        rootProject.tasks.register("downloadNdk", Exec::class.java) {
             val os = DefaultNativePlatform.getCurrentOperatingSystem()
             val ext = if (os.isWindows) {
                 ".bat"
