@@ -102,7 +102,7 @@ internal object KonanUtil {
             if (konanTarget.family != Family.MINGW) {
                 it.args("-fPIC")
             }
-            val targetInfo = targetInfoMap.getValue(konanTarget)
+            val targetInfo = targetInfoMap[konanTarget] ?: error("missing target info $konanTarget")
             it.args("--target=${targetInfo.targetName}")
             it.args("--sysroot=${targetInfo.sysRoot(project).absolutePath}")
             it.args(targetInfo.clangArgs)
@@ -118,6 +118,16 @@ internal object KonanUtil {
         KonanTarget.MACOS_X64 to TargetInfo(
             "x86_64-apple-darwin10", // Not sure about this but it doesn't matter yet.
             { konanDeps.resolve("target-sysroot-10-macos_x64") }
+        ),
+        KonanTarget.IOS_ARM64 to TargetInfo(
+            "arm64-apple-darwin10", // Not sure about this but it doesn't matter yet.
+            { File("/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/") },
+            listOf("-framework", "Foundation")
+        ),
+        KonanTarget.IOS_X64 to TargetInfo(
+            "x86_64-apple-darwin10", // Not sure about this but it doesn't matter yet.
+            { File("/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk/") },
+            listOf("-framework", "Foundation")
         ),
         KonanTarget.MINGW_X64 to TargetInfo(
             "x86_64-w64-mingw32",

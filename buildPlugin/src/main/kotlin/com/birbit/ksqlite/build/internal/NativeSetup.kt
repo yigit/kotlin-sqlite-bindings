@@ -55,6 +55,7 @@ internal fun KotlinMultiplatformExtension.setupNative(
         linuxArm32Hfp(configure = configure)
         mingwX64(configure = configure)
         macosX64(configure = configure)
+        ios(configure = configure)
         if (shouldBuildAndroidNative(gradle) && includeAndroidNative) {
             androidNativeArm32(configure = configure)
             androidNativeArm64(configure = configure)

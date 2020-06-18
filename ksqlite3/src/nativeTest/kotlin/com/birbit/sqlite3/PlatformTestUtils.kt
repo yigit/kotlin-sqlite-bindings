@@ -15,11 +15,16 @@
  */
 package com.birbit.sqlite3
 
-import kotlin.random.Random
 import kotlinx.cinterop.memScoped
+import kotlinx.cinterop.staticCFunction
+import kotlinx.cinterop.toKStringFromUtf8
+import platform.posix.FTW_DEPTH
+import platform.posix.FTW_PHYS
 import platform.posix.F_OK
 import platform.posix.access
-import platform.posix.system
+import platform.posix.nftw
+import platform.posix.remove
+import kotlin.random.Random
 
 actual object PlatformTestUtils {
     private fun randomFolderName(): String {
@@ -53,11 +58,10 @@ actual object PlatformTestUtils {
     }
 
     actual fun deleteDir(tmpDir: String) {
-        when (Platform.osFamily) {
-            OsFamily.WINDOWS -> {
-                system("rmdir $tmpDir /s /q")
+        nftw(tmpDir, staticCFunction { path, stat, typeFlag, ftw ->
+            memScoped {
+                remove(path!!.toKStringFromUtf8())
             }
-            else -> system("rm -rf $tmpDir")
-        }
+        }, 64, FTW_DEPTH.or(FTW_PHYS))
     }
 }

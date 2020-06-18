@@ -62,6 +62,11 @@ data class SoInput(
                     Architecture.ARM64 -> "arm64-v8a"
                     else -> throw GradleException("add this architecture for android ${konanTarget.architecture}")
                 }
+                Family.IOS -> "ios" + when(konanTarget.architecture) {
+                    Architecture.ARM64 -> "_arm64"
+                    Architecture.X64 -> "_x64"
+                    else -> throw GradleException("unsupported arch ${konanTarget.architecture} for IOS family")
+                }
                 else -> throw GradleException("unsupported architecture family ${konanTarget.family}")
             }
         }
@@ -138,6 +143,7 @@ abstract class CollectNativeLibrariesTask : DefaultTask() {
             if (distOutputsFolder == null || forAndroid) {
                 // obtain from compilations
                 kotlin.targets.withType(KotlinNativeTarget::class.java).filter {
+                    it.konanTarget.family != Family.IOS &&
                     it.konanTarget.isBuiltOnThisMachine() &&
                         forAndroid == (it.konanTarget.family == Family.ANDROID)
                 }.forEach {
