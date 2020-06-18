@@ -67,7 +67,13 @@ internal object AndroidSetup {
             it.dependsOn(downloadTask)
         }
         project.rootProject.tasks.register("downloadNdk", Exec::class.java) {
-            it.executable(cmdLineToolsFolder.resolve("tools/bin/sdkmanager"))
+            val os = DefaultNativePlatform.getCurrentOperatingSystem()
+            val ext = if (os.isWindows) {
+                ".bat"
+            } else {
+                ""
+            }
+            it.executable(cmdLineToolsFolder.resolve("tools/bin/sdkmanager$ext"))
             it.args("--install", "ndk;${android.ndkVersion}", "--verbose")
             it.args("--sdk_root=${android.sdkDirectory.absolutePath}")
             // pass y to accept licenses
