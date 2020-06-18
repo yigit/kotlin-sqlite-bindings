@@ -55,7 +55,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-konan-cache-
     - name: Download ndk
-      run: ./gradlew downloadNdk --info
+      run: ./gradlew downloadNdk --info --stacktrace
     - name: build and test
       run: ./gradlew allTests --info --stacktrace
     - name: run spotless on build plugin
