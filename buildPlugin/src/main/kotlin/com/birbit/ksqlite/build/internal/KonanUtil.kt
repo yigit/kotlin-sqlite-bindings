@@ -121,12 +121,14 @@ internal object KonanUtil {
         ),
         KonanTarget.IOS_ARM64 to TargetInfo(
             "arm64-apple-darwin10", // Not sure about this but it doesn't matter yet.
-            { File("/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/") },
+            { File("/Applications/Xcode.app/Contents/Developer/Platforms/" +
+                    "iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/") },
             listOf("-framework", "Foundation")
         ),
         KonanTarget.IOS_X64 to TargetInfo(
             "x86_64-apple-darwin10", // Not sure about this but it doesn't matter yet.
-            { File("/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk/") },
+            { File("/Applications/Xcode.app/Contents/Developer/Platforms/" +
+                    "iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk/") },
             listOf("-framework", "Foundation")
         ),
         KonanTarget.MINGW_X64 to TargetInfo(

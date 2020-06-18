@@ -15,6 +15,7 @@
  */
 package com.birbit.sqlite3
 
+import kotlin.random.Random
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.staticCFunction
 import kotlinx.cinterop.toKStringFromUtf8
@@ -24,7 +25,6 @@ import platform.posix.F_OK
 import platform.posix.access
 import platform.posix.nftw
 import platform.posix.remove
-import kotlin.random.Random
 
 actual object PlatformTestUtils {
     private fun randomFolderName(): String {

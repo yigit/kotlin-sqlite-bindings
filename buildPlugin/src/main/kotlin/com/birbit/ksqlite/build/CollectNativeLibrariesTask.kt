@@ -62,7 +62,7 @@ data class SoInput(
                     Architecture.ARM64 -> "arm64-v8a"
                     else -> throw GradleException("add this architecture for android ${konanTarget.architecture}")
                 }
-                Family.IOS -> "ios" + when(konanTarget.architecture) {
+                Family.IOS -> "ios" + when (konanTarget.architecture) {
                     Architecture.ARM64 -> "_arm64"
                     Architecture.X64 -> "_x64"
                     else -> throw GradleException("unsupported arch ${konanTarget.architecture} for IOS family")
