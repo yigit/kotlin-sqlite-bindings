@@ -17,8 +17,10 @@ package com.birbit.ksqlite.build.internal
 
 import com.android.build.gradle.LibraryExtension
 import org.gradle.api.Project
+import org.gradle.api.tasks.Exec
 
 internal object AndroidSetup {
+    private const val DOWNLOAD_NDK_TASK = "downloadNdk"
     fun configure(project: Project) {
         val androidLibrary = project.extensions.findByType(LibraryExtension::class.java)
             ?: error("cannot find library extension on $project")
@@ -35,6 +37,25 @@ internal object AndroidSetup {
             it.getByName("androidTest").java
                 .srcDir(project.file("src/androidTest/kotlin"))
         }
-        androidLibrary.ndkVersion = "21.2.6472646"
+        androidLibrary.ndkVersion = "21.3.6528147"
+        createInstallNdkTask(project)
+    }
+
+    fun createInstallNdkTask(project: Project) {
+        // find a reference to android
+        val exists = project.rootProject.tasks.findByName(DOWNLOAD_NDK_TASK)
+        if (exists != null) {
+            return
+        }
+        val android = project.extensions.findByType(LibraryExtension::class.java)
+            ?: return
+
+        project.rootProject.tasks.register("downloadNdk", Exec::class.java) {
+            it.executable(android.sdkDirectory.resolve("cmdline-tools/latest/tools/bin/sdkmanager"))
+            it.args("--install", "ndk;${android.ndkVersion}", "--verbose")
+            it.args("--sdk_root=${android.sdkDirectory.absolutePath}")
+
+            it.setStandardInput("y".byteInputStream(Charsets.UTF_8))
+        }
     }
 }
