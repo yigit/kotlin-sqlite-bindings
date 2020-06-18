@@ -73,6 +73,11 @@ internal object AndroidSetup {
             } else {
                 ""
             }
+            if (os.isLinux) {
+                it.doFirst {
+                    Runtime.getRuntime().exec("sudo chown \$USER:\$USER ${android.sdkDirectory} -R")
+                }
+            }
             it.executable(cmdLineToolsFolder.resolve("tools/bin/sdkmanager$ext"))
             it.args("--install", "ndk;${android.ndkVersion}", "--verbose")
             it.args("--sdk_root=${android.sdkDirectory.absolutePath}")
