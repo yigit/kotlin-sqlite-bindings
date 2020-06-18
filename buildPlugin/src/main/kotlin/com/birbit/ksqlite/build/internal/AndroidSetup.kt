@@ -17,9 +17,12 @@ package com.birbit.ksqlite.build.internal
 
 import com.android.build.gradle.LibraryExtension
 import org.gradle.api.Project
+import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.Exec
+import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
 
 internal object AndroidSetup {
+    private const val DOWNLOAD_CMD_LINE_TOOLS_TASK = "downloadAndroidCommandLineTools"
     private const val DOWNLOAD_NDK_TASK = "downloadNdk"
     fun configure(project: Project) {
         val androidLibrary = project.extensions.findByType(LibraryExtension::class.java)
@@ -50,12 +53,37 @@ internal object AndroidSetup {
         val android = project.extensions.findByType(LibraryExtension::class.java)
             ?: return
 
+        val rootProject = project.rootProject
+        val buildDir = rootProject.buildDir.resolve("android-cmd-line-tools")
+        val toolsZip = buildDir.resolve("tools.zip")
+        val downloadTask = project.tasks.register("downloadAndroidCmdLineTools", DownloadTask::class.java) {
+            it.downlodUrl = buildCommandLineToolsUrl()
+            it.downloadTargetFile = toolsZip
+        }
+        val cmdLineToolsFolder = buildDir.resolve("tools")
+        val unzipCommandLineToolsTask = project.tasks.register("unzipCommandLineTools", Copy::class.java) {
+            it.from(project.zipTree(toolsZip))
+            it.into(cmdLineToolsFolder)
+            it.dependsOn(downloadTask)
+        }
         project.rootProject.tasks.register("downloadNdk", Exec::class.java) {
-            it.executable(android.sdkDirectory.resolve("cmdline-tools/latest/tools/bin/sdkmanager"))
+            it.executable(cmdLineToolsFolder.resolve("tools/bin/sdkmanager"))
             it.args("--install", "ndk;${android.ndkVersion}", "--verbose")
             it.args("--sdk_root=${android.sdkDirectory.absolutePath}")
-
+            // pass y to accept licenses
             it.setStandardInput("y".byteInputStream(Charsets.UTF_8))
+            it.dependsOn(unzipCommandLineToolsTask)
         }
+    }
+
+    private fun buildCommandLineToolsUrl(): String {
+        val os = DefaultNativePlatform.getCurrentOperatingSystem()
+        val osKey = when {
+            os.isWindows -> "win"
+            os.isLinux -> "linux"
+            os.isMacOsX -> "mac"
+            else -> error("unsupported build OS: ${os.displayName}")
+        }
+        return "https://dl.google.com/android/repository/commandlinetools-$osKey-6514223_latest.zip"
     }
 }
