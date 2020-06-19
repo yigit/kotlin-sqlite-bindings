@@ -1,9 +1,9 @@
 # Kotlin Sqlite Bindings
-This project provides kotlin multiplatform bindings for Sqlite3. (win, linux, mac, and Android)
+This project provides kotlin multiplatform bindings for Sqlite3. (Win, Linux, Mac, Android, and iOS)
 
 By using it, you can write platform independent Sqlite code in your Kotlin common code.
 
-**For now, it is more of a playground then a real project so do not use it on production**
+**For now, it is more of a playground then a real project so do not use it on production.**
 
 ## Disclaimer
 This is **not** an official Google product.
