@@ -35,8 +35,8 @@ internal object SqliteCompilation {
         // TODO convert these to gradle properties
         val downloadFile = buildFolder.resolve("download/amalgamation.zip")
         val srcDir = buildFolder.resolve("src")
-        val downloadTask = project.tasks.register("downloadSqlite", DownloadSqliteTask::class.java) {
-            it.version = config.version
+        val downloadTask = project.tasks.register("downloadSqlite", DownloadTask::class.java) {
+            it.downlodUrl = computeDownloadUrl(config.version)
             it.downloadTargetFile = downloadFile
         }
 
@@ -135,4 +135,25 @@ internal object SqliteCompilation {
             }
         }
     }
+
+    private fun computeDownloadUrl(version: String): String {
+        // see https://www.sqlite.org/download.html
+        // The version is encoded so that filenames sort in order of increasing version number
+        // when viewed using "ls".
+        // For version 3.X.Y the filename encoding is 3XXYY00.
+        // For branch version 3.X.Y.Z, the encoding is 3XXYYZZ.
+        val sections = version.split('.')
+        check(sections.size >= 3) { // TODO add support for branch versions
+            "invalid sqlite version $version"
+        }
+        val major = sections[0].toInt()
+        val minor = sections[1].toInt()
+        val patch = sections[2].toInt()
+        val branch = if (sections.size >= 4) sections[3].toInt() else 0
+        val fileName = String.format("%d%02d%02d%02d.zip", major, minor, patch, branch)
+        println("filename: $fileName")
+        return "$BASE_URL$fileName"
+    }
+
+    private const val BASE_URL = "https://www.sqlite.org/2020/sqlite-amalgamation-"
 }
