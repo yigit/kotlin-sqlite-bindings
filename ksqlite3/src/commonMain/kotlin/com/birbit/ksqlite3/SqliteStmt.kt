@@ -111,8 +111,7 @@ class SqliteStmt(
     fun query(): Sequence<Row> = sequence {
         SqliteApi.reset(stmtRef)
         val row = Row(stmtRef)
-        val stepResultCode: ResultCode =
-            ResultCode.OK
+        val stepResultCode: ResultCode = ResultCode.OK
         while (SqliteApi.step(stmtRef).also { stepResultCode == it } == ResultCode.ROW) {
             yield(row)
         }
