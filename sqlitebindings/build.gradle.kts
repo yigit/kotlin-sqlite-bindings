@@ -15,8 +15,8 @@
  */
 
 import com.android.build.gradle.internal.tasks.factory.dependsOn
-import com.birbit.ksqlite.build.Dependencies
-import com.birbit.ksqlite.build.SqliteCompilationConfig
+import com.birbit.ksqlite3.build.Dependencies
+import com.birbit.ksqlite3.build.SqliteCompilationConfig
 
 plugins {
     id("com.android.library")
@@ -50,7 +50,7 @@ ksqliteBuild {
 kotlin {
     val combinedSharedLibsFolder = project.buildDir.resolve("combinedSharedLibs")
     val combineSharedLibsTask =
-        com.birbit.ksqlite.build.CollectNativeLibrariesTask
+        com.birbit.ksqlite3.build.CollectNativeLibrariesTask
             .create(
                 project = project,
                 namePrefix = "sqlite3jni",
@@ -59,7 +59,7 @@ kotlin {
 
     val combinedAndroidSharedLibsFolder = project.buildDir.resolve("combinedAndroidSharedLibs")
     val combineAndroidSharedLibsTask =
-        com.birbit.ksqlite.build.CollectNativeLibrariesTask
+        com.birbit.ksqlite3.build.CollectNativeLibrariesTask
             .create(
                 project = project,
                 namePrefix = "sqlite3jni",

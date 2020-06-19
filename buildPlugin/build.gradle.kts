@@ -66,11 +66,11 @@ configure<GradlePluginDevelopmentExtension> {
     plugins {
         create("ksqliteBuild") {
             id = "ksqlite-build"
-            implementationClass = "com.birbit.ksqlite.build.KSqliteBuildPlugin"
+            implementationClass = "com.birbit.ksqlite3.build.KSqliteBuildPlugin"
         }
         create("ksqliteDependencies") {
             id = "ksqlite-dependencies"
-            implementationClass = "com.birbit.ksqlite.build.Dependencies"
+            implementationClass = "com.birbit.ksqlite3.build.Dependencies"
         }
     }
 }

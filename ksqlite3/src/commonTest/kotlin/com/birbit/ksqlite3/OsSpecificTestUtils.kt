@@ -13,21 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import com.birbit.ksqlite3.build.Dependencies
+package com.birbit.ksqlite3
 
-plugins {
-    kotlin("jvm")
-    id("ksqlite-dependencies")
-}
-
-dependencies {
-    implementation(kotlin("stdlib-jdk8"))
-    implementation(project.fileTree("libs") {
-        include("*.jar")
-    })
-    implementation(Dependencies.KOTLIN_POET)
-}
-
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-    kotlinOptions.jvmTarget = "1.8"
+expect object OsSpecificTestUtils {
+    // mkdir in posix is different in all OSs so lets use this instead
+    internal fun mkdirForTest(path: String)
 }

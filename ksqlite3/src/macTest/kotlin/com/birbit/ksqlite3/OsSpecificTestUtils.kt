@@ -13,21 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import com.birbit.ksqlite3.build.Dependencies
+package com.birbit.ksqlite3
 
-plugins {
-    kotlin("jvm")
-    id("ksqlite-dependencies")
-}
+import kotlinx.cinterop.convert
+import platform.posix.S_IRUSR
+import platform.posix.S_IWUSR
+import platform.posix.S_IXUSR
+import platform.posix.mkdir
 
-dependencies {
-    implementation(kotlin("stdlib-jdk8"))
-    implementation(project.fileTree("libs") {
-        include("*.jar")
-    })
-    implementation(Dependencies.KOTLIN_POET)
-}
-
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-    kotlinOptions.jvmTarget = "1.8"
+actual object OsSpecificTestUtils {
+    internal actual fun mkdirForTest(path: String) {
+        mkdir(path, S_IRUSR.or(S_IWUSR).or(S_IXUSR).convert())
+    }
 }

@@ -51,7 +51,7 @@ kotlin {
         val androidTest by getting {
             dependencies {
                 implementation(kotlin("test-junit"))
-                com.birbit.ksqlite.build.Dependencies.ANDROID_TEST.forEach {
+                com.birbit.ksqlite3.build.Dependencies.ANDROID_TEST.forEach {
                     implementation(it)
                 }
             }

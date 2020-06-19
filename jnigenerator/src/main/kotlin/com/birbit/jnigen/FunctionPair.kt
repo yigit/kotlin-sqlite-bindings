@@ -21,5 +21,5 @@ data class FunctionPair(
 ) {
     val jniSignature: String
         // TODO this is probably more complicated
-        get() = "Java_com_birbit_sqlite3_internal_SqliteApi_${nativeFun.name}"
+        get() = "Java_com_birbit_ksqlite3_internal_SqliteApi_${nativeFun.name}"
 }

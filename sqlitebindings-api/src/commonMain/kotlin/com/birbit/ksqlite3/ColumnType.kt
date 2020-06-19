@@ -13,21 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import com.birbit.ksqlite3.build.Dependencies
+package com.birbit.ksqlite3
 
-plugins {
-    kotlin("jvm")
-    id("ksqlite-dependencies")
-}
-
-dependencies {
-    implementation(kotlin("stdlib-jdk8"))
-    implementation(project.fileTree("libs") {
-        include("*.jar")
-    })
-    implementation(Dependencies.KOTLIN_POET)
-}
-
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-    kotlinOptions.jvmTarget = "1.8"
+// see https://www.sqlite.org/c3ref/c_blob.html
+inline class ColumnType(val value: Int) {
+    companion object {
+        val INTEGER = ColumnType(1)
+        val FLOAT = ColumnType(2)
+        val STRING = ColumnType(3)
+        val BLOB = ColumnType(4)
+        val NULL = ColumnType(5)
+    }
 }

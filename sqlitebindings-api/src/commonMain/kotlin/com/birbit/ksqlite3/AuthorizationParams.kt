@@ -13,21 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import com.birbit.ksqlite3.build.Dependencies
+package com.birbit.ksqlite3
 
-plugins {
-    kotlin("jvm")
-    id("ksqlite-dependencies")
-}
-
-dependencies {
-    implementation(kotlin("stdlib-jdk8"))
-    implementation(project.fileTree("libs") {
-        include("*.jar")
-    })
-    implementation(Dependencies.KOTLIN_POET)
-}
-
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-    kotlinOptions.jvmTarget = "1.8"
+class AuthorizationParams(
+    val actionCode: Int,
+    val param1: String?,
+    val param2: String?,
+    val param3: String?,
+    val param4: String?
+) {
+    override fun toString(): String {
+        return "AuthorizationParams(actionCode=$actionCode, param1=$param1, param2=$param2, param3=$param3, " +
+            "param4=$param4)"
+    }
 }

@@ -28,7 +28,7 @@ class JniWriter(
     val pairs: List<FunctionPair>
 ) {
     fun write(file: File) {
-        val spec = FileSpec.builder("com.birbit.sqlite3.internal", "GeneratedJni").apply {
+        val spec = FileSpec.builder("com.birbit.ksqlite3.internal", "GeneratedJni").apply {
             indent("    ")
             addAnnotation(
                 AnnotationSpec.builder(Suppress::class).apply {

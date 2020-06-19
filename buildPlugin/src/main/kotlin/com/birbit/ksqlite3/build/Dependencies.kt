@@ -13,21 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import com.birbit.ksqlite3.build.Dependencies
+package com.birbit.ksqlite3.build
 
-plugins {
-    kotlin("jvm")
-    id("ksqlite-dependencies")
-}
+import org.gradle.api.Plugin
+import org.gradle.api.Project
 
-dependencies {
-    implementation(kotlin("stdlib-jdk8"))
-    implementation(project.fileTree("libs") {
-        include("*.jar")
-    })
-    implementation(Dependencies.KOTLIN_POET)
-}
+/**
+ * Extension to read dependencies
+ */
+class Dependencies : Plugin<Project> {
+    override fun apply(target: Project) {
+    }
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-    kotlinOptions.jvmTarget = "1.8"
+    companion object {
+        val NATIVE_LIB_LOADER = "org.scijava:native-lib-loader:2.3.4"
+        val KOTLIN_POET = "com.squareup:kotlinpoet:1.5.0"
+        val ANDROID_TEST = listOf(
+            "androidx.test.ext:junit:1.1.1",
+            "androidx.test:runner:1.2.0"
+        )
+    }
 }

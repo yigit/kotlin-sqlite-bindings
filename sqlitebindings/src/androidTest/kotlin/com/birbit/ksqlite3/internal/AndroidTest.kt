@@ -13,21 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import com.birbit.ksqlite3.build.Dependencies
+package com.birbit.ksqlite3.internal
 
-plugins {
-    kotlin("jvm")
-    id("ksqlite-dependencies")
-}
+import kotlin.test.Test
+import kotlin.test.assertTrue
 
-dependencies {
-    implementation(kotlin("stdlib-jdk8"))
-    implementation(project.fileTree("libs") {
-        include("*.jar")
-    })
-    implementation(Dependencies.KOTLIN_POET)
-}
-
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-    kotlinOptions.jvmTarget = "1.8"
+// existence of this test prevents connectedCheck task from skipping
+class AndroidTest {
+    @Test
+    fun ensureGradleDoesNotSkipTestTask() {
+        assertTrue(true)
+    }
 }
