@@ -176,6 +176,9 @@ jobs:
           # An ordered list of keys to use for restoring the cache if no cache hit occurred for key
           restore-keys: |
             ${{ runner.os }}-konan-cache-
+      - name: Own sdk dir
+        if: runner.os == 'Linux'
+        run: sudo chown $USER:$USER $ANDROID_HOME -R
       # download artifacts
       - name: Download ndk
         run: ./gradlew downloadNdk --info
