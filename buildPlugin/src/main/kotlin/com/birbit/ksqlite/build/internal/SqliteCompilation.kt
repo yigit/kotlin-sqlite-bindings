@@ -134,7 +134,8 @@ internal object SqliteCompilation {
                 cInteropTask.dependsOn(createDefFileTask)
             }
             // workaround for https://youtrack.jetbrains.com/issue/KT-39396
-            it.compilations["main"].kotlinOptions.freeCompilerArgs += listOf("-include-binary", staticLibFile.absolutePath)
+            it.compilations["main"].kotlinOptions.freeCompilerArgs += listOf("-include-binary",
+                staticLibFile.absolutePath)
         }
     }
 
