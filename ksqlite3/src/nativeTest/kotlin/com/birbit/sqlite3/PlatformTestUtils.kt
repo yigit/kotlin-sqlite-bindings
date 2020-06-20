@@ -15,6 +15,8 @@
  */
 package com.birbit.sqlite3
 
+import kotlin.native.concurrent.TransferMode
+import kotlin.native.concurrent.Worker
 import kotlin.random.Random
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.staticCFunction
@@ -63,5 +65,14 @@ actual object PlatformTestUtils {
                 remove(path!!.toKStringFromUtf8())
             }
         }, 64, FTW_DEPTH.or(FTW_PHYS))
+    }
+
+    actual fun <T> runInAnotherThread(block: () -> T): T {
+        // we don't care about being unsafe here, it is just for tests
+        val worker = Worker.start(name = "one-off")
+        val resultFuture = worker.execute(TransferMode.UNSAFE, { block }) {
+            it()
+        }
+        return resultFuture.result
     }
 }

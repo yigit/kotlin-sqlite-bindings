@@ -19,6 +19,8 @@ import android.content.Context
 import androidx.test.platform.app.InstrumentationRegistry
 import java.io.File
 import java.util.UUID
+import java.util.concurrent.atomic.AtomicReference
+import kotlin.concurrent.thread
 
 actual object PlatformTestUtils {
     private val context: Context
@@ -41,5 +43,13 @@ actual object PlatformTestUtils {
 
     actual fun deleteDir(tmpDir: String) {
         File(tmpDir).deleteRecursively()
+    }
+
+    actual fun <T> runInAnotherThread(block: () -> T): T {
+        val result = AtomicReference<T>()
+        thread {
+            result.set(block())
+        }.join()
+        return result.get()
     }
 }

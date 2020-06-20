@@ -15,6 +15,7 @@
  */
 package com.birbit.sqlite3
 
+import com.birbit.sqlite3.PlatformTestUtils.runInAnotherThread
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -108,6 +109,21 @@ class SqliteConnectionTest {
                 it.query().toList()
             }
             assertEquals(result, emptyList<Row>())
+        }
+    }
+
+    @Test
+    fun multiThreadedAccess() {
+        SqliteConnection.openConnection(":memory:").use { conn ->
+            conn.exec("CREATE TABLE Foo(name)")
+            val rc = runInAnotherThread {
+                conn.exec("INSERT INTO Foo VALUES('bar')")
+            }
+            assertEquals(rc, ResultCode.OK)
+            val read = conn.query("SELECT * FROM Foo") {
+                it.first().readString(0)
+            }
+            assertEquals(read, "bar")
         }
     }
 
