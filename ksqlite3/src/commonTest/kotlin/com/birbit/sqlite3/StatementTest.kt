@@ -20,6 +20,10 @@ import com.birbit.sqlite3.SqliteStmt.BindParameterMetadata
 import com.birbit.sqlite3.SqliteStmt.BindParameterMetadata.BindParameter
 import com.birbit.sqlite3.SqliteStmt.ResultMetadata
 import com.birbit.sqlite3.SqliteStmt.ResultMetadata.ColumnInfo
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.launch
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse

@@ -28,6 +28,8 @@ ksqliteBuild {
     buildOnServer()
 }
 
+fun coroutines(artifactName : String) = "org.jetbrains.kotlinx:kotlinx-coroutines-$artifactName:1.3.7-native-mt-1.4-M2"
+
 kotlin {
     sourceSets {
         val commonMain by getting {
@@ -35,6 +37,7 @@ kotlin {
                 implementation(kotlin("stdlib-common"))
                 implementation(project(":sqlitebindings"))
                 api(project(":sqlitebindings-api"))
+                implementation(coroutines("core"))
             }
         }
         val commonTest by getting {

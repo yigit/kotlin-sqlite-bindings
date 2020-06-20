@@ -18,6 +18,7 @@ pluginManagement {
         mavenCentral()
         maven("https://plugins.gradle.org/m2/")
         maven("https://dl.bintray.com/kotlin/kotlin-eap")
+        maven("https://dl.bintray.com/kotlin/kotlin-dev")
         google()
     }
     val properties = java.util.Properties()

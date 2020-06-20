@@ -34,6 +34,7 @@ buildscript {
     val kotlinVersion: String by rootProject
     repositories {
         maven("https://dl.bintray.com/kotlin/kotlin-eap")
+        maven("https://dl.bintray.com/kotlin/kotlin-dev")
     }
     dependencies {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
@@ -45,6 +46,7 @@ repositories {
     gradlePluginPortal()
     maven("https://dl.bintray.com/kotlin/kotlin-eap")
     maven("https://kotlin.bintray.com/kotlinx")
+    maven("https://dl.bintray.com/kotlin/kotlin-dev")
     google()
 }
 

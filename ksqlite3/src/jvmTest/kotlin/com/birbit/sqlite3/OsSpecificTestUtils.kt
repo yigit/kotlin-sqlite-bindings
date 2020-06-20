@@ -15,10 +15,17 @@
  */
 package com.birbit.sqlite3
 
+import kotlinx.coroutines.runBlocking
 import java.io.File
 
 actual object OsSpecificTestUtils {
     internal actual fun mkdirForTest(path: String) {
         File(path).mkdirs()
+    }
+
+    internal actual fun <T> myRunBlocking(block: suspend () -> T): T {
+        return runBlocking {
+            block()
+        }
     }
 }
