@@ -133,6 +133,8 @@ internal object SqliteCompilation {
                 it.defFile = newDefFile
                 cInteropTask.dependsOn(createDefFileTask)
             }
+            // workaround for https://youtrack.jetbrains.com/issue/KT-39396
+            it.compilations["main"].kotlinOptions.freeCompilerArgs += listOf("-include-binary", staticLibFile.absolutePath)
         }
     }
 
