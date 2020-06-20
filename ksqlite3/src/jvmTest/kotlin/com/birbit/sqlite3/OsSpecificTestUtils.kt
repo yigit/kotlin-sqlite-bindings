@@ -28,4 +28,6 @@ actual object OsSpecificTestUtils {
             block()
         }
     }
+
+    internal actual fun threadId(): String = Thread.currentThread().name
 }

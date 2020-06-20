@@ -125,7 +125,7 @@ actual class StmtRef(@Suppress("unused") actual val dbRef: DbRef, val rawPtr: CP
     override fun isDisposed() = nativeRef.isDisposed()
 }
 
-// TODO these two classes are almost idential, should probably commanize as more comes
+// TODO these two classes are almost identical, should probably commanize as more comes
 actual class DbRef(val rawPtr: CPointer<sqlite3>) : ObjRef {
     private val nativeRef = NativeRef(this)
     internal val authorizer = AtomicReference<NativeRef<Authorizer>?>(null)
