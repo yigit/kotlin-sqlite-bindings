@@ -78,7 +78,6 @@ internal fun KotlinMultiplatformExtension.setupCommon(
             os.isWindows -> "windows"
             else -> null
         }
-        //  TODO move them to shared folder once we move to 1.4-M3
         osSpecificFolderPrefix?.let {
             compilations["main"].defaultSourceSet {
                 kotlin.srcDir("src/${it}Main/kotlin")
@@ -88,6 +87,10 @@ internal fun KotlinMultiplatformExtension.setupCommon(
             }
         }
 
+        // TODO move them to shared folder once we move to 1.4-M3
+        //  unfortunately it doesn't work because IDE cannot detect
+        //  the cinterop outputs
+        //  see: https://youtrack.jetbrains.com/issue/KT-36086
         compilations["main"].defaultSourceSet {
             kotlin.srcDir("src/nativeMain/kotlin")
         }
