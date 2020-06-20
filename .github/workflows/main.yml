@@ -93,9 +93,6 @@ jobs:
         path: build/dist
   androidTests:
     runs-on: macos-latest
-    strategy:
-      matrix:
-        api-level: [21, 24, 27, 29]
     steps:
     - name: Setup Java environment to j11
       uses: actions/setup-java@v1
@@ -129,12 +126,33 @@ jobs:
           ${{ runner.os }}-konan-cache-
     - name: Download ndk
       run: ./gradlew downloadNdk --info
-    - name: Run Integration Tests
-      uses: ReactiveCircus/android-emulator-runner@v2.8.0
+    # we are not using matrix build here as the overhead of the build is a lot, no reason to spend unnecessary CI
+    # resources even though matrix would be faster.
+    - name: Run Integration Tests 21
+      uses: ReactiveCircus/android-emulator-runner@v2.11.0
       with:
-        api-level: ${{ matrix.api-level }}
+        api-level: 21
         arch: x86_64
         script: ./gradlew connectedCheck --stacktrace
+    - name: Run Integration Tests 24
+      uses: ReactiveCircus/android-emulator-runner@v2.11.0
+      with:
+        api-level: 24
+        arch: x86_64
+        script: ./gradlew connectedCheck --stacktrace
+    - name: Run Integration Tests 27
+      uses: ReactiveCircus/android-emulator-runner@v2.11.0
+      with:
+        api-level: 27
+        arch: x86_64
+        script: ./gradlew connectedCheck --stacktrace
+    - name: Run Integration Tests 29
+      uses: ReactiveCircus/android-emulator-runner@v2.11.0
+      with:
+        api-level: 29
+        arch: x86_64
+        script: ./gradlew connectedCheck --stacktrace
+
     - name: Upload build reports
       if: always()
       uses: actions/upload-artifact@v2
