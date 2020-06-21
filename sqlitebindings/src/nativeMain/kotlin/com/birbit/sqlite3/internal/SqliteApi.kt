@@ -109,6 +109,9 @@ internal class NativeRef<T : Any>(target: T) : ObjRef {
 
 actual class StmtRef(@Suppress("unused") actual val dbRef: DbRef, val rawPtr: CPointer<sqlite3_stmt>) : ObjRef {
     private val nativeRef = NativeRef(this)
+    init {
+        freeze()
+    }
     fun toJni() = nativeRef.stableRef.toJni()
 
     companion object {
@@ -126,6 +129,9 @@ actual class StmtRef(@Suppress("unused") actual val dbRef: DbRef, val rawPtr: CP
 actual class DbRef(val rawPtr: CPointer<sqlite3>) : ObjRef {
     private val nativeRef = NativeRef(this)
     internal val authorizer = AtomicReference<NativeRef<Authorizer>?>(null)
+    init {
+        freeze()
+    }
     fun toJni() = nativeRef.stableRef.toJni()
 
     companion object {

@@ -15,6 +15,7 @@
  */
 package com.birbit.sqlite3
 
+import com.birbit.sqlite3.PlatformTestUtils.runInAnotherThread
 import com.birbit.sqlite3.SqliteStmt.BindParameterMetadata
 import com.birbit.sqlite3.SqliteStmt.BindParameterMetadata.BindParameter
 import com.birbit.sqlite3.SqliteStmt.ResultMetadata
@@ -346,6 +347,21 @@ class StatementTest {
                 }.toList()
             }
             assertEquals(results, listOf("x", "y"))
+        }
+    }
+
+    @Test
+    fun multiThreadedAccess() {
+        SqliteConnection.openConnection(":memory:").use { conn ->
+            conn.exec("CREATE TABLE Foo(text TEXT)")
+            conn.exec("INSERT INTO Foo VALUES('bar')")
+            val stmt = conn.prepareStmt("SELECT * FROM Foo")
+            val result = runInAnotherThread {
+                stmt.use {
+                    it.query().first().readString(0)
+                }
+            }
+            assertEquals("bar", result)
         }
     }
 

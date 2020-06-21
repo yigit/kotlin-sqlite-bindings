@@ -18,6 +18,8 @@ package com.birbit.sqlite3
 import java.io.File
 import java.nio.file.Paths
 import java.util.UUID
+import java.util.concurrent.atomic.AtomicReference
+import kotlin.concurrent.thread
 
 actual object PlatformTestUtils {
     actual fun getTmpDir(): String {
@@ -40,5 +42,13 @@ actual object PlatformTestUtils {
         val file = File(tmpDir)
         if (!file.exists()) return
         file.deleteRecursively()
+    }
+
+    actual fun <T> runInAnotherThread(block: () -> T): T {
+        val result = AtomicReference<T>()
+        thread {
+            result.set(block())
+        }.join()
+        return result.get()
     }
 }

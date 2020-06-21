@@ -20,6 +20,7 @@ expect object PlatformTestUtils {
     fun fileExists(path: String): Boolean
     fun fileSeparator(): Char
     fun deleteDir(tmpDir: String)
+    fun <T> runInAnotherThread(block: () -> T): T
 }
 
 fun <T> withTmpFolder(block: TmpFolderScope.() -> T) {
