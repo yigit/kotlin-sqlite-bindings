@@ -1,6 +1,7 @@
 package com.birbit.sqlite3
 
 import com.birbit.sqlite3.OsSpecificTestUtils.threadId
+import com.birbit.sqlite3.PlatformTestUtils.createSingleThreadedCoroutineContext
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -23,6 +24,7 @@ class Playground {
             OsSpecificTestUtils.myRunBlocking {
                 fun getConn() = SqliteConnection.openConnection(path).also {
 //                    it.exec("PRAGMA journal_mode=WAL")
+                    it.exec("PRAGMA busy_timeout=10000")
                 }
                 val createTable = GlobalScope.launch(Dispatchers.Default) {
                     getConn().use {
@@ -33,9 +35,9 @@ class Playground {
                 createTable.join()
                 val inserted = CompletableDeferred<Unit>()
                 val read = CompletableDeferred<List<Pair<Int, String?>>>()
-                val insert1 = GlobalScope.launch(Dispatchers.Default) {
+                val insert1 = GlobalScope.launch(createSingleThreadedCoroutineContext()) {
                     val conn = getConn()
-                    println("${threadId()} begin insert transactio}")
+                    println("${threadId()} begin insert transaction")
                     conn.exec("BEGIN EXCLUSIVE TRANSACTION")
                     conn.exec("INSERT INTO Foo VALUES(1, 'a')")
                     println("delaying insert transaction")
@@ -47,12 +49,12 @@ class Playground {
                     println("inserted")
                     inserted.complete(Unit)
                 }
-                val reader = GlobalScope.launch(Dispatchers.Default) {
+                val reader = GlobalScope.launch(createSingleThreadedCoroutineContext()) {
                     delay(1000)
                     println("${threadId()} reading")
                     read.complete(getConn().use {
                         println("using connection ${threadId()}")
-                        it.exec("PRAGMA busy_timeout=10000")
+                        println("set busy timeout")
                         it.query("SELECT * FROM Foo") {
                             it.map {
                                 it.readInt(0) to it.readString(1)

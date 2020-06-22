@@ -17,10 +17,13 @@ package com.birbit.sqlite3
 
 import android.content.Context
 import androidx.test.platform.app.InstrumentationRegistry
+import kotlinx.coroutines.asCoroutineDispatcher
 import java.io.File
 import java.util.UUID
+import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.concurrent.thread
+import kotlin.coroutines.CoroutineContext
 
 actual object PlatformTestUtils {
     private val context: Context
@@ -51,5 +54,9 @@ actual object PlatformTestUtils {
             result.set(block())
         }.join()
         return result.get()
+    }
+
+    actual fun createSingleThreadedCoroutineContext(): CoroutineContext {
+        return Executors.newSingleThreadExecutor().asCoroutineDispatcher()
     }
 }

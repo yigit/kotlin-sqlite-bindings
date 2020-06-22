@@ -15,6 +15,7 @@
  */
 package com.birbit.sqlite3
 
+import com.birbit.sqlite3.PlatformTestUtils.runInAnotherThread
 import com.birbit.sqlite3.SqliteStmt.BindParameterMetadata
 import com.birbit.sqlite3.SqliteStmt.BindParameterMetadata.BindParameter
 import com.birbit.sqlite3.SqliteStmt.ResultMetadata

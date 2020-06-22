@@ -21,12 +21,15 @@ import kotlin.random.Random
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.staticCFunction
 import kotlinx.cinterop.toKStringFromUtf8
+import kotlinx.coroutines.SingleThreadDispatcher
+import kotlinx.coroutines.newSingleThreadContext
 import platform.posix.FTW_DEPTH
 import platform.posix.FTW_PHYS
 import platform.posix.F_OK
 import platform.posix.access
 import platform.posix.nftw
 import platform.posix.remove
+import kotlin.coroutines.CoroutineContext
 
 actual object PlatformTestUtils {
     private fun randomFolderName(): String {
@@ -74,5 +77,9 @@ actual object PlatformTestUtils {
             it()
         }
         return resultFuture.result
+    }
+
+    actual fun createSingleThreadedCoroutineContext() : CoroutineContext {
+        return newSingleThreadContext("foo")
     }
 }

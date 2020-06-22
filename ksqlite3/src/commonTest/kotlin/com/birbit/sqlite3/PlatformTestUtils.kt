@@ -15,12 +15,15 @@
  */
 package com.birbit.sqlite3
 
+import kotlin.coroutines.CoroutineContext
+
 expect object PlatformTestUtils {
     fun getTmpDir(): String
     fun fileExists(path: String): Boolean
     fun fileSeparator(): Char
     fun deleteDir(tmpDir: String)
     fun <T> runInAnotherThread(block: () -> T): T
+    fun createSingleThreadedCoroutineContext(): CoroutineContext
 }
 
 fun <T> withTmpFolder(block: TmpFolderScope.() -> T) {
