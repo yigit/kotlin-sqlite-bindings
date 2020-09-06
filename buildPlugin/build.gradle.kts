@@ -55,6 +55,7 @@ dependencies {
     implementation(gradleApi())
     implementation(gradleKotlinDsl())
     implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
     implementation("org.jetbrains.kotlin:kotlin-native-utils:$kotlinVersion")
     implementation("org.jetbrains.kotlin:kotlin-gradle-plugin-api:$kotlinVersion")
     implementation(kotlin("stdlib-jdk8"))
@@ -77,6 +78,7 @@ configure<GradlePluginDevelopmentExtension> {
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
     kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.freeCompilerArgs += listOf("-Xopt-in=kotlin.RequiresOptIn")
 }
 
 extensions.getByType(SpotlessExtension::class).apply {

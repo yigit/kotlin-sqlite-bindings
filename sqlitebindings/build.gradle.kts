@@ -93,21 +93,21 @@ kotlin {
                 implementation(kotlin("stdlib-jdk8"))
             }
         }
-        val androidMain by getting {
-            dependsOn(commonJvmMain)
-            dependencies {
-                implementation(kotlin("stdlib-jdk8"))
-            }
-        }
-        val androidTest by getting {
-            dependsOn(commonTest)
-            dependencies {
-                implementation(kotlin("test-junit"))
-                Dependencies.ANDROID_TEST.forEach {
-                    implementation(it)
-                }
-            }
-        }
+//        val androidMain by getting {
+//            dependsOn(commonJvmMain)
+//            dependencies {
+//                implementation(kotlin("stdlib-jdk8"))
+//            }
+//        }
+//        val androidTest by getting {
+//            dependsOn(commonTest)
+//            dependencies {
+//                implementation(kotlin("test-junit"))
+//                Dependencies.ANDROID_TEST.forEach {
+//                    implementation(it)
+//                }
+//            }
+//        }
 
         // Default source set for JVM-specific sources and dependencies:
         jvm().compilations["main"].defaultSourceSet {

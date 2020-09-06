@@ -27,7 +27,9 @@ import org.gradle.kotlin.dsl.get
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.konan.target.presetName
+import java.util.Locale
 
+@OptIn(kotlin.ExperimentalStdlibApi::class)
 internal object SqliteCompilation {
     fun setup(project: Project, config: SqliteCompilationConfig) {
         val buildFolder = project.buildDir.resolve("sqlite-compilation")
@@ -122,7 +124,7 @@ internal object SqliteCompilation {
                 val original = it.defFile
                 val newDefFile = generatedDefFileFolder.resolve("${konanTarget.presetName}/sqlite-generated.def")
                 val createDefFileTask = project.tasks.register(
-                    "createDefFileForSqlite${konanTarget.presetName.capitalize()}",
+                    "createDefFileForSqlite${konanTarget.presetName.capitalize(Locale.US)}",
                     CreateDefFileWithLibraryPathTask::class.java
                 ) { task ->
                     task.original = original
@@ -133,9 +135,6 @@ internal object SqliteCompilation {
                 it.defFile = newDefFile
                 cInteropTask.dependsOn(createDefFileTask)
             }
-            // workaround for https://youtrack.jetbrains.com/issue/KT-39396
-            it.compilations["main"].kotlinOptions.freeCompilerArgs += listOf("-include-binary",
-                staticLibFile.absolutePath)
         }
     }
 

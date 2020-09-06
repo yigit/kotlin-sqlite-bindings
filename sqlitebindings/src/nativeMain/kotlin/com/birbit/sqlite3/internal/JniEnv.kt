@@ -149,7 +149,7 @@ internal class JvmAuthorizerCallback private constructor(
                     invokeMethodId = getMethodId(
                         env,
                         classRef.jobject,
-                        "invoke",
+                        "invoke-bGr0_7Q",
                         "(Lcom/birbit/sqlite3/AuthorizationParams;)I"
                     ),
                     disposeMethodId = getMethodId(
@@ -192,7 +192,6 @@ internal class JvmAuthorizerCallback private constructor(
             target: jobject
         ) {
             val disposeMethod = env.nativeInterface().CallVoidMethod!!.reinterpret<DisposeMethod>()
-                ?: error("cannot find dispose method on authorizer")
             disposeMethod.invoke(env, target, _instance.value().disposeMethodId)
         }
 
