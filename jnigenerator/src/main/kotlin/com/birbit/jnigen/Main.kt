@@ -16,10 +16,10 @@
 package com.birbit.jnigen
 
 import java.io.File
-import java.util.Calendar
-import org.jetbrains.kotlin.spec.grammar.tools.parseKotlinCode
 import java.io.IOException
+import java.util.Calendar
 import java.util.concurrent.TimeUnit
+import org.jetbrains.kotlin.spec.grammar.tools.parseKotlinCode
 
 /**
  * TODO: should we make this part of the build?
@@ -93,18 +93,18 @@ fun String.runCommand(workingDir: File): String? {
 
         proc.waitFor(60, TimeUnit.MINUTES)
         return proc.inputStream.bufferedReader().readText()
-    } catch(e: IOException) {
+    } catch (e: IOException) {
         e.printStackTrace()
         return null
     }
 }
 
-fun String.parseJavapMethodName() : JvmClassName? {
+fun String.parseJavapMethodName(): JvmClassName? {
     val openParan = indexOf('(')
     if (openParan < 0) return null
     val firstSpace = substring(0, openParan).lastIndexOf(" ")
     val methodName = substring(firstSpace + 1, openParan).let {
-        if(it.isBlank()) null
+        if (it.isBlank()) null
         else it
     } ?: return null
     // native methods gets a `-` in their name, cleanup

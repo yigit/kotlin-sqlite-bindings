@@ -71,7 +71,7 @@ fun KotlinParseTree.objectDeclarations() = asSequence().filter {
     ObjectDeclaration(it)
 }
 
-fun KotlinParseTree.skipFindPath(target:String, sections: List<String>): List<KotlinParseTree> {
+fun KotlinParseTree.skipFindPath(target: String, sections: List<String>): List<KotlinParseTree> {
     val index = children.indexOfFirst {
         it.name() == target
     }
