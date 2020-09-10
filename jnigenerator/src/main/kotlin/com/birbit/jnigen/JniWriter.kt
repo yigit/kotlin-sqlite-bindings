@@ -41,7 +41,7 @@ class JniWriter(
             }
         }.build()
         val output = StringBuilder()
-        output.appendln(copyright)
+        output.appendLine(copyright)
         spec.writeTo(output)
         println("will output to ${file.absolutePath}")
         file.writeText(output.toString(), Charsets.UTF_8)

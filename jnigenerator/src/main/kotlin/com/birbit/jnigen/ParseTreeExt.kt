@@ -71,6 +71,17 @@ fun KotlinParseTree.objectDeclarations() = asSequence().filter {
     ObjectDeclaration(it)
 }
 
+fun KotlinParseTree.skipFindPath(target: String, sections: List<String>): List<KotlinParseTree> {
+    val index = children.indexOfFirst {
+        it.name() == target
+    }
+    if (index < 0) {
+        error("cannot find $target")
+    }
+    return children.subList(index + 1, children.size).flatMap {
+        it.findPath(sections)
+    }
+}
 fun KotlinParseTree.findPath(sections: List<String>): List<KotlinParseTree> {
     if (sections.isEmpty()) {
         return listOf(this)
@@ -111,10 +122,10 @@ class FunctionDeclaration(
     val parseTree: KotlinParseTree
 ) {
     val name by lazy {
-        checkNotNull(parseTree.findPath(listOf(
+        checkNotNull(parseTree.skipFindPath(Declarations.FUN, listOf(
             Declarations.SIMPLE_IDENTIFIER,
             Declarations.IDENTIFIER
-        )).first().text()) {
+        )).firstOrNull()?.text()) {
             "cannot find name for $parseTree"
         }
     }

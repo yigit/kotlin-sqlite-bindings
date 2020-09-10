@@ -19,7 +19,7 @@ import com.diffplug.gradle.spotless.SpotlessExtension
 plugins {
     id("com.diffplug.gradle.spotless")
     id("org.jlleitschuh.gradle.ktlint")
-    kotlin("multiplatform")
+    kotlin("multiplatform") apply false
 }
 
 buildscript {

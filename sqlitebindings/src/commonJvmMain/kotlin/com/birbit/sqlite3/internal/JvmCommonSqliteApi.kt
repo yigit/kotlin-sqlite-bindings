@@ -18,6 +18,7 @@ package com.birbit.sqlite3.internal
 import com.birbit.sqlite3.Authorizer
 import com.birbit.sqlite3.ColumnType
 import com.birbit.sqlite3.ResultCode
+import kotlin.jvm.JvmName
 
 open class JvmObjRef(
     ptr: Long
@@ -36,7 +37,9 @@ actual class DbRef(ptr: Long) : JvmObjRef(ptr), ObjRef
 
 actual class StmtRef(actual val dbRef: DbRef, ptr: Long) : JvmObjRef(ptr), ObjRef
 
+@Suppress("INAPPLICABLE_JVM_NAME")
 actual object SqliteApi {
+    // for all native jvm name methods, see: https://youtrack.jetbrains.com/issue/KT-28135
     init {
         loadNativeLibrary()
     }
@@ -60,6 +63,7 @@ actual object SqliteApi {
         return nativeStep(stmtRef.ptr)
     }
 
+    @JvmName("nativeStep")
     external fun nativeStep(stmtPtr: Long): ResultCode
 
     actual fun columnText(stmtRef: StmtRef, index: Int): String? {
@@ -82,17 +86,20 @@ actual object SqliteApi {
         return nativeReset(stmtRef.ptr)
     }
 
+    @JvmName("nativeReset")
     external fun nativeReset(stmtPtr: Long): ResultCode
     actual fun close(dbRef: DbRef): ResultCode {
         return nativeClose(dbRef.ptr)
     }
 
+    @JvmName("nativeClose")
     external fun nativeClose(ptr: Long): ResultCode
 
     actual fun finalize(stmtRef: StmtRef): ResultCode {
         return nativeFinalize(stmtRef.ptr)
     }
 
+    @JvmName("nativeFinalize")
     external fun nativeFinalize(stmtPtr: Long): ResultCode
 
     actual fun columnBlob(stmtRef: StmtRef, index: Int): ByteArray? {
@@ -115,29 +122,36 @@ actual object SqliteApi {
         return nativeBindBlob(stmtRef.ptr, index, bytes)
     }
 
+    @JvmName("nativeBindBlob")
     external fun nativeBindBlob(stmtPtr: Long, index: Int, bytes: ByteArray): ResultCode
+
     actual fun bindText(stmtRef: StmtRef, index: Int, value: String): ResultCode {
         return nativeBindText(stmtRef.ptr, index, value)
     }
 
+    @JvmName("nativeBindText")
     external fun nativeBindText(stmtPtr: Long, index: Int, value: String): ResultCode
     actual fun bindInt(stmtRef: StmtRef, index: Int, value: Int): ResultCode {
         return nativeBindInt(stmtRef.ptr, index, value)
     }
 
+    @JvmName("nativeBindInt")
     external fun nativeBindInt(stmtPtr: Long, index: Int, value: Int): ResultCode
 
     actual fun bindLong(stmtRef: StmtRef, index: Int, value: Long): ResultCode {
         return nativeBindLong(stmtRef.ptr, index, value)
     }
 
+    @JvmName("nativeBindLong")
     external fun nativeBindLong(stmtPtr: Long, index: Int, value: Long): ResultCode
 
     actual fun bindNull(stmtRef: StmtRef, index: Int): ResultCode {
         return nativeBindNull(stmtRef.ptr, index)
     }
 
+    @JvmName("nativeBindNull")
     external fun nativeBindNull(stmtPtr: Long, index: Int): ResultCode
+
     actual fun errorMsg(dbRef: DbRef): String? {
         return nativeErrorMsg(dbRef.ptr)
     }
@@ -148,17 +162,21 @@ actual object SqliteApi {
         return nativeErrorCode(dbRef.ptr)
     }
 
+    @JvmName("nativeErrorCode")
     external fun nativeErrorCode(dbPtr: Long): ResultCode
 
     actual fun errorString(code: ResultCode): String? {
         return nativeErrorString(code)
     }
 
+    @JvmName("nativeErrorString")
     external fun nativeErrorString(code: ResultCode): String?
+
     actual fun bindDouble(stmtRef: StmtRef, index: Int, value: Double): ResultCode {
         return nativeBindDouble(stmtRef.ptr, index, value)
     }
 
+    @JvmName("nativeBindDouble")
     external fun nativeBindDouble(stmtPtr: Long, index: Int, value: Double): ResultCode
     actual fun setAuthorizer(
         dbRef: DbRef,
@@ -167,6 +185,7 @@ actual object SqliteApi {
         return nativeSetAuthorizer(dbRef.ptr, authorizer)
     }
 
+    @JvmName("nativeSetAuthorizer")
     external fun nativeSetAuthorizer(dbPtr: Long, authorizer: Authorizer?): ResultCode
     actual fun columnType(
         stmtRef: StmtRef,
@@ -175,6 +194,7 @@ actual object SqliteApi {
         return nativeColumnType(stmtRef.ptr, index)
     }
 
+    @JvmName("nativeColumnType")
     external fun nativeColumnType(stmtPtr: Long, index: Int): ColumnType
     actual fun exec(
         dbRef: DbRef,
@@ -183,6 +203,7 @@ actual object SqliteApi {
         return nativeExec(dbRef.ptr, query)
     }
 
+    @JvmName("nativeExec")
     external fun nativeExec(dbPtr: Long, query: String): ResultCode
     actual fun columnDeclType(stmtRef: StmtRef, index: Int): String? {
         return nativeColumnDeclType(stmtRef.ptr, index)

@@ -33,5 +33,8 @@ kotlin {
                 implementation(kotlin("stdlib"))
             }
         }
+        all {
+            languageSettings.enableLanguageFeature("InlineClasses")
+        }
     }
 }
