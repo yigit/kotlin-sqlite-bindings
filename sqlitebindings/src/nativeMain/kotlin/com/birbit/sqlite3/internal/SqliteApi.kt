@@ -104,7 +104,7 @@ internal class NativeRef<T : Any>(target: T) : ObjRef {
         _stableRef.value = null
     }
 
-    override fun isDisposed() = _stableRef == null
+    override fun isDisposed() = _stableRef.value == null
 }
 
 actual class StmtRef(@Suppress("unused") actual val dbRef: DbRef, val rawPtr: CPointer<sqlite3_stmt>) : ObjRef {
