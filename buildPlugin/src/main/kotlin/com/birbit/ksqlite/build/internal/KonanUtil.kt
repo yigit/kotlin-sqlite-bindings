@@ -90,7 +90,6 @@ internal object KonanUtil {
                         "SDKs/MacOSX.sdk/usr/include"
                 )
             }
-
             it.executable(llvmBinFolder.resolve("clang").absolutePath)
             it.args("--compile", "-Wall")
             if (konanTarget.family == Family.ANDROID) {
@@ -126,7 +125,7 @@ internal object KonanUtil {
             listOf("-framework", "Foundation")
         ),
         KonanTarget.IOS_X64 to TargetInfo(
-            "x86_64-apple-darwin10", // Not sure about this but it doesn't matter yet.
+            "x86_64-apple-ios10.3-simulator",
             { File("/Applications/Xcode.app/Contents/Developer/Platforms/" +
                     "iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk/") },
             listOf("-framework", "Foundation")
