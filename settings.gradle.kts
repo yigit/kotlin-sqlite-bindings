@@ -31,4 +31,3 @@ pluginManagement {
 }
 includeBuild("buildPlugin")
 include("konan-warmup", "sqlitebindings", "sqlitebindings-api", "jnigenerator", "ksqlite3")
-enableFeaturePreview("GRADLE_METADATA")

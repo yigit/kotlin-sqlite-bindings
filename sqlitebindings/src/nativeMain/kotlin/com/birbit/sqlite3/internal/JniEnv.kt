@@ -149,7 +149,7 @@ internal class JvmAuthorizerCallback private constructor(
                     invokeMethodId = getMethodId(
                         env,
                         classRef.jobject,
-                        "invoke-bGr0_7Q",
+                        "invoke-LECIP-g",
                         "(Lcom/birbit/sqlite3/AuthorizationParams;)I"
                     ),
                     disposeMethodId = getMethodId(

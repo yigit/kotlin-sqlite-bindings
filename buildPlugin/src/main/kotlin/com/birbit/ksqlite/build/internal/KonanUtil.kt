@@ -15,7 +15,8 @@
  */
 package com.birbit.ksqlite.build.internal
 
-import com.android.build.gradle.LibraryExtension
+import com.android.build.api.dsl.LibraryExtension
+import com.android.build.api.extension.LibraryAndroidComponentsExtension
 import java.io.File
 import org.gradle.api.Project
 import org.gradle.api.tasks.Exec
@@ -162,7 +163,12 @@ internal object KonanUtil {
     )
 
     private fun Project.ndkSysrootDir(): File {
-        val ndkDir = project.extensions.getByType(LibraryExtension::class.java).ndkDirectory.resolve("sysroot")
+        val libraryComponents = project.extensions.getByType(LibraryAndroidComponentsExtension::class.java)
+        val androidLibrary = project.extensions.findByType(LibraryExtension::class.java)
+                ?: error("cannot find library extension on $project")
+        // hack, for some reason, sdkComponents.ndkDirectory is NOT set so we default to sdk/ndk
+        val ndkVersion = androidLibrary.ndkVersion
+        val ndkDir = libraryComponents.sdkComponents.sdkDirectory.get().asFile.resolve("ndk/$ndkVersion/sysroot")
         check(ndkDir.exists()) {
             println("NDK directory is missing")
         }

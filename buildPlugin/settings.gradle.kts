@@ -34,4 +34,3 @@ pluginManagement {
     }
 }
 include("buildPlugin")
-enableFeaturePreview("GRADLE_METADATA")

@@ -25,7 +25,7 @@ plugins {
 buildscript {
     dependencies {
         // workaround for KMP plugin to find android classes
-        classpath("com.android.tools.build:gradle:3.6.3")
+        classpath("com.android.tools.build:gradle:7.0.0-beta03")
     }
 }
 

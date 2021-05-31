@@ -15,7 +15,8 @@
  */
 package com.birbit.ksqlite.build.internal
 
-import com.android.build.gradle.LibraryExtension
+import com.android.build.api.dsl.LibraryExtension
+import com.android.build.api.extension.LibraryAndroidComponentsExtension
 import org.gradle.api.Project
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.Exec
@@ -27,17 +28,15 @@ internal object AndroidSetup {
     fun configure(project: Project) {
         val androidLibrary = project.extensions.findByType(LibraryExtension::class.java)
             ?: error("cannot find library extension on $project")
-        androidLibrary.compileSdkVersion = "android-29"
-        androidLibrary.defaultConfig {
-            it.minSdkVersion(21)
-            it.targetSdkVersion(29)
+        androidLibrary.compileSdk = 29
+        androidLibrary.defaultConfig.let {
+            it.minSdk = 21
+            it.targetSdk = 29
             it.testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-            it.ndk {
-                it.abiFilters("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
-            }
+            it.ndk.abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64"))
         }
         androidLibrary.sourceSets {
-            it.getByName("androidTest").java
+            getByName("androidTest").java
                 .srcDir(project.file("src/androidTest/kotlin"))
         }
         androidLibrary.ndkVersion = "21.3.6528147"
@@ -50,7 +49,9 @@ internal object AndroidSetup {
         if (exists != null) {
             return
         }
-        val android = project.extensions.findByType(LibraryExtension::class.java)
+        val androidComponents = project.extensions.findByType(LibraryAndroidComponentsExtension::class.java)
+            ?: return
+        val androidLibraryExt = project.extensions.findByType(LibraryExtension::class.java)
             ?: return
 
         val rootProject = project.rootProject
@@ -73,14 +74,15 @@ internal object AndroidSetup {
             } else {
                 ""
             }
+            val sdkPath = androidComponents.sdkComponents.sdkDirectory.get().asFile.absolutePath
             if (os.isLinux) {
                 it.doFirst {
-                    Runtime.getRuntime().exec("sudo chown \$USER:\$USER ${android.sdkDirectory} -R")
+                    Runtime.getRuntime().exec("sudo chown \$USER:\$USER $sdkPath -R")
                 }
             }
             it.executable(cmdLineToolsFolder.resolve("tools/bin/sdkmanager$ext"))
-            it.args("--install", "ndk;${android.ndkVersion}", "--verbose")
-            it.args("--sdk_root=${android.sdkDirectory.absolutePath}")
+            it.args("--install", "ndk;${androidLibraryExt.ndkVersion}", "--verbose")
+            it.args("--sdk_root=$sdkPath")
             // pass y to accept licenses
             it.setStandardInput("y".byteInputStream(Charsets.UTF_8))
             it.dependsOn(unzipCommandLineToolsTask)

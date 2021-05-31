@@ -66,11 +66,11 @@ kotlin {
                 outFolder = combinedAndroidSharedLibsFolder,
                 forAndroid = true)
     project.android.sourceSets {
-        val main by getting {
-            this.jniLibs.srcDir(combinedAndroidSharedLibsFolder)
-        }
+        this["main"].jniLibs.srcDir(combinedAndroidSharedLibsFolder)
     }
-    project.android.libraryVariants.all {
+
+    val androidExt = project.extensions.findByType(com.android.build.gradle.LibraryExtension::class)
+    androidExt!!.libraryVariants.all {
         this.javaCompileProvider.dependsOn(combineAndroidSharedLibsTask)
     }
     jvm().compilations["main"].compileKotlinTask.dependsOn(combineSharedLibsTask)
