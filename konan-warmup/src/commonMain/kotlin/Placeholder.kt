@@ -14,4 +14,4 @@
  * limitations under the License.
  */
 package com.birbit.konanWarmup
-class Dummy
+class Placeholder

@@ -81,7 +81,7 @@ internal object KonanUtil {
             it.onlyIf { HostManager().isEnabled(konanTarget) }
             // we need konan executables downloaded and this is a nice hacky way to get them :)
             // TODO figure out how to get these download dependencies properly
-            it.dependsOn(project.rootProject.findProject(":konan-warmup")!!.tasks.named("allTests"))
+            it.dependsOn(project.rootProject.findProject(":konan-warmup")!!.tasks.named("assemble"))
 
             it.environment("PATH", "$llvmBinFolder;${System.getenv("PATH")}")
             if (HostManager.hostIsMac && konanTarget == KonanTarget.MACOS_X64) {
@@ -141,7 +141,8 @@ internal object KonanUtil {
         ),
         KonanTarget.LINUX_ARM32_HFP to TargetInfo(
             "armv6-unknown-linux-gnueabihf",
-            { konanDeps.resolve("target-sysroot-2-raspberrypi") },
+            // YOLO
+            { konanDeps.resolve("arm-unknown-linux-gnueabihf-gcc-8.3.0-glibc-2.19-kernel-4.9-2/arm-unknown-linux-gnueabihf/sysroot/") },
             listOf("-mfpu=vfp", "-mfloat-abi=hard")
         ),
         KonanTarget.ANDROID_ARM32 to TargetInfo(
