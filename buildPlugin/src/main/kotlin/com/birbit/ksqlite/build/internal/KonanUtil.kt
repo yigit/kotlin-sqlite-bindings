@@ -142,7 +142,8 @@ internal object KonanUtil {
         KonanTarget.LINUX_ARM32_HFP to TargetInfo(
             "armv6-unknown-linux-gnueabihf",
             // YOLO
-            { konanDeps.resolve("arm-unknown-linux-gnueabihf-gcc-8.3.0-glibc-2.19-kernel-4.9-2/arm-unknown-linux-gnueabihf/sysroot/") },
+            { konanDeps.resolve("arm-unknown-linux-gnueabihf-gcc-8.3.0-glibc-2.19-kernel-4.9-2/" +
+                    "arm-unknown-linux-gnueabihf/sysroot/") },
             listOf("-mfpu=vfp", "-mfloat-abi=hard")
         ),
         KonanTarget.ANDROID_ARM32 to TargetInfo(
