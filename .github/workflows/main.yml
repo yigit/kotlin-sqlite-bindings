@@ -129,7 +129,7 @@ jobs:
     # we are not using matrix build here as the overhead of the build is a lot, no reason to spend unnecessary CI
     # resources even though matrix would be faster.
     - name: Run Integration Tests 21
-      uses: ReactiveCircus/android-emulator-runner@v2.11.0
+      uses: ReactiveCircus/android-emulator-runner@v2.17.0
       env:
         ACTIONS_ALLOW_UNSECURE_COMMANDS: true
       with:
@@ -137,7 +137,7 @@ jobs:
         arch: x86_64
         script: ./gradlew connectedCheck --stacktrace
     - name: Run Integration Tests 24
-      uses: ReactiveCircus/android-emulator-runner@v2.11.0
+      uses: ReactiveCircus/android-emulator-runner@v2.17.0
       env:
         ACTIONS_ALLOW_UNSECURE_COMMANDS: true
       with:
@@ -145,7 +145,7 @@ jobs:
         arch: x86_64
         script: ./gradlew connectedCheck --stacktrace
     - name: Run Integration Tests 27
-      uses: ReactiveCircus/android-emulator-runner@v2.11.0
+      uses: ReactiveCircus/android-emulator-runner@v2.17.0
       env:
         ACTIONS_ALLOW_UNSECURE_COMMANDS: true
       with:
@@ -153,7 +153,7 @@ jobs:
         arch: x86_64
         script: ./gradlew connectedCheck --stacktrace
     - name: Run Integration Tests 29
-      uses: ReactiveCircus/android-emulator-runner@v2.11.0
+      uses: ReactiveCircus/android-emulator-runner@v2.17.0
       env:
         ACTIONS_ALLOW_UNSECURE_COMMANDS: true
       with:
