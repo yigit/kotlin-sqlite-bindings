@@ -106,7 +106,6 @@ internal object KonanUtil {
             if (konanTarget.family != Family.MINGW) {
                 it.args("-fPIC")
             }
-            // val targetInfo = targetInfoMap[konanTarget] ?: error("missing target info $konanTarget")
             val targetInfo = targetInfoFromProps(konanTarget)
             it.args("--target=${targetInfo.targetName}")
             it.args("--sysroot=${targetInfo.sysRoot(project).absolutePath}")

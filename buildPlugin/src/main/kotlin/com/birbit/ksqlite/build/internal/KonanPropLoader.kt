@@ -18,9 +18,6 @@ package com.birbit.ksqlite.build.internal
 import java.util.Properties
 import org.jetbrains.kotlin.konan.target.KonanTarget
 
-// TODO: eventually swap this with:
-//  https://github.com/JetBrains/kotlin/blob/92d200e093c693b3c06e53a39e0b0973b84c7ec5/kotlin-native/shared/src/main/kotlin/org/jetbrains/kotlin/konan/target/ConfigurablesImpl.kt
-//  https://github.com/JetBrains/kotlin/blob/92d200e093c693b3c06e53a39e0b0973b84c7ec5/kotlin-native/shared/src/main/kotlin/org/jetbrains/kotlin/konan/target/KonanProperties.kt
 internal object KonanPropLoader {
     private val konanProps = Properties()
     val regex = "\\\$([a-zA-Z_.0-9])+".toRegex()
