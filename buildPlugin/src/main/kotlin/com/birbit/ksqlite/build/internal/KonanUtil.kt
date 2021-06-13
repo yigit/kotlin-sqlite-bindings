@@ -82,7 +82,7 @@ internal object KonanUtil {
                 nativeCompilerDownloader.downloadIfNeeded()
                 val konanc = nativeCompilerDownloader.compilerDirectory.resolve("bin/konanc")
                 check(konanc.exists()) {
-                    "Cannot find konan compiler at ${konanc}"
+                    "Cannot find konan compiler at $konanc"
                 }
                 project.exec {
                     it.executable = konanc.absolutePath
