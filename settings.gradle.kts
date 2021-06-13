@@ -30,4 +30,4 @@ pluginManagement {
     }
 }
 includeBuild("buildPlugin")
-include("sqlitebindings", "sqlitebindings-api", "jnigenerator", "ksqlite5")
+include("sqlitebindings", "sqlitebindings-api", "jnigenerator", "ksqlite3")
