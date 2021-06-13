@@ -34,3 +34,9 @@ kotlin {
         }
     }
 }
+
+afterEvaluate {
+    tasks.named("connectedDebugAndroidTest").configure {
+        this.enabled = false
+    }
+}
