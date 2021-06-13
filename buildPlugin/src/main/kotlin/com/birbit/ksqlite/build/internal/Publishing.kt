@@ -18,6 +18,7 @@ package com.birbit.ksqlite.build.internal
 import com.android.build.api.dsl.LibraryExtension
 import java.io.File
 import org.gradle.api.Project
+import org.gradle.api.file.DuplicatesStrategy
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.tasks.Copy
 import org.gradle.kotlin.dsl.findByType
@@ -36,6 +37,7 @@ internal object Publishing {
             repoFolders.forEach {
                 copyTask.from(it)
             }
+            copyTask.duplicatesStrategy = DuplicatesStrategy.EXCLUDE
             copyTask.from(BuildOnServer.getOutRepo())
             copyTask.destinationDir = rootProject.buildDir.resolve("dist/combinedRepo")
             rootProject.subprojects { subProject ->
