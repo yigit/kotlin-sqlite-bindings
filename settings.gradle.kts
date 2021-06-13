@@ -30,4 +30,4 @@ pluginManagement {
     }
 }
 includeBuild("buildPlugin")
-include("konan-warmup", "sqlitebindings", "sqlitebindings-api", "jnigenerator", "ksqlite3")
+include("sqlitebindings", "sqlitebindings-api", "jnigenerator", "ksqlite5")

@@ -29,8 +29,6 @@ buildscript {
     }
 }
 
-project("sqlitebindings").evaluationDependsOn(":konan-warmup")
-
 subprojects {
     repositories {
         google()

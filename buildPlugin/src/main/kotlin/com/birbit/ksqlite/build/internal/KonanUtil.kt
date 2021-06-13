@@ -31,7 +31,6 @@ import org.jetbrains.kotlin.konan.target.presetName
 import org.jetbrains.kotlin.konan.util.DependencyDirectories
 
 internal object KonanUtil {
-    // taken from https://github.com/Dominaezzz/kotlin-sqlite
     private val konanDeps = DependencyDirectories.defaultDependenciesRoot
     private val konanProps = KonanPropLoader
     private val toolChainFolderName = konanProps.llvmHome(HostManager.host)
@@ -77,14 +76,19 @@ internal object KonanUtil {
         return project.tasks.register("$prefix${konanTarget.presetName.capitalize()}", Exec::class.java) {
             it.onlyIf { HostManager().isEnabled(konanTarget) }
             it.doFirst {
-                NativeCompilerDownloader(
+                val nativeCompilerDownloader = NativeCompilerDownloader(
                     project = project
-                ).downloadIfNeeded()
+                )
+                nativeCompilerDownloader.downloadIfNeeded()
+                val konanc = nativeCompilerDownloader.compilerDirectory.resolve("bin/konanc")
+                check(konanc.exists()) {
+                    "Cannot find konan compiler at ${konanc}"
+                }
+                project.exec {
+                    it.executable = konanc.absolutePath
+                    it.args("-Xcheck-dependencies", "-target", konanTarget.visibleName)
+                }
             }
-            // we need konan executables downloaded and this is a nice hacky way to get them :)
-            // TODO figure out how to get these download dependencies properly
-            it.dependsOn(project.rootProject.findProject(":konan-warmup")!!.tasks.named("assemble"))
-
             it.environment("PATH", "$llvmBinFolder;${System.getenv("PATH")}")
             it.executable(llvmBinFolder.resolve("clang").absolutePath)
             it.args("--compile", "-Wall")
