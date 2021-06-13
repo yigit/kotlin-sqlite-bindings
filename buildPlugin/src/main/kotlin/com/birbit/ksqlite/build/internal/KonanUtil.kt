@@ -80,7 +80,12 @@ internal object KonanUtil {
                     project = project
                 )
                 nativeCompilerDownloader.downloadIfNeeded()
-                val konanc = nativeCompilerDownloader.compilerDirectory.resolve("bin/konanc")
+                val konancName = if (HostManager.hostIsMingw) {
+                    "konanc.bat"
+                } else {
+                    "konanc"
+                }
+                val konanc = nativeCompilerDownloader.compilerDirectory.resolve("bin/$konancName")
                 check(konanc.exists()) {
                     "Cannot find konan compiler at $konanc"
                 }
