@@ -15,6 +15,8 @@
  */
 package com.birbit.ksqlite.build.internal
 
+import com.android.build.api.dsl.LibraryExtension
+import com.android.build.api.extension.LibraryAndroidComponentsExtension
 import java.io.File
 import java.util.Locale
 import org.gradle.api.Project
@@ -107,18 +109,37 @@ internal object KonanUtil {
     private fun targetInfoFromProps(target: KonanTarget): TargetInfo {
         return TargetInfo(
             targetName = konanProps.targetTriple(target),
-            sysRoot = { _ ->
+            sysRoot = { project ->
                 val appleSdkRoot = getAppleSdkRoot(target)
-                if (appleSdkRoot == null) {
+                if (appleSdkRoot != null) {
+                    File(appleSdkRoot)
+                } else if (target.family == Family.ANDROID) {
+                    // TODO we should be able to use the standard sysroot from props, figure out
+                    //  why the actual sysroot is only available in dependencies
+                    project.ndkSysrootDir()
+                } else {
                     konanDeps.resolve(
                         konanProps.sysroot(target)
                     )
-                } else {
-                    File(appleSdkRoot)
                 }
             },
             clangArgs = emptyList()
         )
+    }
+
+    private fun Project.ndkSysrootDir(): File {
+        val libraryComponents =
+            project.extensions.getByType(LibraryAndroidComponentsExtension::class.java)
+        val androidLibrary = project.extensions.findByType(LibraryExtension::class.java)
+            ?: error("cannot find library extension on $project")
+        // hack, for some reason, sdkComponents.ndkDirectory is NOT set so we default to sdk/ndk
+        val ndkVersion = androidLibrary.ndkVersion
+        val ndkDir =
+            libraryComponents.sdkComponents.sdkDirectory.get().asFile.resolve("ndk/$ndkVersion/sysroot")
+        check(ndkDir.exists()) {
+            println("NDK directory is missing")
+        }
+        return ndkDir
     }
 
     private fun getAppleSdkRoot(target: KonanTarget): String? {
