@@ -15,29 +15,25 @@
  */
 package com.birbit.ksqlite.build.internal
 
-import com.android.build.gradle.LibraryExtension
+import com.android.build.api.dsl.LibraryExtension
+import com.android.build.api.extension.LibraryAndroidComponentsExtension
 import java.io.File
+import java.util.Locale
 import org.gradle.api.Project
 import org.gradle.api.tasks.Exec
 import org.gradle.api.tasks.TaskProvider
+import org.jetbrains.kotlin.gradle.utils.NativeCompilerDownloader
+import org.jetbrains.kotlin.konan.target.Architecture
 import org.jetbrains.kotlin.konan.target.Family
 import org.jetbrains.kotlin.konan.target.HostManager
 import org.jetbrains.kotlin.konan.target.KonanTarget
 import org.jetbrains.kotlin.konan.target.presetName
+import org.jetbrains.kotlin.konan.util.DependencyDirectories
 
 internal object KonanUtil {
-    // taken from https://github.com/Dominaezzz/kotlin-sqlite
-    private val konanUserDir = File(
-        System.getenv("KONAN_DATA_DIR")
-            ?: "${System.getProperty("user.home")}/.konan"
-    )
-    private val konanDeps = konanUserDir.resolve("dependencies")
-    private val toolChainFolderName = when {
-        HostManager.hostIsLinux -> "clang-llvm-8.0.0-linux-x86-64"
-        HostManager.hostIsMac -> "clang-llvm-apple-8.0.0-darwin-macos"
-        HostManager.hostIsMingw -> "msys2-mingw-w64-x86_64-clang-llvm-lld-compiler_rt-8.0.1"
-        else -> error("Unknown host OS")
-    }
+    private val konanDeps = DependencyDirectories.defaultDependenciesRoot
+    private val konanProps = KonanPropLoader
+    private val toolChainFolderName = konanProps.llvmHome(HostManager.host)
     private val llvmBinFolder = konanDeps.resolve("$toolChainFolderName/bin")
 
     internal class TargetInfo(
@@ -54,7 +50,7 @@ internal object KonanUtil {
         output: File,
         configure: (Exec) -> Unit
     ): TaskProvider<Exec> {
-        return project.tasks.register("$prefix${konanTarget.presetName.capitalize()}", Exec::class.java) {
+        return project.tasks.register("$prefix${konanTarget.presetName.capitalize(Locale.US)}", Exec::class.java) {
             it.onlyIf { HostManager().isEnabled(konanTarget) }
 
             it.inputs.file(input)
@@ -70,6 +66,7 @@ internal object KonanUtil {
         }
     }
 
+    // TODO see if we can move this to KonanInteropTask in the native plugin
     fun registerCompilationTask(
         project: Project,
         prefix: String,
@@ -78,18 +75,26 @@ internal object KonanUtil {
     ): TaskProvider<Exec> {
         return project.tasks.register("$prefix${konanTarget.presetName.capitalize()}", Exec::class.java) {
             it.onlyIf { HostManager().isEnabled(konanTarget) }
-            // we need konan executables downloaded and this is a nice hacky way to get them :)
-            // TODO figure out how to get these download dependencies properly
-            it.dependsOn(project.rootProject.findProject(":konan-warmup")!!.tasks.named("allTests"))
-
-            it.environment("PATH", "$llvmBinFolder;${System.getenv("PATH")}")
-            if (HostManager.hostIsMac && konanTarget == KonanTarget.MACOS_X64) {
-                it.environment(
-                    "CPATH",
-                    "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/" +
-                        "SDKs/MacOSX.sdk/usr/include"
+            it.doFirst {
+                val nativeCompilerDownloader = NativeCompilerDownloader(
+                    project = project
                 )
+                nativeCompilerDownloader.downloadIfNeeded()
+                val konancName = if (HostManager.hostIsMingw) {
+                    "konanc.bat"
+                } else {
+                    "konanc"
+                }
+                val konanc = nativeCompilerDownloader.compilerDirectory.resolve("bin/$konancName")
+                check(konanc.exists()) {
+                    "Cannot find konan compiler at $konanc"
+                }
+                project.exec {
+                    it.executable = konanc.absolutePath
+                    it.args("-Xcheck-dependencies", "-target", konanTarget.visibleName)
+                }
             }
+            it.environment("PATH", "$llvmBinFolder;${System.getenv("PATH")}")
             it.executable(llvmBinFolder.resolve("clang").absolutePath)
             it.args("--compile", "-Wall")
             if (konanTarget.family == Family.ANDROID) {
@@ -101,7 +106,7 @@ internal object KonanUtil {
             if (konanTarget.family != Family.MINGW) {
                 it.args("-fPIC")
             }
-            val targetInfo = targetInfoMap[konanTarget] ?: error("missing target info $konanTarget")
+            val targetInfo = targetInfoFromProps(konanTarget)
             it.args("--target=${targetInfo.targetName}")
             it.args("--sysroot=${targetInfo.sysRoot(project).absolutePath}")
             it.args(targetInfo.clangArgs)
@@ -109,63 +114,75 @@ internal object KonanUtil {
         }
     }
 
-    private val targetInfoMap = mapOf(
-        KonanTarget.LINUX_X64 to TargetInfo(
-            "x86_64-unknown-linux-gnu",
-            { konanDeps.resolve("target-gcc-toolchain-3-linux-x86-64/x86_64-unknown-linux-gnu/sysroot") }
-        ),
-        KonanTarget.MACOS_X64 to TargetInfo(
-            "x86_64-apple-darwin10", // Not sure about this but it doesn't matter yet.
-            { konanDeps.resolve("target-sysroot-10-macos_x64") }
-        ),
-        KonanTarget.IOS_ARM64 to TargetInfo(
-            "arm64-apple-darwin10", // Not sure about this but it doesn't matter yet.
-            { File("/Applications/Xcode.app/Contents/Developer/Platforms/" +
-                    "iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/") },
-            listOf("-framework", "Foundation")
-        ),
-        KonanTarget.IOS_X64 to TargetInfo(
-            "x86_64-apple-ios10.3-simulator",
-            { File("/Applications/Xcode.app/Contents/Developer/Platforms/" +
-                    "iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk/") },
-            listOf("-framework", "Foundation")
-        ),
-        KonanTarget.MINGW_X64 to TargetInfo(
-            "x86_64-w64-mingw32",
-            { konanDeps.resolve("msys2-mingw-w64-x86_64-clang-llvm-lld-compiler_rt-8.0.1") }
-        ),
-        KonanTarget.MINGW_X86 to TargetInfo(
-            "i686-w64-mingw32",
-            { konanDeps.resolve("msys2-mingw-w64-i686-clang-llvm-lld-compiler_rt-8.0.1") }
-        ),
-        KonanTarget.LINUX_ARM32_HFP to TargetInfo(
-            "armv6-unknown-linux-gnueabihf",
-            { konanDeps.resolve("target-sysroot-2-raspberrypi") },
-            listOf("-mfpu=vfp", "-mfloat-abi=hard")
-        ),
-        KonanTarget.ANDROID_ARM32 to TargetInfo(
-            "arm-linux-androideabi",
-            { it.ndkSysrootDir() }
-        ),
-        KonanTarget.ANDROID_ARM64 to TargetInfo(
-            "aarch64-linux-android",
-            { it.ndkSysrootDir() }
-        ),
-        KonanTarget.ANDROID_X86 to TargetInfo(
-            "i686-linux-android",
-            { it.ndkSysrootDir() }
-        ),
-        KonanTarget.ANDROID_X64 to TargetInfo(
-            "x86_64-linux-android",
-            { it.ndkSysrootDir() }
+    private fun targetInfoFromProps(target: KonanTarget): TargetInfo {
+        return TargetInfo(
+            targetName = konanProps.targetTriple(target),
+            sysRoot = { project ->
+                val appleSdkRoot = getAppleSdkRoot(target)
+                if (appleSdkRoot != null) {
+                    File(appleSdkRoot)
+                } else if (target.family == Family.ANDROID) {
+                    // TODO we should be able to use the standard sysroot from props, figure out
+                    //  why the actual sysroot is only available in dependencies
+                    project.ndkSysrootDir()
+                } else {
+                    konanDeps.resolve(
+                        konanProps.sysroot(target)
+                    )
+                }
+            },
+            clangArgs = emptyList()
         )
-    )
+    }
 
     private fun Project.ndkSysrootDir(): File {
-        val ndkDir = project.extensions.getByType(LibraryExtension::class.java).ndkDirectory.resolve("sysroot")
+        val libraryComponents =
+            project.extensions.getByType(LibraryAndroidComponentsExtension::class.java)
+        val androidLibrary = project.extensions.findByType(LibraryExtension::class.java)
+            ?: error("cannot find library extension on $project")
+        // hack, for some reason, sdkComponents.ndkDirectory is NOT set so we default to sdk/ndk
+        val ndkVersion = androidLibrary.ndkVersion
+        val ndkDir =
+            libraryComponents.sdkComponents.sdkDirectory.get().asFile.resolve("ndk/$ndkVersion/sysroot")
         check(ndkDir.exists()) {
             println("NDK directory is missing")
         }
         return ndkDir
+    }
+
+    private fun getAppleSdkRoot(target: KonanTarget): String? {
+        // https://github.com/JetBrains/kotlin-native/blob/bb568a8a7e529a9eae473432a71c13ca105ba5ee/shared/src/main/kotlin/org/jetbrains/kotlin/konan/target/Xcode.kt
+        val sdkName = when (target.family) {
+            Family.IOS -> {
+                when (target.architecture) {
+                    Architecture.ARM64, Architecture.ARM32 -> "iphoneos"
+                    Architecture.X86, Architecture.X64 -> "iphonesimulator"
+                    else -> "unexpected sdk param: $target"
+                }
+            }
+            Family.OSX -> "macosx"
+            Family.WATCHOS -> when (target.architecture) {
+                Architecture.ARM64, Architecture.ARM32 -> "watchos"
+                Architecture.X86, Architecture.X64 -> "watchsimulator"
+                else -> "unexpected sdk param: $target"
+            }
+            Family.TVOS -> when (target.architecture) {
+                Architecture.ARM64, Architecture.ARM32 -> "appletvos"
+                Architecture.X86, Architecture.X64 -> "appletvsimulator"
+                else -> "unexpected sdk param: $target"
+            }
+            else -> null
+        }
+        return sdkName?.let {
+            xcrun("--sdk", it, "--show-sdk-path")
+        }
+    }
+
+    private fun xcrun(vararg args: String): String = try {
+        Runtime.getRuntime().exec(arrayOf("/usr/bin/xcrun") + args).inputStream.reader(
+            Charsets.UTF_8
+        ).readText().trim()
+    } catch (e: Throwable) {
+        throw RuntimeException("cannot call xcrun $args", e)
     }
 }

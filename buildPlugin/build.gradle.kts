@@ -60,7 +60,8 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-gradle-plugin-api:$kotlinVersion")
     implementation(kotlin("stdlib-jdk8"))
     // workaround for KMP plugin to find android classes
-    implementation("com.android.tools.build:gradle:$agpVersion")
+    implementation("com.android.tools.build:gradle-api:$agpVersion")
+    testImplementation("com.google.truth", "truth", "1.1.3")
 }
 
 configure<GradlePluginDevelopmentExtension> {
