@@ -15,8 +15,11 @@
  */
 package com.birbit.sqlite3
 
+import kotlin.jvm.JvmInline
+
 // commonized sqlite APIs to build the rest in common, or most at least
-inline class ResultCode(val value: Int) {
+@JvmInline
+value class ResultCode(val value: Int) {
     companion object {
         val OK = ResultCode(0) /* Successful result */
         val ERROR = ResultCode(1) /* Generic error */
