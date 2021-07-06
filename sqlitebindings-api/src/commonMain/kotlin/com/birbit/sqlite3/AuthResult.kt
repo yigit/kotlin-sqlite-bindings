@@ -15,8 +15,11 @@
  */
 package com.birbit.sqlite3
 
+import kotlin.jvm.JvmInline
+
 // see https://www.sqlite.org/c3ref/c_deny.html
-inline class AuthResult(val value: Int) {
+@JvmInline
+value class AuthResult(val value: Int) {
     companion object {
         val OK = AuthResult(0)
         val DENY = AuthResult(1)
