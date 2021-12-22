@@ -25,17 +25,20 @@ plugins {
 buildscript {
     dependencies {
         // workaround for KMP plugin to find android classes
-        classpath("com.android.tools.build:gradle:7.0.0-beta03")
+        classpath("com.android.tools.build:gradle:7.2.0-alpha06")
+    }
+    repositories {
+        google()
+        gradlePluginPortal()
+        mavenCentral()
     }
 }
 
 subprojects {
     repositories {
         google()
-        jcenter()
         mavenCentral()
-        maven ("https://dl.bintray.com/kotlin/kotlin-eap")
-        maven ("https://kotlin.bintray.com/kotlinx")
+        gradlePluginPortal()
     }
 
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().all {

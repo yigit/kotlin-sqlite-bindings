@@ -17,7 +17,6 @@ pluginManagement {
     repositories {
         mavenCentral()
         maven("https://plugins.gradle.org/m2/")
-        maven("https://dl.bintray.com/kotlin/kotlin-eap")
         google()
     }
     val spotlessVersion: String by settings
