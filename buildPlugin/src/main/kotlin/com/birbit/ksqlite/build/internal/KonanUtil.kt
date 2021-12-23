@@ -50,7 +50,10 @@ internal object KonanUtil {
         output: File,
         configure: (Exec) -> Unit
     ): TaskProvider<Exec> {
-        return project.tasks.register("$prefix${konanTarget.presetName.capitalize(Locale.US)}", Exec::class.java) {
+        return project.tasks.register(
+            "$prefix${konanTarget.presetName.capitalize(Locale.US)}",
+            Exec::class.java
+        ) {
             it.onlyIf { HostManager().isEnabled(konanTarget) }
 
             it.inputs.file(input)
@@ -73,25 +76,32 @@ internal object KonanUtil {
         konanTarget: KonanTarget,
         configure: (Exec) -> Unit
     ): TaskProvider<Exec> {
-        val checkDepsTask = project.tasks.register("$prefix${konanTarget.presetName.capitalize()}CheckDependencies", Exec::class.java) {
-            it.onlyIf { HostManager().isEnabled(konanTarget) }
-            val nativeCompilerDownloader = NativeCompilerDownloader(
-                project = project
-            )
-            nativeCompilerDownloader.downloadIfNeeded()
-            val konancName = if (HostManager.hostIsMingw) {
-                "konanc.bat"
-            } else {
-                "konanc"
+        val checkDepsTask = project.tasks
+            .register(
+                "$prefix${konanTarget.presetName.capitalize()}CheckDependencies",
+                Exec::class.java
+            ) {
+                it.onlyIf { HostManager().isEnabled(konanTarget) }
+                val nativeCompilerDownloader = NativeCompilerDownloader(
+                    project = project
+                )
+                nativeCompilerDownloader.downloadIfNeeded()
+                val konancName = if (HostManager.hostIsMingw) {
+                    "konanc.bat"
+                } else {
+                    "konanc"
+                }
+                val konanc = nativeCompilerDownloader.compilerDirectory.resolve("bin/$konancName")
+                check(konanc.exists()) {
+                    "Cannot find konan compiler at $konanc"
+                }
+                it.executable = konanc.absolutePath
+                it.args("-Xcheck-dependencies", "-target", konanTarget.visibleName)
             }
-            val konanc = nativeCompilerDownloader.compilerDirectory.resolve("bin/$konancName")
-            check(konanc.exists()) {
-                "Cannot find konan compiler at $konanc"
-            }
-            it.executable = konanc.absolutePath
-            it.args("-Xcheck-dependencies", "-target", konanTarget.visibleName)
-        }
-        return project.tasks.register("$prefix${konanTarget.presetName.capitalize()}", Exec::class.java) {
+        return project.tasks.register(
+            "$prefix${konanTarget.presetName.capitalize()}",
+            Exec::class.java
+        ) {
             it.onlyIf { HostManager().isEnabled(konanTarget) }
             it.dependsOn(checkDepsTask)
             it.environment("PATH", "$llvmBinFolder;${System.getenv("PATH")}")
