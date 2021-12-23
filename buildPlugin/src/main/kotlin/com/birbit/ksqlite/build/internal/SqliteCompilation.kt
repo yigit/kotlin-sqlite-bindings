@@ -127,6 +127,7 @@ internal object SqliteCompilation {
                     "createDefFileForSqlite${konanTarget.presetName.capitalize(Locale.US)}",
                     CreateDefFileWithLibraryPathTask::class.java
                 ) { task ->
+                    task.dependsOn(archiveSQLite)
                     task.original = original
                     task.target = newDefFile
                     task.soFilePath = staticLibFile
