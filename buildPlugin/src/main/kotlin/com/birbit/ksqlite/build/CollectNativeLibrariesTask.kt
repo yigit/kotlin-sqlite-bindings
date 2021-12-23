@@ -17,8 +17,6 @@ package com.birbit.ksqlite.build
 
 import com.birbit.ksqlite.build.internal.Publishing
 import com.birbit.ksqlite.build.internal.isBuiltOnThisMachine
-import com.birbit.ksqlite.build.internal.runningInIdea
-import com.birbit.ksqlite.build.internal.shouldBuildAndroidNative
 import java.io.File
 import java.io.Serializable
 import org.gradle.api.DefaultTask
@@ -181,12 +179,8 @@ abstract class CollectNativeLibrariesTask : DefaultTask() {
 
             // soFiles shouldn't be empty unless we are in idea or this is created for android and android native
             // is disabled
-            check(
-                soFiles.isNotEmpty() ||
-                        task.project.gradle.runningInIdea() ||
-                    (forAndroid && !shouldBuildAndroidNative(task.project.gradle))
-            ) {
-                println("sth is wrong, there should be some so files")
+            check(soFiles.isNotEmpty()) {
+                "found no SO files for ${task.name}"
             }
             println("found so files:$soFiles, for android $forAndroid")
             task.soInputs = soFiles

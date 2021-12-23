@@ -34,6 +34,7 @@ kotlin {
             dependencies {
                 implementation(kotlin("stdlib-common"))
                 implementation(project(":sqlitebindings"))
+                implementation(kotlin("stdlib"))
                 api(project(":sqlitebindings-api"))
             }
         }
@@ -43,11 +44,11 @@ kotlin {
                 implementation(kotlin("test-annotations-common"))
             }
         }
-        val androidMain by getting {
-            dependencies {
-                implementation(kotlin("stdlib-jdk8"))
-            }
-        }
+//        val androidMain by getting {
+//            dependencies {
+//                implementation(kotlin("stdlib-jdk8"))
+//            }
+//        }
         val androidTest by getting {
             dependencies {
                 implementation(kotlin("test-junit"))
@@ -57,15 +58,34 @@ kotlin {
             }
         }
         // Default source set for JVM-specific sources and dependencies:
-        jvm().compilations["main"].defaultSourceSet {
-            dependencies {
-                implementation(kotlin("stdlib-jdk8"))
-            }
-        }
+//        jvm().compilations["main"].defaultSourceSet {
+//            dependencies {
+//                implementation(kotlin("stdlib-jdk8"))
+//            }
+//        }
         // JVM-specific tests and their dependencies:
         jvm().compilations["test"].defaultSourceSet {
             dependencies {
                 implementation(kotlin("test-junit"))
+            }
+        }
+        val linuxTest by creating
+        val windowsTest by creating
+        val macTest by creating
+        this.forEach { ss ->
+            if (ss.name.endsWith("Test")) {
+                val osSourceSet = when {
+                    ss.name.startsWith("mac") -> macTest
+                    ss.name.startsWith("ios") -> macTest
+                    ss.name.startsWith("linux") -> linuxTest
+                    ss.name.startsWith("mingw") -> windowsTest
+                    else -> null
+                }
+                osSourceSet?.let {
+                    if (it.name != ss.name) {
+                        ss.dependsOn(it)
+                    }
+                }
             }
         }
     }
