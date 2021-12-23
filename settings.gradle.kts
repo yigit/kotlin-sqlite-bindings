@@ -23,7 +23,7 @@ pluginManagement {
     val ktlintVersion: String by settings
     val kotlinVersion: String by settings
     plugins {
-        id("com.diffplug.gradle.spotless") version spotlessVersion
+        id("com.diffplug.spotless") version spotlessVersion
         id("org.jlleitschuh.gradle.ktlint") version ktlintVersion
         kotlin("multiplatform") version kotlinVersion
     }

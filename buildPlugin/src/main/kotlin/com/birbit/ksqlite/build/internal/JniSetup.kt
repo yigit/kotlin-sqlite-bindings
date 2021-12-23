@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 package com.birbit.ksqlite.build.internal
-import java.io.File
-import java.util.concurrent.Callable
 import org.gradle.api.GradleException
 import org.gradle.kotlin.dsl.get
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.konan.target.Family
+import java.io.File
+import java.util.concurrent.Callable
 
 internal object JniSetup {
     fun configure(target: KotlinNativeTarget) {

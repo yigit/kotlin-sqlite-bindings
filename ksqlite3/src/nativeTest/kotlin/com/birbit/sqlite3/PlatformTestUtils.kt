@@ -15,9 +15,6 @@
  */
 package com.birbit.sqlite3
 
-import kotlin.native.concurrent.TransferMode
-import kotlin.native.concurrent.Worker
-import kotlin.random.Random
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.staticCFunction
 import kotlinx.cinterop.toKStringFromUtf8
@@ -27,6 +24,9 @@ import platform.posix.F_OK
 import platform.posix.access
 import platform.posix.nftw
 import platform.posix.remove
+import kotlin.native.concurrent.TransferMode
+import kotlin.native.concurrent.Worker
+import kotlin.random.Random
 
 actual object PlatformTestUtils {
     private fun randomFolderName(): String {
@@ -60,11 +60,15 @@ actual object PlatformTestUtils {
     }
 
     actual fun deleteDir(tmpDir: String) {
-        nftw(tmpDir, staticCFunction { path, stat, typeFlag, ftw ->
-            memScoped {
-                remove(path!!.toKStringFromUtf8())
-            }
-        }, 64, FTW_DEPTH.or(FTW_PHYS))
+        nftw(
+            tmpDir,
+            staticCFunction { path, stat, typeFlag, ftw ->
+                memScoped {
+                    remove(path!!.toKStringFromUtf8())
+                }
+            },
+            64, FTW_DEPTH.or(FTW_PHYS)
+        )
     }
 
     actual fun <T> runInAnotherThread(block: () -> T): T {

@@ -22,9 +22,11 @@ plugins {
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
-    implementation(project.fileTree("libs") {
-        include("*.jar")
-    })
+    implementation(
+        project.fileTree("libs") {
+            include("*.jar")
+        }
+    )
     implementation(Dependencies.KOTLIN_POET)
 }
 

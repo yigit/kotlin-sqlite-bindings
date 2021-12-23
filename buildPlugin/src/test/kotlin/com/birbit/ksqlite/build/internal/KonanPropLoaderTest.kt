@@ -25,7 +25,8 @@ class KonanPropLoaderTest {
     fun loadToolchain() {
         val hostManager = HostManager
         assertThat(
-            KonanPropLoader.require("llvm.linux_x64.dev"))
+            KonanPropLoader.require("llvm.linux_x64.dev")
+        )
             .isEqualTo("clang-llvm-8.0.0-linux-x86-64")
         assertThat(KonanPropLoader.llvmHome(KonanTarget.MACOS_X64))
             .isEqualTo("clang-llvm-apple-8.0.0-darwin-macos")

@@ -16,21 +16,9 @@
 package com.birbit.ksqlite.build.internal
 
 import org.gradle.api.invocation.Gradle
-import org.gradle.kotlin.dsl.accessors.runtime.addDependencyTo
-import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.get
-import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
-import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSetContainer
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
-
-//internal fun shouldBuildAndroidNative(gradle: Gradle): Boolean {
-//    val os = DefaultNativePlatform.getCurrentOperatingSystem()
-//    return !gradle.runningInIdea() && when {
-//        os.isWindows -> !runningInCI()
-//        else -> true
-//    }
-//}
 
 internal fun KotlinMultiplatformExtension.setupNative(
     gradle: Gradle,

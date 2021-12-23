@@ -15,12 +15,12 @@
  */
 package com.birbit.ksqlite.build
 
-import java.io.File
-import java.nio.file.Paths
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
+import java.io.File
+import java.nio.file.Paths
 
 abstract class CreateDefFileWithLibraryPathTask : DefaultTask() {
     @InputFile

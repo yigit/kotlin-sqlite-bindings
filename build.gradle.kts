@@ -17,7 +17,7 @@
 import com.diffplug.gradle.spotless.SpotlessExtension
 
 plugins {
-    id("com.diffplug.gradle.spotless")
+    id("com.diffplug.spotless")
     id("org.jlleitschuh.gradle.ktlint")
     kotlin("multiplatform") apply false
 }
@@ -45,10 +45,12 @@ subprojects {
         kotlinOptions.freeCompilerArgs += listOf("-Xopt-in=kotlin.RequiresOptIn")
     }
     if (this.path != ":konan-warmup") {
-        apply(plugin = "com.diffplug.gradle.spotless")
+        apply(plugin = "com.diffplug.spotless")
         this.extensions.getByType(SpotlessExtension::class).apply {
             kotlin {
                 target("src/**/*.kt")
+                // ktlint fails to parse this
+                targetExclude("src/**/JniEnv.kt")
                 ktlint().userData(
                     mapOf(
                         "max_line_length" to "120"

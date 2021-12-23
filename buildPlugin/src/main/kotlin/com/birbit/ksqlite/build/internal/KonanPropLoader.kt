@@ -15,8 +15,8 @@
  */
 package com.birbit.ksqlite.build.internal
 
-import java.util.Properties
 import org.jetbrains.kotlin.konan.target.KonanTarget
+import java.util.Properties
 
 internal object KonanPropLoader {
     private val konanProps = Properties()

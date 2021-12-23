@@ -19,8 +19,6 @@ package com.birbit.sqlite3.internal
 
 import com.birbit.sqlite3.ColumnType
 import com.birbit.sqlite3.ResultCode
-import kotlin.Suppress
-import kotlin.native.CName
 import kotlinx.cinterop.CPointer
 import platform.android.JNIEnvVar
 import platform.android.jboolean
@@ -31,6 +29,8 @@ import platform.android.jint
 import platform.android.jlong
 import platform.android.jobject
 import platform.android.jstring
+import kotlin.Suppress
+import kotlin.native.CName
 
 @CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativeOpenConnection")
 fun openConnection(

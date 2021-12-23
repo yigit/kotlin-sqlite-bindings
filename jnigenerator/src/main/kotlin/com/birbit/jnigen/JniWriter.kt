@@ -48,9 +48,11 @@ class JniWriter(
     }
 
     fun generate(pair: FunctionPair) = FunSpec.builder(pair.actualFun.name).apply {
-        addAnnotation(AnnotationSpec.builder(ClassNames.CNAME).apply {
-            this.addMember("%S", pair.jniSignature)
-        }.build())
+        addAnnotation(
+            AnnotationSpec.builder(ClassNames.CNAME).apply {
+                this.addMember("%S", pair.jniSignature)
+            }.build()
+        )
         val envParam = ParameterSpec.builder(
             "env",
             ClassNames.CPOINTER.parameterizedBy(ClassNames.JNI_ENV_VAR)
@@ -79,13 +81,13 @@ class JniWriter(
         addStatement("initPlatform()")
 
         /**
-        return runWithJniExceptionConversion(env, 0) {
-        val localP0 = DbRef.fromJni(p0)
-        val localP1 = checkNotNull(p1.toKString(env))
-        val callResult = SqliteApi.prepareStmt(localP0, localP1)
-        val localCallResult = callResult.toJni()
-        localCallResult
-        }
+         return runWithJniExceptionConversion(env, 0) {
+         val localP0 = DbRef.fromJni(p0)
+         val localP1 = checkNotNull(p1.toKString(env))
+         val callResult = SqliteApi.prepareStmt(localP0, localP1)
+         val localCallResult = callResult.toJni()
+         localCallResult
+         }
          */
         beginControlFlow(
             "return runWithJniExceptionConversion(%N, %L)",

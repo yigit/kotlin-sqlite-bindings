@@ -17,9 +17,6 @@ package com.birbit.ksqlite.build.internal
 
 import com.birbit.ksqlite.build.CreateDefFileWithLibraryPathTask
 import com.birbit.ksqlite.build.SqliteCompilationConfig
-import java.io.File
-import java.util.Locale
-import java.util.concurrent.Callable
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.tasks.Copy
@@ -28,6 +25,9 @@ import org.gradle.kotlin.dsl.get
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.konan.target.presetName
+import java.io.File
+import java.util.Locale
+import java.util.concurrent.Callable
 
 @OptIn(kotlin.ExperimentalStdlibApi::class)
 internal object SqliteCompilation {

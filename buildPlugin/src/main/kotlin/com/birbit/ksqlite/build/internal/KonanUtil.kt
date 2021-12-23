@@ -17,8 +17,6 @@ package com.birbit.ksqlite.build.internal
 
 import com.android.build.api.dsl.LibraryExtension
 import com.android.build.api.variant.LibraryAndroidComponentsExtension
-import java.io.File
-import java.util.Locale
 import org.gradle.api.Project
 import org.gradle.api.tasks.Exec
 import org.gradle.api.tasks.TaskProvider
@@ -29,6 +27,8 @@ import org.jetbrains.kotlin.konan.target.HostManager
 import org.jetbrains.kotlin.konan.target.KonanTarget
 import org.jetbrains.kotlin.konan.target.presetName
 import org.jetbrains.kotlin.konan.util.DependencyDirectories
+import java.io.File
+import java.util.Locale
 
 internal object KonanUtil {
     private val konanDeps = DependencyDirectories.defaultDependenciesRoot

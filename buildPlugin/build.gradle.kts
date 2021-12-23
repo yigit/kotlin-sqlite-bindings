@@ -18,7 +18,7 @@ import com.diffplug.gradle.spotless.SpotlessExtension
 
 plugins {
     id("org.jlleitschuh.gradle.ktlint")
-    id("com.diffplug.gradle.spotless")
+    id("com.diffplug.spotless")
     kotlin("jvm") version "1.6.10"
     `java-gradle-plugin`
 }

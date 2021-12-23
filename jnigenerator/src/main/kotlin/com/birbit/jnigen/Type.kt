@@ -151,7 +151,8 @@ open class Type(
             ClassNames.JDOUBLE,
             defaultValue = "0.0"
         )
-        val BOOLEAN = Type(Boolean::class.asClassName(),
+        val BOOLEAN = Type(
+            Boolean::class.asClassName(),
             ClassNames.JBOOLEAN,
             defaultValue = "JFALSE",
             convertFromJni = { type, envParam, inParam, outVar ->
@@ -163,7 +164,8 @@ open class Type(
                 buildCodeBlock {
                     addStatement("val %L = %L.toJBoolean()", outVar, inVar)
                 }
-            })
+            }
+        )
         val RESULT_CODE = Type(
             ClassNames.RESULT_CODE,
             ClassNames.RESULT_CODE,

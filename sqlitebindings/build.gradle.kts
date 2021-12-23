@@ -40,9 +40,11 @@ ksqliteBuild {
         }
     }
     android()
-    includeSqlite(SqliteCompilationConfig(
-        version = "3.31.1"
-    ))
+    includeSqlite(
+        SqliteCompilationConfig(
+            version = "3.31.1"
+        )
+    )
     publish()
     buildOnServer()
 }
@@ -55,7 +57,8 @@ kotlin {
                 project = project,
                 namePrefix = "sqlite3jni",
                 outFolder = combinedSharedLibsFolder,
-                forAndroid = false)
+                forAndroid = false
+            )
 
     val combinedAndroidSharedLibsFolder = project.buildDir.resolve("combinedAndroidSharedLibs")
     val combineAndroidSharedLibsTask =
@@ -64,7 +67,8 @@ kotlin {
                 project = project,
                 namePrefix = "sqlite3jni",
                 outFolder = combinedAndroidSharedLibsFolder,
-                forAndroid = true)
+                forAndroid = true
+            )
     project.android.sourceSets {
         this["main"].jniLibs.srcDir(combinedAndroidSharedLibsFolder)
     }

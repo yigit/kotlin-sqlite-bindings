@@ -24,6 +24,6 @@ import org.jetbrains.kotlin.konan.target.KonanTarget
 // linux targets on linux
 // windows targets on windows
 internal fun KonanTarget.isBuiltOnThisMachine() = HostManager().isEnabled(this) &&
-        DefaultNativePlatform.getCurrentOperatingSystem().let { os ->
-            !os.isWindows || this@isBuiltOnThisMachine.family == Family.MINGW
-        }
+    DefaultNativePlatform.getCurrentOperatingSystem().let { os ->
+        !os.isWindows || this@isBuiltOnThisMachine.family == Family.MINGW
+    }

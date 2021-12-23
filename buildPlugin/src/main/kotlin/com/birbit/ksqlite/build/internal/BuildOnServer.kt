@@ -16,11 +16,11 @@
 package com.birbit.ksqlite.build.internal
 
 import com.birbit.ksqlite.build.CollectNativeLibrariesTask
-import java.io.File
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.TaskProvider
+import java.io.File
 
 object BuildOnServer {
     private lateinit var distDir: File

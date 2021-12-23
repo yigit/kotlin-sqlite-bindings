@@ -17,8 +17,6 @@ package com.birbit.ksqlite.build
 
 import com.birbit.ksqlite.build.internal.Publishing
 import com.birbit.ksqlite.build.internal.isBuiltOnThisMachine
-import java.io.File
-import java.io.Serializable
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.Project
@@ -34,6 +32,8 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import org.jetbrains.kotlin.konan.target.Architecture
 import org.jetbrains.kotlin.konan.target.Family
 import org.jetbrains.kotlin.konan.target.KonanTarget
+import java.io.File
+import java.io.Serializable
 
 data class SoInput(
     val folderName: String,
@@ -142,7 +142,7 @@ abstract class CollectNativeLibrariesTask : DefaultTask() {
                 // obtain from compilations
                 kotlin.targets.withType(KotlinNativeTarget::class.java).filter {
                     it.konanTarget.family != Family.IOS &&
-                    it.konanTarget.isBuiltOnThisMachine() &&
+                        it.konanTarget.isBuiltOnThisMachine() &&
                         forAndroid == (it.konanTarget.family == Family.ANDROID)
                 }.forEach {
                     val sharedLib = it.binaries.findSharedLib(
