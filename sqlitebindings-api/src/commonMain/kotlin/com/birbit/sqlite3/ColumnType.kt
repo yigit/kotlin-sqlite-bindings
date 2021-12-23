@@ -15,8 +15,11 @@
  */
 package com.birbit.sqlite3
 
+import kotlin.jvm.JvmInline
+
 // see https://www.sqlite.org/c3ref/c_blob.html
-inline class ColumnType(val value: Int) {
+@JvmInline
+value class ColumnType(val value: Int) {
     companion object {
         val INTEGER = ColumnType(1)
         val FLOAT = ColumnType(2)
