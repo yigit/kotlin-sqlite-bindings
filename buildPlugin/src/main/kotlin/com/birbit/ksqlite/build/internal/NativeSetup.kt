@@ -17,6 +17,7 @@ package com.birbit.ksqlite.build.internal
 
 import org.gradle.api.invocation.Gradle
 import org.gradle.kotlin.dsl.get
+import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
@@ -25,9 +26,15 @@ internal fun KotlinMultiplatformExtension.setupNative(
     includeAndroidNative: Boolean,
     configure: KotlinNativeTarget.() -> Unit
 ) {
+    val os = DefaultNativePlatform.getCurrentOperatingSystem()
+    mingwX64(configure = configure)
+    if (os.isWindows) {
+        // windows build fails with error: unknown type name '__int64' for JNI in
+        // cinteropJniLinuxX64
+        return
+    }
     linuxX64(configure = configure)
     linuxArm32Hfp(configure = configure)
-    mingwX64(configure = configure)
     macosX64(configure = configure)
     ios(configure = configure)
     androidNativeArm32(configure = configure)
