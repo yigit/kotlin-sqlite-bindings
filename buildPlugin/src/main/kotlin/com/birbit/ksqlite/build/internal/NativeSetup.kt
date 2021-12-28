@@ -15,15 +15,12 @@
  */
 package com.birbit.ksqlite.build.internal
 
-import org.gradle.api.invocation.Gradle
 import org.gradle.kotlin.dsl.get
 import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
 internal fun KotlinMultiplatformExtension.setupNative(
-    gradle: Gradle,
-    includeAndroidNative: Boolean,
     configure: KotlinNativeTarget.() -> Unit
 ) {
     val os = DefaultNativePlatform.getCurrentOperatingSystem()
@@ -44,8 +41,6 @@ internal fun KotlinMultiplatformExtension.setupNative(
 }
 
 internal fun KotlinMultiplatformExtension.setupCommon(
-    gradle: Gradle,
-    includeAndroidNative: Boolean,
     configure: KotlinNativeTarget.() -> Unit
 ) {
     val nativeMain = sourceSets.create("nativeMain") {
@@ -54,17 +49,7 @@ internal fun KotlinMultiplatformExtension.setupCommon(
     val nativeTest = sourceSets.create("nativeTest") {
         it.dependsOn(sourceSets["commonTest"])
     }
-    setupNative(gradle, includeAndroidNative) {
-        // TODO move them to shared folder once we move to 1.4-M3
-        //  unfortunately it doesn't work because IDE cannot detect
-        //  the cinterop outputs
-        //  see: https://youtrack.jetbrains.com/issue/KT-36086
-//        compilations["main"].defaultSourceSet {
-//            kotlin.srcDir("src/nativeMain/kotlin")
-//        }
-//        compilations["test"].defaultSourceSet {
-//            kotlin.srcDir("src/nativeTest/kotlin")
-//        }
+    setupNative {
         sourceSets[this.targetName + "Main"].dependsOn(nativeMain)
         sourceSets[this.targetName + "Test"].dependsOn(nativeTest)
         this.configure()
