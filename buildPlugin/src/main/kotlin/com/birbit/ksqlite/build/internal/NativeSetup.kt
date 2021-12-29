@@ -16,13 +16,20 @@
 package com.birbit.ksqlite.build.internal
 
 import org.gradle.kotlin.dsl.get
+import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
 internal fun KotlinMultiplatformExtension.setupNative(
     configure: KotlinNativeTarget.() -> Unit
 ) {
+    val os = DefaultNativePlatform.getCurrentOperatingSystem()
     mingwX64(configure = configure)
+    mingwX86(configure = configure)
+    if (os.isWindows) {
+        // don't configure others on windows. Hits inconsistent type problems with JNI
+        return
+    }
     linuxX64(configure = configure)
     linuxArm32Hfp(configure = configure)
     macosX64(configure = configure)

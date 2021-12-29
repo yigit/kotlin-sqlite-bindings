@@ -54,7 +54,7 @@ internal object KonanUtil {
             "$prefix${konanTarget.presetName.capitalize(Locale.US)}",
             Exec::class.java
         ) {
-            it.onlyIf { HostManager().isEnabled(konanTarget) }
+            it.onlyIf { konanTarget.isBuiltOnThisMachine() }
 
             it.inputs.file(input)
             it.outputs.file(output)
@@ -81,7 +81,7 @@ internal object KonanUtil {
                 "$prefix${konanTarget.presetName.capitalize()}CheckDependencies",
                 Exec::class.java
             ) {
-                it.onlyIf { HostManager().isEnabled(konanTarget) }
+                it.onlyIf { konanTarget.isBuiltOnThisMachine() }
                 val nativeCompilerDownloader = NativeCompilerDownloader(
                     project = project
                 )
@@ -102,7 +102,7 @@ internal object KonanUtil {
             "$prefix${konanTarget.presetName.capitalize()}",
             Exec::class.java
         ) {
-            it.onlyIf { HostManager().isEnabled(konanTarget) }
+            it.onlyIf { konanTarget.isBuiltOnThisMachine() }
             it.dependsOn(checkDepsTask)
             it.environment("PATH", "$llvmBinFolder;${System.getenv("PATH")}")
             it.executable(llvmBinFolder.resolve("clang").absolutePath)
