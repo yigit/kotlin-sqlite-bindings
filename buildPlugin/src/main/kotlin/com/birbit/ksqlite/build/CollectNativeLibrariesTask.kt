@@ -138,9 +138,12 @@ abstract class CollectNativeLibrariesTask : DefaultTask() {
             }
             val soFiles = mutableListOf<SoInput>()
             val distOutputsFolder = Publishing.getDistOutputs()
+            var requireAndroidTarget = false
             if (distOutputsFolder == null || forAndroid) {
                 // obtain from compilations
                 kotlin.targets.withType(KotlinNativeTarget::class.java).filter {
+                    requireAndroidTarget = requireAndroidTarget ||
+                        it.konanTarget.family == Family.ANDROID
                     it.konanTarget.family != Family.IOS &&
                         it.konanTarget.isBuiltOnThisMachine() &&
                         forAndroid == (it.konanTarget.family == Family.ANDROID)
@@ -161,6 +164,7 @@ abstract class CollectNativeLibrariesTask : DefaultTask() {
                     task.dependsOn(sharedLib.linkTask)
                 }
             } else {
+                requireAndroidTarget = true
                 // collect from dist output
                 val nativesFolders = distOutputsFolder.walkTopDown().filter {
                     it.isDirectory && it.name == "natives"
@@ -176,10 +180,9 @@ abstract class CollectNativeLibrariesTask : DefaultTask() {
                 }
                 soFiles.addAll(foundSoFiles)
             }
-
-            // soFiles shouldn't be empty unless we are in idea or this is created for android and android native
-            // is disabled
-            check(soFiles.isNotEmpty()) {
+            // soFiles shouldn't be empty unless we are targeting android and have no android
+            // targets
+            check(soFiles.isNotEmpty() || (forAndroid && !requireAndroidTarget)) {
                 "found no SO files for ${task.name}"
             }
             println("found so files:$soFiles, for android $forAndroid")

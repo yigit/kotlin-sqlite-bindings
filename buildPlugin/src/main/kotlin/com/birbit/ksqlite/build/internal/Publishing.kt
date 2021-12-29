@@ -73,7 +73,7 @@ internal object Publishing {
     }
 
     /**
-     * outputs of other builds in CO
+     * outputs of other builds in CI
      */
     fun getDistOutputs(): File? {
         return System.getenv(DIST_OUTPUTS_ENV_VAR)?.let {

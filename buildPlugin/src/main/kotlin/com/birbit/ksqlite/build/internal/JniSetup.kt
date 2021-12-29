@@ -16,7 +16,6 @@
 package com.birbit.ksqlite.build.internal
 import org.gradle.api.GradleException
 import org.gradle.kotlin.dsl.get
-import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.konan.target.Family
 import java.io.File
@@ -36,10 +35,6 @@ internal object JniSetup {
                 }
                 if (!include.exists()) {
                     throw GradleException("cannot find include")
-                }
-                val os = DefaultNativePlatform.getCurrentOperatingSystem()
-                if (os.isWindows) {
-                    it.compilerOpts("-fdeclspec", "-D__int64=long long")
                 }
                 it.includeDirs(
                     Callable { include },
