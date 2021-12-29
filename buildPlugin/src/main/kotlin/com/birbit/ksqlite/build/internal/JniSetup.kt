@@ -16,6 +16,8 @@
 package com.birbit.ksqlite.build.internal
 import org.gradle.api.GradleException
 import org.gradle.kotlin.dsl.get
+import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
+import org.jetbrains.kotlin.gradle.plugin.mpp.DefaultCInteropSettings
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.konan.target.Family
 import java.io.File
@@ -35,6 +37,11 @@ internal object JniSetup {
                 }
                 if (!include.exists()) {
                     throw GradleException("cannot find include")
+                }
+                val os = DefaultNativePlatform.getCurrentOperatingSystem()
+                if (os.isWindows) {
+                    it.compilerOpts.add("-fdeclspec")
+                    it.compilerOpts.addAll(listOf("-D","__int64=long long"))
                 }
                 // match the name on android to use the same code for native.
                 // TODO could be abstract this into another module?
