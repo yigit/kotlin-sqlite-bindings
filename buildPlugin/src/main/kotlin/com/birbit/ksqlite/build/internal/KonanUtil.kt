@@ -155,7 +155,7 @@ internal object KonanUtil {
         val ndkDir =
             libraryComponents.sdkComponents.sdkDirectory.get().asFile.resolve("ndk/$ndkVersion/sysroot")
         check(ndkDir.exists()) {
-            println("NDK directory is missing")
+            println("NDK directory is missing: ${ndkDir.absolutePath}")
         }
         return ndkDir
     }
