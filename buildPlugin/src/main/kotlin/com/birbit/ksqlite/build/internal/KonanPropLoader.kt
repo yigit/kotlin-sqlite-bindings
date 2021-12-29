@@ -15,8 +15,8 @@
  */
 package com.birbit.ksqlite.build.internal
 
-import java.util.Properties
 import org.jetbrains.kotlin.konan.target.KonanTarget
+import java.util.Properties
 
 internal object KonanPropLoader {
     private val konanProps = Properties()
@@ -37,6 +37,10 @@ internal object KonanPropLoader {
     }
 
     fun require(key: String): String {
+        // use user insteaad of dev, see commit 8866ab5916c5a7dc2d2ee3579e32e95de660f3ad
+        // in kotlin repo
+        @Suppress("NAME_SHADOWING") // intentional
+        val key = key.replace(".dev", ".user")
         val value = konanProps[key] ?: error("cannot find required property: $key")
         check(value is String) {
             "expected String, found $value (${value::class.java}"
@@ -61,7 +65,6 @@ internal object KonanPropLoader {
     }
 
     fun llvmHome(target: KonanTarget): String {
-        target.architecture.bitness
         return loadPropertyWithKeySubstitution("llvmHome.${target.name}")
     }
 }

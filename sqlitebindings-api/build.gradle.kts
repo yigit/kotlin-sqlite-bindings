@@ -33,6 +33,11 @@ kotlin {
                 implementation(kotlin("stdlib"))
             }
         }
+        // studio is looking for it when syncing
+        val main by creating {
+            dependsOn(commonMain)
+        }
+
         all {
             languageSettings.enableLanguageFeature("InlineClasses")
         }

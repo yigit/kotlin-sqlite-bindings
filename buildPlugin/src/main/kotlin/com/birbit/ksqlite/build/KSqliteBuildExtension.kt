@@ -44,7 +44,6 @@ open class KSqliteBuildExtension(
         val kmpExt = project.extensions.findByType(KotlinMultiplatformExtension::class.java)
             ?: error("Must apply KMP plugin")
         kmpExt.setupCommon(
-            gradle = project.gradle,
             includeAndroidNative = includeAndroidNative,
             configure = {
                 if (includeJni) {

@@ -17,14 +17,13 @@ pluginManagement {
     repositories {
         mavenCentral()
         maven("https://plugins.gradle.org/m2/")
-        maven("https://dl.bintray.com/kotlin/kotlin-eap")
         google()
     }
     val spotlessVersion: String by settings
     val ktlintVersion: String by settings
     val kotlinVersion: String by settings
     plugins {
-        id("com.diffplug.gradle.spotless") version spotlessVersion
+        id("com.diffplug.spotless") version spotlessVersion
         id("org.jlleitschuh.gradle.ktlint") version ktlintVersion
         kotlin("multiplatform") version kotlinVersion
     }

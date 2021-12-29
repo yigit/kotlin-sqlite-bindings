@@ -208,23 +208,26 @@ class StatementTest {
                 CREATE TABLE Test(
                     ${columns.joinToString(",") { (name, type) -> "$name $type" }}
                 )
-            """.trimIndent()
+                """.trimIndent()
             )
             it.prepareStmt("SELECT * FROM Test").use {
                 it.obtainResultMetadata()
             }
         }
-        assertEquals(ResultMetadata(
-            columns = columns.map { (name, type) ->
-                ColumnInfo(
-                    databaseName = "main",
-                    tableName = "Test",
-                    originName = name,
-                    declaredType = type,
-                    name = name
-                )
-            }
-        ), metadata)
+        assertEquals(
+            ResultMetadata(
+                columns = columns.map { (name, type) ->
+                    ColumnInfo(
+                        databaseName = "main",
+                        tableName = "Test",
+                        originName = name,
+                        declaredType = type,
+                        name = name
+                    )
+                }
+            ),
+            metadata
+        )
     }
 
     @Test
@@ -278,7 +281,8 @@ class StatementTest {
                         originName = null
                     )
                 )
-            ), metadata
+            ),
+            metadata
         )
     }
 

@@ -33,7 +33,8 @@ class SqliteConnectionTest {
             SqliteConnection.openConnection("/::")
         }
         assertEquals(
-            result.exceptionOrNull(), SqliteException(
+            result.exceptionOrNull(),
+            SqliteException(
                 ResultCode.CANTOPEN,
                 "could not open database at path  /::"
             )
@@ -58,7 +59,8 @@ class SqliteConnectionTest {
             }
 
             assertEquals(
-                result.exceptionOrNull(), SqliteException(
+                result.exceptionOrNull(),
+                SqliteException(
                     resultCode = ResultCode.ERROR,
                     msg = "no such table: nonExistingTable"
                 )

@@ -18,11 +18,12 @@ import com.diffplug.gradle.spotless.SpotlessExtension
 
 plugins {
     id("org.jlleitschuh.gradle.ktlint")
-    id("com.diffplug.gradle.spotless")
+    id("com.diffplug.spotless")
+    kotlin("jvm") version "1.6.10"
     `java-gradle-plugin`
 }
 // has to be separate while using M2
-apply(plugin = "kotlin-platform-jvm")
+
 buildscript {
     val properties = java.util.Properties()
     rootDir.resolve("../gradle.properties").inputStream().use {
@@ -33,7 +34,9 @@ buildscript {
     }
     val kotlinVersion: String by rootProject
     repositories {
-        maven("https://dl.bintray.com/kotlin/kotlin-eap")
+        gradlePluginPortal()
+        mavenCentral()
+        google()
     }
     dependencies {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
@@ -43,8 +46,6 @@ buildscript {
 repositories {
     mavenCentral()
     gradlePluginPortal()
-    maven("https://dl.bintray.com/kotlin/kotlin-eap")
-    maven("https://kotlin.bintray.com/kotlinx")
     google()
 }
 

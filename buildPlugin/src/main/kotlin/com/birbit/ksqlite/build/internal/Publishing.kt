@@ -16,7 +16,6 @@
 package com.birbit.ksqlite.build.internal
 
 import com.android.build.api.dsl.LibraryExtension
-import java.io.File
 import org.gradle.api.Project
 import org.gradle.api.file.DuplicatesStrategy
 import org.gradle.api.publish.PublishingExtension
@@ -24,6 +23,7 @@ import org.gradle.api.tasks.Copy
 import org.gradle.kotlin.dsl.findByType
 import org.gradle.kotlin.dsl.maven
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
+import java.io.File
 
 internal object Publishing {
     fun createCombinedRepoTaskIfPossible(
@@ -73,7 +73,7 @@ internal object Publishing {
     }
 
     /**
-     * outputs of other builds in CO
+     * outputs of other builds in CI
      */
     fun getDistOutputs(): File? {
         return System.getenv(DIST_OUTPUTS_ENV_VAR)?.let {

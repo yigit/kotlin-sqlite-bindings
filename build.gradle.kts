@@ -17,7 +17,7 @@
 import com.diffplug.gradle.spotless.SpotlessExtension
 
 plugins {
-    id("com.diffplug.gradle.spotless")
+    id("com.diffplug.spotless")
     id("org.jlleitschuh.gradle.ktlint")
     kotlin("multiplatform") apply false
 }
@@ -25,27 +25,32 @@ plugins {
 buildscript {
     dependencies {
         // workaround for KMP plugin to find android classes
-        classpath("com.android.tools.build:gradle:7.0.0-beta03")
+        classpath("com.android.tools.build:gradle:7.2.0-alpha06")
+    }
+    repositories {
+        google()
+        gradlePluginPortal()
+        mavenCentral()
     }
 }
 
 subprojects {
     repositories {
         google()
-        jcenter()
         mavenCentral()
-        maven ("https://dl.bintray.com/kotlin/kotlin-eap")
-        maven ("https://kotlin.bintray.com/kotlinx")
+        gradlePluginPortal()
     }
 
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().all {
         kotlinOptions.freeCompilerArgs += listOf("-Xopt-in=kotlin.RequiresOptIn")
     }
     if (this.path != ":konan-warmup") {
-        apply(plugin = "com.diffplug.gradle.spotless")
+        apply(plugin = "com.diffplug.spotless")
         this.extensions.getByType(SpotlessExtension::class).apply {
             kotlin {
                 target("src/**/*.kt")
+                // ktlint fails to parse this
+                targetExclude("src/**/JniEnv.kt")
                 ktlint().userData(
                     mapOf(
                         "max_line_length" to "120"

@@ -1,1 +1,3 @@
 headers = jni.h
+# match android so we can have shared code between android and jvm jni
+package=platform.android

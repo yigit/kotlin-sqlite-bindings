@@ -16,8 +16,7 @@
 pluginManagement {
     repositories {
         mavenCentral()
-        maven("https://plugins.gradle.org/m2/")
-        maven("https://dl.bintray.com/kotlin/kotlin-eap")
+        gradlePluginPortal()
         google()
     }
     val properties = java.util.Properties()
@@ -28,7 +27,7 @@ pluginManagement {
     val ktlintVersion: String by properties
     val kotlinVersion: String by properties
     plugins {
-        id("com.diffplug.gradle.spotless") version spotlessVersion
+        id("com.diffplug.spotless") version spotlessVersion
         id("org.jlleitschuh.gradle.ktlint") version ktlintVersion
         kotlin("multiplatform") version kotlinVersion
     }

@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 package com.birbit.ksqlite.build.internal
-import java.io.File
-import java.util.concurrent.Callable
 import org.gradle.api.GradleException
 import org.gradle.kotlin.dsl.get
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.konan.target.Family
+import java.io.File
+import java.util.concurrent.Callable
 
 internal object JniSetup {
     fun configure(target: KotlinNativeTarget) {
@@ -36,14 +36,11 @@ internal object JniSetup {
                 if (!include.exists()) {
                     throw GradleException("cannot find include")
                 }
-                // match the name on android to use the same code for native.
-                // TODO could be abstract this into another module?
-                it.packageName = "platform.android"
                 it.includeDirs(
                     Callable { include },
                     Callable { File(include, "darwin") },
                     Callable { File(include, "linux") },
-                    Callable { File(include, "win32") }
+                    Callable { File(include, "win32") },
                 )
             }
         }

@@ -17,10 +17,6 @@ package com.birbit.ksqlite.build
 
 import com.birbit.ksqlite.build.internal.Publishing
 import com.birbit.ksqlite.build.internal.isBuiltOnThisMachine
-import com.birbit.ksqlite.build.internal.runningInIdea
-import com.birbit.ksqlite.build.internal.shouldBuildAndroidNative
-import java.io.File
-import java.io.Serializable
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.Project
@@ -36,6 +32,8 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import org.jetbrains.kotlin.konan.target.Architecture
 import org.jetbrains.kotlin.konan.target.Family
 import org.jetbrains.kotlin.konan.target.KonanTarget
+import java.io.File
+import java.io.Serializable
 
 data class SoInput(
     val folderName: String,
@@ -140,11 +138,14 @@ abstract class CollectNativeLibrariesTask : DefaultTask() {
             }
             val soFiles = mutableListOf<SoInput>()
             val distOutputsFolder = Publishing.getDistOutputs()
+            var requireAndroidTarget = false
             if (distOutputsFolder == null || forAndroid) {
                 // obtain from compilations
                 kotlin.targets.withType(KotlinNativeTarget::class.java).filter {
+                    requireAndroidTarget = requireAndroidTarget ||
+                        it.konanTarget.family == Family.ANDROID
                     it.konanTarget.family != Family.IOS &&
-                    it.konanTarget.isBuiltOnThisMachine() &&
+                        it.konanTarget.isBuiltOnThisMachine() &&
                         forAndroid == (it.konanTarget.family == Family.ANDROID)
                 }.forEach {
                     val sharedLib = it.binaries.findSharedLib(
@@ -163,6 +164,7 @@ abstract class CollectNativeLibrariesTask : DefaultTask() {
                     task.dependsOn(sharedLib.linkTask)
                 }
             } else {
+                requireAndroidTarget = true
                 // collect from dist output
                 val nativesFolders = distOutputsFolder.walkTopDown().filter {
                     it.isDirectory && it.name == "natives"
@@ -178,15 +180,10 @@ abstract class CollectNativeLibrariesTask : DefaultTask() {
                 }
                 soFiles.addAll(foundSoFiles)
             }
-
-            // soFiles shouldn't be empty unless we are in idea or this is created for android and android native
-            // is disabled
-            check(
-                soFiles.isNotEmpty() ||
-                        task.project.gradle.runningInIdea() ||
-                    (forAndroid && !shouldBuildAndroidNative(task.project.gradle))
-            ) {
-                println("sth is wrong, there should be some so files")
+            // soFiles shouldn't be empty unless we are targeting android and have no android
+            // targets
+            check(soFiles.isNotEmpty() || (forAndroid && !requireAndroidTarget)) {
+                "found no SO files for ${task.name}"
             }
             println("found so files:$soFiles, for android $forAndroid")
             task.soInputs = soFiles

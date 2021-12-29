@@ -22,8 +22,6 @@ import com.birbit.sqlite3.Authorizer
 import com.birbit.sqlite3.ColumnType
 import com.birbit.sqlite3.ResultCode
 import com.birbit.sqlite3.SqliteException
-import kotlin.native.concurrent.AtomicReference
-import kotlin.native.concurrent.freeze
 import kotlinx.cinterop.ByteVar
 import kotlinx.cinterop.COpaquePointer
 import kotlinx.cinterop.CPointer
@@ -84,6 +82,8 @@ import sqlite3.sqlite3_reset
 import sqlite3.sqlite3_set_authorizer
 import sqlite3.sqlite3_sql
 import sqlite3.sqlite3_step
+import kotlin.native.concurrent.AtomicReference
+import kotlin.native.concurrent.freeze
 
 private inline fun <reified T : Any> jlong.castFromJni(): T {
     val ptr: COpaquePointer = this.toCPointer()!!

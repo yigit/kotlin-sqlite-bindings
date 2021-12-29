@@ -37,7 +37,7 @@ internal fun SqliteException.Companion.buildFromConnection(dbRef: DbRef, errorCo
     return SqliteException(
         resultCode = errorCode?.let { ResultCode(it) } ?: SqliteApi.errorCode(dbRef),
         msg = SqliteApi.errorMsg(dbRef) ?: errorCode?.let { SqliteApi.errorString(ResultCode(it)) }
-        ?: "unknown error"
+            ?: "unknown error"
     )
 }
 fun ResultCode.errorString() = SqliteApi.errorString(this)

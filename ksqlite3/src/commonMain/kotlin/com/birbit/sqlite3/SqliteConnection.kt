@@ -59,11 +59,14 @@ class SqliteConnection private constructor(
     ) {
         // TODO we should track these to ensure we release them if closed as they keep a StableRef
         // this object can disappear once we move Authorizer to fun interface
-        SqliteApi.setAuthorizer(dbRef, object : Authorizer {
-            override fun invoke(params: AuthorizationParams): AuthResult {
-                return callback(params)
+        SqliteApi.setAuthorizer(
+            dbRef,
+            object : Authorizer {
+                override fun invoke(params: AuthorizationParams): AuthResult {
+                    return callback(params)
+                }
             }
-        })
+        )
     }
 
     fun clearAuthCallback() {

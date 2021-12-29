@@ -15,89 +15,47 @@
  */
 package com.birbit.ksqlite.build.internal
 
-import org.gradle.api.invocation.Gradle
 import org.gradle.kotlin.dsl.get
 import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
-internal fun shouldBuildAndroidNative(gradle: Gradle): Boolean {
-    val os = DefaultNativePlatform.getCurrentOperatingSystem()
-    return !gradle.runningInIdea() && when {
-        os.isWindows -> !runningInCI()
-        else -> true
-    }
-}
-
 internal fun KotlinMultiplatformExtension.setupNative(
-    gradle: Gradle,
     includeAndroidNative: Boolean,
     configure: KotlinNativeTarget.() -> Unit
 ) {
-    // TODO change this to build only on one target in CI
-    val runningInIdea = gradle.runningInIdea()
     val os = DefaultNativePlatform.getCurrentOperatingSystem()
-    if (runningInIdea || os.isWindows) {
-        when {
-            os.isLinux -> {
-                linuxX64(configure = configure)
-            }
-            os.isWindows -> {
-                mingwX64(configure = configure)
-            }
-            os.isMacOsX -> {
-                macosX64(configure = configure)
-            }
-            else -> error("OS $os is not supported")
-        }
-    } else {
-        linuxX64(configure = configure)
-        linuxArm32Hfp(configure = configure)
-        mingwX64(configure = configure)
-        macosX64(configure = configure)
-        ios(configure = configure)
-        if (shouldBuildAndroidNative(gradle) && includeAndroidNative) {
-            androidNativeArm32(configure = configure)
-            androidNativeArm64(configure = configure)
-            androidNativeX64(configure = configure)
-            androidNativeX86(configure = configure)
-        }
+    mingwX64(configure = configure)
+    mingwX86(configure = configure)
+    if (os.isWindows) {
+        // don't configure others on windows. Hits inconsistent type problems with JNI
+        return
     }
+    if (includeAndroidNative) {
+        androidNativeArm32(configure = configure)
+        androidNativeArm64(configure = configure)
+        androidNativeX64(configure = configure)
+        androidNativeX86(configure = configure)
+    }
+    linuxX64(configure = configure)
+    linuxArm32Hfp(configure = configure)
+    macosX64(configure = configure)
+    ios(configure = configure)
 }
 
 internal fun KotlinMultiplatformExtension.setupCommon(
-    gradle: Gradle,
     includeAndroidNative: Boolean,
     configure: KotlinNativeTarget.() -> Unit
 ) {
-    setupNative(gradle, includeAndroidNative) {
-        val os = DefaultNativePlatform.getCurrentOperatingSystem()
-        val osSpecificFolderPrefix = when {
-            os.isLinux -> "linux"
-            os.isMacOsX -> "mac"
-            os.isWindows -> "windows"
-            else -> null
-        }
-        osSpecificFolderPrefix?.let {
-            compilations["main"].defaultSourceSet {
-                kotlin.srcDir("src/${it}Main/kotlin")
-            }
-            compilations["test"].defaultSourceSet {
-                kotlin.srcDir("src/${it}Test/kotlin")
-            }
-        }
-
-        // TODO move them to shared folder once we move to 1.4-M3
-        //  unfortunately it doesn't work because IDE cannot detect
-        //  the cinterop outputs
-        //  see: https://youtrack.jetbrains.com/issue/KT-36086
-        compilations["main"].defaultSourceSet {
-            kotlin.srcDir("src/nativeMain/kotlin")
-        }
-        compilations["test"].defaultSourceSet {
-            kotlin.srcDir("src/nativeTest/kotlin")
-        }
-
+    val nativeMain = sourceSets.create("nativeMain") {
+        it.dependsOn(sourceSets["commonMain"])
+    }
+    val nativeTest = sourceSets.create("nativeTest") {
+        it.dependsOn(sourceSets["commonTest"])
+    }
+    setupNative(includeAndroidNative) {
+        sourceSets[this.targetName + "Main"].dependsOn(nativeMain)
+        sourceSets[this.targetName + "Test"].dependsOn(nativeTest)
         this.configure()
     }
 }

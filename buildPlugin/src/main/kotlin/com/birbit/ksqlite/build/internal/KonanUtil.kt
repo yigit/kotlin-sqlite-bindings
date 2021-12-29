@@ -16,9 +16,7 @@
 package com.birbit.ksqlite.build.internal
 
 import com.android.build.api.dsl.LibraryExtension
-import com.android.build.api.extension.LibraryAndroidComponentsExtension
-import java.io.File
-import java.util.Locale
+import com.android.build.api.variant.LibraryAndroidComponentsExtension
 import org.gradle.api.Project
 import org.gradle.api.tasks.Exec
 import org.gradle.api.tasks.TaskProvider
@@ -29,6 +27,8 @@ import org.jetbrains.kotlin.konan.target.HostManager
 import org.jetbrains.kotlin.konan.target.KonanTarget
 import org.jetbrains.kotlin.konan.target.presetName
 import org.jetbrains.kotlin.konan.util.DependencyDirectories
+import java.io.File
+import java.util.Locale
 
 internal object KonanUtil {
     private val konanDeps = DependencyDirectories.defaultDependenciesRoot
@@ -50,8 +50,11 @@ internal object KonanUtil {
         output: File,
         configure: (Exec) -> Unit
     ): TaskProvider<Exec> {
-        return project.tasks.register("$prefix${konanTarget.presetName.capitalize(Locale.US)}", Exec::class.java) {
-            it.onlyIf { HostManager().isEnabled(konanTarget) }
+        return project.tasks.register(
+            "$prefix${konanTarget.presetName.capitalize(Locale.US)}",
+            Exec::class.java
+        ) {
+            it.onlyIf { konanTarget.isBuiltOnThisMachine() }
 
             it.inputs.file(input)
             it.outputs.file(output)
@@ -73,9 +76,12 @@ internal object KonanUtil {
         konanTarget: KonanTarget,
         configure: (Exec) -> Unit
     ): TaskProvider<Exec> {
-        return project.tasks.register("$prefix${konanTarget.presetName.capitalize()}", Exec::class.java) {
-            it.onlyIf { HostManager().isEnabled(konanTarget) }
-            it.doFirst {
+        val checkDepsTask = project.tasks
+            .register(
+                "$prefix${konanTarget.presetName.capitalize()}CheckDependencies",
+                Exec::class.java
+            ) {
+                it.onlyIf { konanTarget.isBuiltOnThisMachine() }
                 val nativeCompilerDownloader = NativeCompilerDownloader(
                     project = project
                 )
@@ -89,11 +95,15 @@ internal object KonanUtil {
                 check(konanc.exists()) {
                     "Cannot find konan compiler at $konanc"
                 }
-                project.exec {
-                    it.executable = konanc.absolutePath
-                    it.args("-Xcheck-dependencies", "-target", konanTarget.visibleName)
-                }
+                it.executable = konanc.absolutePath
+                it.args("-Xcheck-dependencies", "-target", konanTarget.visibleName)
             }
+        return project.tasks.register(
+            "$prefix${konanTarget.presetName.capitalize()}",
+            Exec::class.java
+        ) {
+            it.onlyIf { konanTarget.isBuiltOnThisMachine() }
+            it.dependsOn(checkDepsTask)
             it.environment("PATH", "$llvmBinFolder;${System.getenv("PATH")}")
             it.executable(llvmBinFolder.resolve("clang").absolutePath)
             it.args("--compile", "-Wall")
@@ -145,7 +155,7 @@ internal object KonanUtil {
         val ndkDir =
             libraryComponents.sdkComponents.sdkDirectory.get().asFile.resolve("ndk/$ndkVersion/sysroot")
         check(ndkDir.exists()) {
-            println("NDK directory is missing")
+            println("NDK directory is missing: ${ndkDir.absolutePath}")
         }
         return ndkDir
     }

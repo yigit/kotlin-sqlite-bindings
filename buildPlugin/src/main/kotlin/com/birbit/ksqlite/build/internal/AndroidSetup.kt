@@ -16,7 +16,7 @@
 package com.birbit.ksqlite.build.internal
 
 import com.android.build.api.dsl.LibraryExtension
-import com.android.build.api.extension.LibraryAndroidComponentsExtension
+import com.android.build.api.variant.LibraryAndroidComponentsExtension
 import org.gradle.api.Project
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.Exec
