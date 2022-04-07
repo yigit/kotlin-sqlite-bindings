@@ -29,12 +29,12 @@ buildscript {
     }
     repositories {
         google()
-        gradlePluginPortal()
         mavenCentral()
+        gradlePluginPortal()
     }
 }
 
-subprojects {
+allprojects {
     repositories {
         google()
         mavenCentral()

@@ -26,6 +26,7 @@ pluginManagement {
         id("com.diffplug.spotless") version spotlessVersion
         id("org.jlleitschuh.gradle.ktlint") version ktlintVersion
         kotlin("multiplatform") version kotlinVersion
+        kotlin("jvm") version kotlinVersion
     }
 }
 includeBuild("buildPlugin")
