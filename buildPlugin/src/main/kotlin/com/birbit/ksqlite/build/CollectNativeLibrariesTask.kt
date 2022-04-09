@@ -144,10 +144,10 @@ abstract class CollectNativeLibrariesTask : DefaultTask() {
                 // obtain from compilations
                 kotlin.targets.withType(KotlinNativeTarget::class.java).filter {
                     requireAndroidTarget = requireAndroidTarget ||
-                            it.konanTarget.family == Family.ANDROID
+                        it.konanTarget.family == Family.ANDROID
                     it.konanTarget.family != Family.IOS &&
-                            it.konanTarget.isBuiltOnThisMachine() &&
-                            forAndroid == (it.konanTarget.family == Family.ANDROID)
+                        it.konanTarget.isBuiltOnThisMachine() &&
+                        forAndroid == (it.konanTarget.family == Family.ANDROID)
                 }.forEach {
                     val sharedLib = it.binaries.findSharedLib(
                         namePrefix = namePrefix,
