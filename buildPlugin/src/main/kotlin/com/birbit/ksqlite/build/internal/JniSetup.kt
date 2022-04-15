@@ -22,9 +22,15 @@ import java.io.File
 import java.util.concurrent.Callable
 
 internal object JniSetup {
+    // we don't include android here since it already has the jni APIs available.
+    private val jniFamilies = listOf(
+        Family.LINUX,
+        Family.MINGW,
+        Family.OSX,
+    )
     fun configure(target: KotlinNativeTarget) {
         // jni already exists on android so we don't need it there
-        if (target.konanTarget.family != Family.ANDROID) {
+        if (target.konanTarget.family in jniFamilies) {
             target.compilations["main"].cinterops.create("jni") {
                 // JDK is required here, JRE is not enough
                 val javaHome = File(System.getenv("JAVA_HOME") ?: System.getProperty("java.home"))

@@ -95,7 +95,14 @@ fun KotlinParseTree.findPath(sections: List<String>): List<KotlinParseTree> {
     if (subSections.isEmpty()) {
         return listOf(this)
     }
-    return children.flatMap {
+    val nextSection = subSections.first()
+    return children.sortedBy {
+        if (it.name() == nextSection) {
+            0
+        } else {
+            1
+        }
+    }.flatMap {
         it.findPath(subSections)
     }
 }

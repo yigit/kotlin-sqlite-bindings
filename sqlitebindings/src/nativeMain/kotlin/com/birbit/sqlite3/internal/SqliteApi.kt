@@ -35,13 +35,10 @@ import kotlinx.cinterop.ptr
 import kotlinx.cinterop.readBytes
 import kotlinx.cinterop.reinterpret
 import kotlinx.cinterop.staticCFunction
-import kotlinx.cinterop.toCPointer
 import kotlinx.cinterop.toKStringFromUtf8
-import kotlinx.cinterop.toLong
 import kotlinx.cinterop.usePinned
 import kotlinx.cinterop.utf8
 import kotlinx.cinterop.value
-import platform.android.jlong
 import sqlite3.SQLITE_NULL
 import sqlite3.SQLITE_OK
 import sqlite3.SQLITE_TRANSIENT
@@ -85,13 +82,6 @@ import sqlite3.sqlite3_step
 import kotlin.native.concurrent.AtomicReference
 import kotlin.native.concurrent.freeze
 
-private inline fun <reified T : Any> jlong.castFromJni(): T {
-    val ptr: COpaquePointer = this.toCPointer()!!
-    return ptr.asStableRef<T>().get()
-}
-
-private inline fun <reified T : Any> StableRef<T>.toJni() = this.asCPointer().toLong()
-
 internal class NativeRef<T : Any>(target: T) : ObjRef {
     private val _stableRef: AtomicReference<StableRef<T>?> = AtomicReference(StableRef.create(target))
     val stableRef: StableRef<T>
@@ -108,14 +98,9 @@ internal class NativeRef<T : Any>(target: T) : ObjRef {
 }
 
 actual class StmtRef(@Suppress("unused") actual val dbRef: DbRef, val rawPtr: CPointer<sqlite3_stmt>) : ObjRef {
-    private val nativeRef = NativeRef(this)
+    internal val nativeRef = NativeRef(this)
     init {
         freeze()
-    }
-    fun toJni() = nativeRef.stableRef.toJni()
-
-    companion object {
-        fun fromJni(jlong: jlong): StmtRef = jlong.castFromJni()
     }
 
     override fun dispose() {
@@ -127,15 +112,10 @@ actual class StmtRef(@Suppress("unused") actual val dbRef: DbRef, val rawPtr: CP
 
 // TODO these two classes are almost idential, should probably commanize as more comes
 actual class DbRef(val rawPtr: CPointer<sqlite3>) : ObjRef {
-    private val nativeRef = NativeRef(this)
+    internal val nativeRef = NativeRef(this)
     internal val authorizer = AtomicReference<NativeRef<Authorizer>?>(null)
     init {
         freeze()
-    }
-    fun toJni() = nativeRef.stableRef.toJni()
-
-    companion object {
-        fun fromJni(jlong: jlong): DbRef = jlong.castFromJni()
     }
 
     override fun dispose() {
