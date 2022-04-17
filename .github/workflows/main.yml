@@ -65,6 +65,8 @@ jobs:
       run: ./gradlew -p buildPlugin spotlessCheck --stacktrace
     - name: run spotless
       run: ./gradlew spotlessCheck --stacktrace
+    - name: stop daemon
+      run: ./gradlew --stop
     - name: build dist
       run: ./gradlew buildOnServer --stacktrace
     - name: Upload test results for sqlitebindings
