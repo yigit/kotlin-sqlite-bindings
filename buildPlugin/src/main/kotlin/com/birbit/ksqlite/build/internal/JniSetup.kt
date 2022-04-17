@@ -40,7 +40,7 @@ internal object JniSetup {
                     include = File(javaHome, "../include")
                 }
                 if (!include.exists()) {
-                    throw GradleException("cannot find include: ${javaHome}")
+                    throw GradleException("cannot find include: $javaHome")
                 }
                 it.includeDirs(
                     Callable { include },
