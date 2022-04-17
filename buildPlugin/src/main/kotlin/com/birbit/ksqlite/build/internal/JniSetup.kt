@@ -43,10 +43,10 @@ internal object JniSetup {
                     throw GradleException("cannot find include: $javaHome")
                 }
                 it.includeDirs(
-                    Callable { include },
-                    Callable { File(include, "darwin") },
-                    Callable { File(include, "linux") },
-                    Callable { File(include, "win32") },
+                    include,
+                    File(include, "darwin"),
+                    File(include, "linux"),
+                    File(include, "win32"),
                 )
             }
         }

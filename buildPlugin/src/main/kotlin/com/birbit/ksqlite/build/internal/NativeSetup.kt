@@ -39,8 +39,8 @@ internal fun KotlinMultiplatformExtension.setupNative(
     }
     linuxX64(configure = configure)
     linuxArm64(configure = configure)
+    macosX64(configure = configure)
     if (os.isMacOsX) {
-        macosX64(configure = configure)
         ios(configure = configure)
     }
 }
