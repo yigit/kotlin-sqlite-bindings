@@ -26,7 +26,10 @@ import java.util.concurrent.TimeUnit
  */
 fun main() {
     val srcFile = File("./sqlitebindings/src/commonJvmMain/kotlin/com/birbit/sqlite3/internal/JvmCommonSqliteApi.kt")
-    val targetFile = File("./sqlitebindings/src/nativeMain/kotlin/com/birbit/sqlite3/internal/GeneratedJni.kt")
+    val targetFiles = listOf(
+        File("./sqlitebindings/src/androidJniWrapperMain/kotlin/com/birbit/sqlite3/internal/GeneratedJni.kt"),
+        File("./sqlitebindings/src/jvmJniWrapperMain/kotlin/com/birbit/sqlite3/internal/GeneratedJni.kt")
+    )
     val jvmMethodNames = findMethodNamesFromClassFile("./sqlitebindings/build")
     val invalidMethods = jvmMethodNames.filter {
         it.suffix.isNotBlank() && it.originalName.startsWith("native")
@@ -65,7 +68,9 @@ fun main() {
     val copyright = File("./scripts/copyright.txt")
         .readText(Charsets.UTF_8)
         .replace("\$YEAR", Calendar.getInstance().get(Calendar.YEAR).toString())
-    JniWriter(copyright, pairs).write(targetFile)
+    targetFiles.forEach {
+        JniWriter(copyright, pairs).write(it)
+    }
 }
 
 fun findMethodNamesFromClassFile(folder: String): List<JvmClassName> {

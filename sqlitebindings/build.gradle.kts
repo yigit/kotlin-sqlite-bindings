@@ -17,6 +17,9 @@
 import com.android.build.gradle.internal.tasks.factory.dependsOn
 import com.birbit.ksqlite.build.Dependencies
 import com.birbit.ksqlite.build.SqliteCompilationConfig
+import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+import org.jetbrains.kotlin.konan.target.Family
 
 plugins {
     id("com.android.library")
@@ -97,6 +100,20 @@ kotlin {
                 implementation(kotlin("stdlib-jdk8"))
             }
         }
+        val nativeMain by getting
+        // commonization of jni does not work across jvm-android anymore, hence we duplicate
+        // the code for them. Using symlinks is not possible due to ide not liking it + windows
+        // issues
+        val jniWrapperComonMain by creating {
+            dependsOn(commonMain)
+            dependsOn(nativeMain)
+        }
+        val androidJniWrapperMain by creating {
+            dependsOn(jniWrapperComonMain)
+        }
+        val jvmJniWrapperMain by creating {
+            dependsOn(jniWrapperComonMain)
+        }
         val androidMain by getting {
             dependsOn(commonJvmMain)
             dependencies {
@@ -125,6 +142,22 @@ kotlin {
         jvm().compilations["test"].defaultSourceSet {
             dependencies {
                 implementation(kotlin("test-junit"))
+            }
+        }
+        targets.forEach { target ->
+            if (target.platformType == KotlinPlatformType.native) {
+                val family = (target as KotlinNativeTarget).konanTarget.family
+                when (family) {
+                    Family.ANDROID -> target.compilations["main"].defaultSourceSet {
+                        dependsOn(androidJniWrapperMain)
+                    }
+                    Family.OSX, Family.MINGW, Family.LINUX -> target.compilations["main"].defaultSourceSet {
+                        dependsOn(jvmJniWrapperMain)
+                    }
+                    else -> {
+                        // skip, doesn't need JNI
+                    }
+                }
             }
         }
     }

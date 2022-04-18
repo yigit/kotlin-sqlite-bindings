@@ -25,16 +25,16 @@ plugins {
 buildscript {
     dependencies {
         // workaround for KMP plugin to find android classes
-        classpath("com.android.tools.build:gradle:7.2.0-alpha06")
+        classpath("com.android.tools.build:gradle:7.1.3")
     }
     repositories {
         google()
-        gradlePluginPortal()
         mavenCentral()
+        gradlePluginPortal()
     }
 }
 
-subprojects {
+allprojects {
     repositories {
         google()
         mavenCentral()
@@ -42,7 +42,7 @@ subprojects {
     }
 
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().all {
-        kotlinOptions.freeCompilerArgs += listOf("-Xopt-in=kotlin.RequiresOptIn")
+        kotlinOptions.freeCompilerArgs += listOf("-opt-in=kotlin.RequiresOptIn")
     }
     if (this.path != ":konan-warmup") {
         apply(plugin = "com.diffplug.spotless")

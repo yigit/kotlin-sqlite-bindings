@@ -19,7 +19,7 @@ import com.diffplug.gradle.spotless.SpotlessExtension
 plugins {
     id("org.jlleitschuh.gradle.ktlint")
     id("com.diffplug.spotless")
-    kotlin("jvm") version "1.6.10"
+    kotlin("jvm") version "1.6.20"
     `java-gradle-plugin`
 }
 // has to be separate while using M2
@@ -80,7 +80,7 @@ configure<GradlePluginDevelopmentExtension> {
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
     kotlinOptions.jvmTarget = "1.8"
-    kotlinOptions.freeCompilerArgs += listOf("-Xopt-in=kotlin.RequiresOptIn")
+    kotlinOptions.freeCompilerArgs += listOf("-opt-in=kotlin.RequiresOptIn")
 }
 
 extensions.getByType(SpotlessExtension::class).apply {

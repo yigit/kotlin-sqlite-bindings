@@ -26,10 +26,9 @@ class KonanPropLoaderTest {
         val hostManager = HostManager
         assertThat(
             KonanPropLoader.require("llvm.linux_x64.dev")
-        )
-            .isEqualTo("clang-llvm-8.0.0-linux-x86-64")
+        ).isEqualTo("llvm-11.1.0-linux-x64-essentials")
         assertThat(KonanPropLoader.llvmHome(KonanTarget.MACOS_X64))
-            .isEqualTo("clang-llvm-apple-8.0.0-darwin-macos")
+            .isEqualTo("apple-llvm-20200714-macos-x64-essentials")
         assertThat(KonanPropLoader.targetTriple(KonanTarget.LINUX_X64))
             .isEqualTo("x86_64-unknown-linux-gnu")
         assertThat(KonanPropLoader.targetTriple(KonanTarget.ANDROID_ARM32))
@@ -37,7 +36,7 @@ class KonanPropLoaderTest {
         assertThat(KonanPropLoader.targetTriple(KonanTarget.IOS_X64))
             .isEqualTo("x86_64-apple-ios-simulator")
         assertThat(KonanPropLoader.sysroot(KonanTarget.IOS_X64))
-            .isEqualTo("target-sysroot-xcode_12_2-ios_x64")
+            .isEqualTo("target-sysroot-xcode_12_5-iphonesimulator")
         assertThat(KonanPropLoader.clangFlags(KonanTarget.IOS_X64))
             .isEqualTo("-cc1 -emit-obj -disable-llvm-passes -x ir")
     }

@@ -17,9 +17,15 @@ package com.birbit.ksqlite.build.internal
 
 import com.android.build.api.dsl.LibraryExtension
 import com.android.build.api.variant.LibraryAndroidComponentsExtension
+import org.gradle.api.DefaultTask
 import org.gradle.api.Project
+import org.gradle.api.provider.Property
+import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Exec
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.TaskProvider
+import org.gradle.kotlin.dsl.property
 import org.jetbrains.kotlin.gradle.utils.NativeCompilerDownloader
 import org.jetbrains.kotlin.konan.target.Architecture
 import org.jetbrains.kotlin.konan.target.Family
@@ -69,43 +75,18 @@ internal object KonanUtil {
         }
     }
 
-    // TODO see if we can move this to KonanInteropTask in the native plugin
     fun registerCompilationTask(
         project: Project,
         prefix: String,
         konanTarget: KonanTarget,
-        configure: (Exec) -> Unit
-    ): TaskProvider<Exec> {
-        val checkDepsTask = project.tasks
-            .register(
-                "$prefix${konanTarget.presetName.capitalize()}CheckDependencies",
-                Exec::class.java
-            ) {
-                it.onlyIf { konanTarget.isBuiltOnThisMachine() }
-                val nativeCompilerDownloader = NativeCompilerDownloader(
-                    project = project
-                )
-                nativeCompilerDownloader.downloadIfNeeded()
-                val konancName = if (HostManager.hostIsMingw) {
-                    "konanc.bat"
-                } else {
-                    "konanc"
-                }
-                val konanc = nativeCompilerDownloader.compilerDirectory.resolve("bin/$konancName")
-                check(konanc.exists()) {
-                    "Cannot find konan compiler at $konanc"
-                }
-                it.executable = konanc.absolutePath
-                it.args("-Xcheck-dependencies", "-target", konanTarget.visibleName)
-            }
+        configure: (CompilationTask) -> Unit
+    ): TaskProvider<CompilationTask> {
         return project.tasks.register(
             "$prefix${konanTarget.presetName.capitalize()}",
-            Exec::class.java
+            CompilationTask::class.java
         ) {
             it.onlyIf { konanTarget.isBuiltOnThisMachine() }
-            it.dependsOn(checkDepsTask)
-            it.environment("PATH", "$llvmBinFolder;${System.getenv("PATH")}")
-            it.executable(llvmBinFolder.resolve("clang").absolutePath)
+            it.konanTarget.set(konanTarget)
             it.args("--compile", "-Wall")
             if (konanTarget.family == Family.ANDROID) {
                 it.args("-Oz") // optimize for size
@@ -194,5 +175,48 @@ internal object KonanUtil {
         ).readText().trim()
     } catch (e: Throwable) {
         throw RuntimeException("cannot call xcrun $args", e)
+    }
+
+    @CacheableTask
+    abstract class CompilationTask : DefaultTask() {
+        @Input
+        val args = project.objects.listProperty(String::class.java)
+        @Input
+        val konanTarget: Property<KonanTarget> = project.objects.property(KonanTarget::class.java)
+        fun args(vararg inputs: String) {
+            args.set(args.get() + inputs)
+        }
+        fun args(inputs: List<String>) {
+            args.set(args.get() + inputs)
+        }
+        private fun downloadNativeCompiler() {
+            val nativeCompilerDownloader = NativeCompilerDownloader(
+                project = project
+            )
+            nativeCompilerDownloader.downloadIfNeeded()
+            val result = project.exec {
+                val konancName = if (HostManager.hostIsMingw) {
+                    "konanc.bat"
+                } else {
+                    "konanc"
+                }
+                val konanc = nativeCompilerDownloader.compilerDirectory.resolve("bin/$konancName")
+                check(konanc.exists()) {
+                    "Cannot find konan compiler at $konanc"
+                }
+                it.executable = konanc.absolutePath
+                it.args("-Xcheck-dependencies", "-target", konanTarget.get().visibleName)
+            }
+            result.assertNormalExitValue()
+        }
+        @TaskAction
+        fun compile() {
+            downloadNativeCompiler()
+            project.exec {
+                it.environment("PATH", "$llvmBinFolder;${System.getenv("PATH")}")
+                it.executable(llvmBinFolder.resolve("clang").absolutePath)
+                it.args(args.get())
+            }
+        }
     }
 }

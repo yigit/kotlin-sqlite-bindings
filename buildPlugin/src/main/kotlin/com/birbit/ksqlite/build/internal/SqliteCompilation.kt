@@ -27,7 +27,6 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.konan.target.presetName
 import java.io.File
 import java.util.Locale
-import java.util.concurrent.Callable
 
 @OptIn(kotlin.ExperimentalStdlibApi::class)
 internal object SqliteCompilation {
@@ -118,9 +117,7 @@ internal object SqliteCompilation {
                 val cInteropTask = project.tasks[it.interopProcessingTaskName]
                 cInteropTask.dependsOn(unzipTask)
                 cInteropTask.dependsOn(archiveSQLite)
-                it.includeDirs(
-                    Callable { srcDir }
-                )
+                it.includeDirs(srcDir)
                 val original = it.defFile
                 val newDefFile = generatedDefFileFolder.resolve("${konanTarget.presetName}/sqlite-generated.def")
                 val createDefFileTask = project.tasks.register(

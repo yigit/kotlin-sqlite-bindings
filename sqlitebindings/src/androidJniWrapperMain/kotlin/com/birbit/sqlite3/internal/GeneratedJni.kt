@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google, LLC.
+ * Copyright 2022 Google, LLC.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,7 +56,7 @@ fun prepareStmt(
 ): jlong {
     initPlatform()
     return runWithJniExceptionConversion(env, 0L) {
-        val localP0 = DbRef.fromJni(p0)
+        val localP0 = dbRefFromJni(p0)
         val localP1 = checkNotNull(p1.toKString(env))
         val callResult = SqliteApi.prepareStmt(localP0, localP1)
         val localCallResult = callResult.toJni()
@@ -72,7 +72,7 @@ fun step(
 ): ResultCode {
     initPlatform()
     return runWithJniExceptionConversion(env, ResultCode(-1)) {
-        val localP0 = StmtRef.fromJni(p0)
+        val localP0 = stmtRefFromJni(p0)
         val callResult = SqliteApi.step(localP0)
         callResult
     }
@@ -87,7 +87,7 @@ fun columnText(
 ): jstring? {
     initPlatform()
     return runWithJniExceptionConversion(env, null) {
-        val localP0 = StmtRef.fromJni(p0)
+        val localP0 = stmtRefFromJni(p0)
         val callResult = SqliteApi.columnText(localP0, p1)
         val localCallResult = callResult?.toJString(env)
         localCallResult
@@ -103,7 +103,7 @@ fun columnInt(
 ): jint {
     initPlatform()
     return runWithJniExceptionConversion(env, 0) {
-        val localP0 = StmtRef.fromJni(p0)
+        val localP0 = stmtRefFromJni(p0)
         val callResult = SqliteApi.columnInt(localP0, p1)
         callResult
     }
@@ -118,7 +118,7 @@ fun columnIsNull(
 ): jboolean {
     initPlatform()
     return runWithJniExceptionConversion(env, JFALSE) {
-        val localP0 = StmtRef.fromJni(p0)
+        val localP0 = stmtRefFromJni(p0)
         val callResult = SqliteApi.columnIsNull(localP0, p1)
         val localCallResult = callResult.toJBoolean()
         localCallResult
@@ -133,7 +133,7 @@ fun reset(
 ): ResultCode {
     initPlatform()
     return runWithJniExceptionConversion(env, ResultCode(-1)) {
-        val localP0 = StmtRef.fromJni(p0)
+        val localP0 = stmtRefFromJni(p0)
         val callResult = SqliteApi.reset(localP0)
         callResult
     }
@@ -147,7 +147,7 @@ fun close(
 ): ResultCode {
     initPlatform()
     return runWithJniExceptionConversion(env, ResultCode(-1)) {
-        val localP0 = DbRef.fromJni(p0)
+        val localP0 = dbRefFromJni(p0)
         val callResult = SqliteApi.close(localP0)
         callResult
     }
@@ -161,7 +161,7 @@ fun finalize(
 ): ResultCode {
     initPlatform()
     return runWithJniExceptionConversion(env, ResultCode(-1)) {
-        val localP0 = StmtRef.fromJni(p0)
+        val localP0 = stmtRefFromJni(p0)
         val callResult = SqliteApi.finalize(localP0)
         callResult
     }
@@ -176,7 +176,7 @@ fun columnBlob(
 ): jbyteArray? {
     initPlatform()
     return runWithJniExceptionConversion(env, null) {
-        val localP0 = StmtRef.fromJni(p0)
+        val localP0 = stmtRefFromJni(p0)
         val callResult = SqliteApi.columnBlob(localP0, p1)
         val localCallResult = callResult?.toJByteArray(env)
         localCallResult
@@ -192,7 +192,7 @@ fun columnDouble(
 ): jdouble {
     initPlatform()
     return runWithJniExceptionConversion(env, 0.0) {
-        val localP0 = StmtRef.fromJni(p0)
+        val localP0 = stmtRefFromJni(p0)
         val callResult = SqliteApi.columnDouble(localP0, p1)
         callResult
     }
@@ -207,7 +207,7 @@ fun columnLong(
 ): jlong {
     initPlatform()
     return runWithJniExceptionConversion(env, 0L) {
-        val localP0 = StmtRef.fromJni(p0)
+        val localP0 = stmtRefFromJni(p0)
         val callResult = SqliteApi.columnLong(localP0, p1)
         callResult
     }
@@ -223,7 +223,7 @@ fun bindBlob(
 ): ResultCode {
     initPlatform()
     return runWithJniExceptionConversion(env, ResultCode(-1)) {
-        val localP0 = StmtRef.fromJni(p0)
+        val localP0 = stmtRefFromJni(p0)
         val localP2 = checkNotNull(p2.toKByteArray(env))
         val callResult = SqliteApi.bindBlob(localP0, p1, localP2)
         callResult
@@ -240,7 +240,7 @@ fun bindText(
 ): ResultCode {
     initPlatform()
     return runWithJniExceptionConversion(env, ResultCode(-1)) {
-        val localP0 = StmtRef.fromJni(p0)
+        val localP0 = stmtRefFromJni(p0)
         val localP2 = checkNotNull(p2.toKString(env))
         val callResult = SqliteApi.bindText(localP0, p1, localP2)
         callResult
@@ -257,7 +257,7 @@ fun bindInt(
 ): ResultCode {
     initPlatform()
     return runWithJniExceptionConversion(env, ResultCode(-1)) {
-        val localP0 = StmtRef.fromJni(p0)
+        val localP0 = stmtRefFromJni(p0)
         val callResult = SqliteApi.bindInt(localP0, p1, p2)
         callResult
     }
@@ -273,7 +273,7 @@ fun bindLong(
 ): ResultCode {
     initPlatform()
     return runWithJniExceptionConversion(env, ResultCode(-1)) {
-        val localP0 = StmtRef.fromJni(p0)
+        val localP0 = stmtRefFromJni(p0)
         val callResult = SqliteApi.bindLong(localP0, p1, p2)
         callResult
     }
@@ -288,7 +288,7 @@ fun bindNull(
 ): ResultCode {
     initPlatform()
     return runWithJniExceptionConversion(env, ResultCode(-1)) {
-        val localP0 = StmtRef.fromJni(p0)
+        val localP0 = stmtRefFromJni(p0)
         val callResult = SqliteApi.bindNull(localP0, p1)
         callResult
     }
@@ -302,7 +302,7 @@ fun errorMsg(
 ): jstring? {
     initPlatform()
     return runWithJniExceptionConversion(env, null) {
-        val localP0 = DbRef.fromJni(p0)
+        val localP0 = dbRefFromJni(p0)
         val callResult = SqliteApi.errorMsg(localP0)
         val localCallResult = callResult?.toJString(env)
         localCallResult
@@ -317,7 +317,7 @@ fun errorCode(
 ): ResultCode {
     initPlatform()
     return runWithJniExceptionConversion(env, ResultCode(-1)) {
-        val localP0 = DbRef.fromJni(p0)
+        val localP0 = dbRefFromJni(p0)
         val callResult = SqliteApi.errorCode(localP0)
         callResult
     }
@@ -347,7 +347,7 @@ fun bindDouble(
 ): ResultCode {
     initPlatform()
     return runWithJniExceptionConversion(env, ResultCode(-1)) {
-        val localP0 = StmtRef.fromJni(p0)
+        val localP0 = stmtRefFromJni(p0)
         val callResult = SqliteApi.bindDouble(localP0, p1, p2)
         callResult
     }
@@ -362,7 +362,7 @@ fun setAuthorizer(
 ): ResultCode {
     initPlatform()
     return runWithJniExceptionConversion(env, ResultCode(-1)) {
-        val localP0 = DbRef.fromJni(p0)
+        val localP0 = dbRefFromJni(p0)
         val localP1 = p1.toKAuthorizer(env)
         val callResult = SqliteApi.setAuthorizer(localP0, localP1)
         callResult
@@ -378,7 +378,7 @@ fun columnType(
 ): ColumnType {
     initPlatform()
     return runWithJniExceptionConversion(env, ColumnType(-1)) {
-        val localP0 = StmtRef.fromJni(p0)
+        val localP0 = stmtRefFromJni(p0)
         val callResult = SqliteApi.columnType(localP0, p1)
         callResult
     }
@@ -393,7 +393,7 @@ fun exec(
 ): ResultCode {
     initPlatform()
     return runWithJniExceptionConversion(env, ResultCode(-1)) {
-        val localP0 = DbRef.fromJni(p0)
+        val localP0 = dbRefFromJni(p0)
         val localP1 = checkNotNull(p1.toKString(env))
         val callResult = SqliteApi.exec(localP0, localP1)
         callResult
@@ -409,7 +409,7 @@ fun columnDeclType(
 ): jstring? {
     initPlatform()
     return runWithJniExceptionConversion(env, null) {
-        val localP0 = StmtRef.fromJni(p0)
+        val localP0 = stmtRefFromJni(p0)
         val callResult = SqliteApi.columnDeclType(localP0, p1)
         val localCallResult = callResult?.toJString(env)
         localCallResult
@@ -425,7 +425,7 @@ fun columnDatabaseName(
 ): jstring? {
     initPlatform()
     return runWithJniExceptionConversion(env, null) {
-        val localP0 = StmtRef.fromJni(p0)
+        val localP0 = stmtRefFromJni(p0)
         val callResult = SqliteApi.columnDatabaseName(localP0, p1)
         val localCallResult = callResult?.toJString(env)
         localCallResult
@@ -441,7 +441,7 @@ fun columnTableName(
 ): jstring? {
     initPlatform()
     return runWithJniExceptionConversion(env, null) {
-        val localP0 = StmtRef.fromJni(p0)
+        val localP0 = stmtRefFromJni(p0)
         val callResult = SqliteApi.columnTableName(localP0, p1)
         val localCallResult = callResult?.toJString(env)
         localCallResult
@@ -457,7 +457,7 @@ fun columnOriginName(
 ): jstring? {
     initPlatform()
     return runWithJniExceptionConversion(env, null) {
-        val localP0 = StmtRef.fromJni(p0)
+        val localP0 = stmtRefFromJni(p0)
         val callResult = SqliteApi.columnOriginName(localP0, p1)
         val localCallResult = callResult?.toJString(env)
         localCallResult
@@ -472,7 +472,7 @@ fun columnCount(
 ): jint {
     initPlatform()
     return runWithJniExceptionConversion(env, 0) {
-        val localP0 = StmtRef.fromJni(p0)
+        val localP0 = stmtRefFromJni(p0)
         val callResult = SqliteApi.columnCount(localP0)
         callResult
     }
@@ -487,7 +487,7 @@ fun columnName(
 ): jstring? {
     initPlatform()
     return runWithJniExceptionConversion(env, null) {
-        val localP0 = StmtRef.fromJni(p0)
+        val localP0 = stmtRefFromJni(p0)
         val callResult = SqliteApi.columnName(localP0, p1)
         val localCallResult = callResult?.toJString(env)
         localCallResult
@@ -502,7 +502,7 @@ fun expandedSql(
 ): jstring {
     initPlatform()
     return runWithJniExceptionConversion(env, "<no value>".toJString(env)!!) {
-        val localP0 = StmtRef.fromJni(p0)
+        val localP0 = stmtRefFromJni(p0)
         val callResult = SqliteApi.expandedSql(localP0)
         val localCallResult = checkNotNull(callResult.toJString(env))
         localCallResult
@@ -517,7 +517,7 @@ fun normalizedSql(
 ): jstring {
     initPlatform()
     return runWithJniExceptionConversion(env, "<no value>".toJString(env)!!) {
-        val localP0 = StmtRef.fromJni(p0)
+        val localP0 = stmtRefFromJni(p0)
         val callResult = SqliteApi.normalizedSql(localP0)
         val localCallResult = checkNotNull(callResult.toJString(env))
         localCallResult
@@ -532,7 +532,7 @@ fun sql(
 ): jstring {
     initPlatform()
     return runWithJniExceptionConversion(env, "<no value>".toJString(env)!!) {
-        val localP0 = StmtRef.fromJni(p0)
+        val localP0 = stmtRefFromJni(p0)
         val callResult = SqliteApi.sql(localP0)
         val localCallResult = checkNotNull(callResult.toJString(env))
         localCallResult
@@ -547,7 +547,7 @@ fun bindParameterCount(
 ): jint {
     initPlatform()
     return runWithJniExceptionConversion(env, 0) {
-        val localP0 = StmtRef.fromJni(p0)
+        val localP0 = stmtRefFromJni(p0)
         val callResult = SqliteApi.bindParameterCount(localP0)
         callResult
     }
@@ -562,7 +562,7 @@ fun bindParameterName(
 ): jstring? {
     initPlatform()
     return runWithJniExceptionConversion(env, null) {
-        val localP0 = StmtRef.fromJni(p0)
+        val localP0 = stmtRefFromJni(p0)
         val callResult = SqliteApi.bindParameterName(localP0, p1)
         val localCallResult = callResult?.toJString(env)
         localCallResult
@@ -578,7 +578,7 @@ fun bindParameterIndex(
 ): jint {
     initPlatform()
     return runWithJniExceptionConversion(env, 0) {
-        val localP0 = StmtRef.fromJni(p0)
+        val localP0 = stmtRefFromJni(p0)
         val localP1 = checkNotNull(p1.toKString(env))
         val callResult = SqliteApi.bindParameterIndex(localP0, localP1)
         callResult

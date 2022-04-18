@@ -132,7 +132,8 @@ abstract class CollectNativeLibrariesTask : DefaultTask() {
             outFolder: File,
             forAndroid: Boolean
         ) {
-            val kotlin = task.project.extensions.findByType(KotlinMultiplatformExtension::class.java)
+            val kotlin =
+                task.project.extensions.findByType(KotlinMultiplatformExtension::class.java)
             checkNotNull(kotlin) {
                 "cannot find kotlin extension"
             }
@@ -174,7 +175,8 @@ abstract class CollectNativeLibrariesTask : DefaultTask() {
                     it.listFiles().asSequence().filter { it.isDirectory }.map { target ->
                         SoInput(
                             folderName = target.name,
-                            soFile = target.listFiles().first()
+                            soFile = target.listFiles().firstOrNull()
+                                ?: error("cannot find so file ${nativesFolders.toList()}")
                         )
                     }
                 }
