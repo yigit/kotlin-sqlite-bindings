@@ -9,7 +9,10 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-
+env:
+  # Allow precise monitoring of the save/restore of Gradle User Home by `gradle-build-action`
+  # See https://github.com/marketplace/actions/gradle-build-action?version=v2.1.1#cache-debugging-and-analysis
+  GRADLE_BUILD_ACTION_CACHE_DEBUG_ENABLED: true
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
@@ -21,7 +24,6 @@ jobs:
 
     # The type of runner that the job will run on
     runs-on: ${{ matrix.os }}
-
     steps:
     - name: Setup Java environment based on setup-java
       uses: actions/setup-java@v1
@@ -31,21 +33,6 @@ jobs:
         architecture: x64
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
-
-    # build cache
-    - name: Cache Gradle Cache
-      uses: actions/cache@v1.1.2
-      with:
-        path: ~/.gradle/caches
-        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
-        # An ordered list of keys to use for restoring the cache if no cache hit occurred for key
-        restore-keys: |
-          ${{ runner.os }}-gradle-
-    - name: Cache gradle wrapper
-      uses: actions/cache@v1.1.2
-      with:
-        path: ~/.gradle/wrapper
-        key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
     - name: Cache konan
       uses: actions/cache@v1.1.2
       with:
@@ -57,18 +44,44 @@ jobs:
     - name: Own sdk dir
       if: runner.os == 'Linux'
       run: sudo chown $USER:$USER $ANDROID_HOME -R
+    - name: "Setup Gradle"
+      uses: gradle/gradle-build-action@v2
+      with:
+        # Don't reuse cache entries from any other Job.
+        gradle-home-cache-strict-match: true
+
+        # Limit the size of the cache entry.
+        # These directories contain instrumented/transformed dependency jars which can be reconstructed relatively quickly.
+        gradle-home-cache-excludes: |
+          caches/jars-9
+          caches/transforms-3
     - name: Download ndk
       run: ./gradlew downloadNdk --info --stacktrace
+      env:
+        GRADLE_CACHE_KEY: ${{ secrets.GCP_ACCOUNT }}
+        GRADLE_CACHE_PUSH: true
     - name: build and test
       run: ./gradlew allTests --info --stacktrace
+      env:
+        GRADLE_CACHE_KEY: ${{ secrets.GCP_ACCOUNT }}
+        GRADLE_CACHE_PUSH: true
     - name: run spotless on build plugin
       run: ./gradlew -p buildPlugin spotlessCheck --stacktrace
+      env:
+        GRADLE_CACHE_KEY: ${{ secrets.GCP_ACCOUNT }}
+        GRADLE_CACHE_PUSH: true
     - name: run spotless
       run: ./gradlew spotlessCheck --stacktrace
+      env:
+        GRADLE_CACHE_KEY: ${{ secrets.GCP_ACCOUNT }}
+        GRADLE_CACHE_PUSH: true
     - name: stop daemon
       run: ./gradlew --stop
     - name: build dist
       run: ./gradlew buildOnServer --stacktrace
+      env:
+        GRADLE_CACHE_KEY: ${{ secrets.GCP_ACCOUNT }}
+        GRADLE_CACHE_PUSH: true
     - name: Upload test results for sqlitebindings
       if: always()
       uses: actions/upload-artifact@v2
@@ -104,20 +117,6 @@ jobs:
         architecture: x64
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
-    # build cache
-    - name: Cache Gradle Cache
-      uses: actions/cache@v1.1.2
-      with:
-        path: ~/.gradle/caches
-        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
-        # An ordered list of keys to use for restoring the cache if no cache hit occurred for key
-        restore-keys: |
-          ${{ runner.os }}-gradle-
-    - name: Cache gradle wrapper
-      uses: actions/cache@v1.1.2
-      with:
-        path: ~/.gradle/wrapper
-        key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
     - name: Cache konan
       uses: actions/cache@v1.1.2
       with:
@@ -126,8 +125,22 @@ jobs:
         # An ordered list of keys to use for restoring the cache if no cache hit occurred for key
         restore-keys: |
           ${{ runner.os }}-konan-cache-
+    - name: "Setup Gradle"
+      uses: gradle/gradle-build-action@v2
+      with:
+        # Don't reuse cache entries from any other Job.
+        gradle-home-cache-strict-match: true
+
+        # Limit the size of the cache entry.
+        # These directories contain instrumented/transformed dependency jars which can be reconstructed relatively quickly.
+        gradle-home-cache-excludes: |
+          caches/jars-9
+          caches/transforms-3
     - name: Download ndk
       run: ./gradlew downloadNdk --info
+      env:
+        GRADLE_CACHE_KEY: ${{ secrets.GCP_ACCOUNT }}
+        GRADLE_CACHE_PUSH: true
     # we are not using matrix build here as the overhead of the build is a lot, no reason to spend unnecessary CI
     # resources even though matrix would be faster.
     - name: Run Integration Tests 21
@@ -181,21 +194,6 @@ jobs:
           architecture: x64
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-
-      # build cache
-      - name: Cache Gradle Cache
-        uses: actions/cache@v1.1.2
-        with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
-          # An ordered list of keys to use for restoring the cache if no cache hit occurred for key
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-      - name: Cache gradle wrapper
-        uses: actions/cache@v1.1.2
-        with:
-          path: ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties') }}
       - name: Cache konan
         uses: actions/cache@v1.1.2
         with:
@@ -204,12 +202,26 @@ jobs:
           # An ordered list of keys to use for restoring the cache if no cache hit occurred for key
           restore-keys: |
             ${{ runner.os }}-konan-cache-
+      - name: "Setup Gradle"
+        uses: gradle/gradle-build-action@v2
+        with:
+          # Don't reuse cache entries from any other Job.
+          gradle-home-cache-strict-match: true
+
+          # Limit the size of the cache entry.
+          # These directories contain instrumented/transformed dependency jars which can be reconstructed relatively quickly.
+          gradle-home-cache-excludes: |
+            caches/jars-9
+            caches/transforms-3
       - name: Own sdk dir
         if: runner.os == 'Linux'
         run: sudo chown $USER:$USER $ANDROID_HOME -R
       # download artifacts
       - name: Download ndk
         run: ./gradlew downloadNdk --info
+        env:
+          GRADLE_CACHE_KEY: ${{ secrets.GCP_ACCOUNT }}
+          GRADLE_CACHE_PUSH: true
       # ubuntu-latest, macos-latest, windows-latest -> should match the strategies of build
       - name: Download linux dist
         uses: actions/download-artifact@v2
@@ -228,6 +240,9 @@ jobs:
           path: artifacts/windows
       - name: test and publish
         run: DIST_OUTPUTS=artifacts ./gradlew jvmTest createCombinedRepo  --info --stacktrace
+        env:
+          GRADLE_CACHE_KEY: ${{ secrets.GCP_ACCOUNT }}
+          GRADLE_CACHE_PUSH: true
       - name: Upload Repo
         uses: actions/upload-artifact@v2
         with:
