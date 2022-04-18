@@ -59,14 +59,26 @@ jobs:
       run: ./gradlew downloadNdk --info --stacktrace
     - name: build and test
       run: ./gradlew allTests --info --stacktrace
+      env:
+        GRADLE_CACHE_KEY: ${{ secrets.GCP_ACCOUNT }}
+        GRADLE_CACHE_PUSH: true
     - name: run spotless on build plugin
       run: ./gradlew -p buildPlugin spotlessCheck --stacktrace
+      env:
+        GRADLE_CACHE_KEY: ${{ secrets.GCP_ACCOUNT }}
+        GRADLE_CACHE_PUSH: true
     - name: run spotless
       run: ./gradlew spotlessCheck --stacktrace
+      env:
+        GRADLE_CACHE_KEY: ${{ secrets.GCP_ACCOUNT }}
+        GRADLE_CACHE_PUSH: true
     - name: stop daemon
       run: ./gradlew --stop
     - name: build dist
       run: ./gradlew buildOnServer --stacktrace
+      env:
+        GRADLE_CACHE_KEY: ${{ secrets.GCP_ACCOUNT }}
+        GRADLE_CACHE_PUSH: true
     - name: Upload test results for sqlitebindings
       if: always()
       uses: actions/upload-artifact@v2
