@@ -49,7 +49,7 @@ val gcpKey = providers.environmentVariable("GRADLE_CACHE_KEY").orNull
     }
 val cacheIsPush = providers.environmentVariable("GRADLE_CACHE_PUSH").orNull?.toBoolean() ?: false
 if (gcpKey != null) {
-    println("setting up remote build cache with push: ${cacheIsPush}")
+    println("setting up remote build cache with push: $cacheIsPush")
     buildCache {
         remote(androidx.build.gradle.gcpbuildcache.GcpBuildCache::class) {
             projectId = "kotlin-sqlite-bindings"
