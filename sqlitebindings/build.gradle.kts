@@ -101,6 +101,9 @@ kotlin {
             }
         }
         val nativeMain by getting
+        // commonization of jni does not work across jvm-android anymore, hence we duplicate
+        // the code for them. Using symlinks is not possible due to ide not liking it + windows
+        // issues
         val jniWrapperComonMain by creating {
             dependsOn(commonMain)
             dependsOn(nativeMain)
