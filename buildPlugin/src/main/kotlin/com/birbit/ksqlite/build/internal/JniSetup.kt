@@ -19,7 +19,6 @@ import org.gradle.kotlin.dsl.get
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.konan.target.Family
 import java.io.File
-import java.util.concurrent.Callable
 
 internal object JniSetup {
     // we don't include android here since it already has the jni APIs available.
