@@ -54,7 +54,7 @@ if (gcpKey != null) {
         remote(androidx.build.gradle.gcpbuildcache.GcpBuildCache::class) {
             projectId = "kotlin-sqlite-bindings"
             bucketName = "kotlin-sqlite-bindings-cache"
-            credentials = androidx.build.gradle.gcpbuildcache.ExportedKeyGcpCredentials{
+            credentials = androidx.build.gradle.gcpbuildcache.ExportedKeyGcpCredentials {
                 gcpKey
             }
             isPush = cacheIsPush
