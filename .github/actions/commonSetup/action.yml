@@ -40,9 +40,11 @@ runs:
         gradle-home-cache-excludes: |
           caches/jars-9
           caches/transforms-3
-    - name: Download ndk
+    - name: Download ndk mac/linux
+      if: runner.os == 'Linux' || runner.os == 'macOS'
       shell: bash
       run: echo "yes" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --install "ndk;21.3.6528147"
-      env:
-        GRADLE_CACHE_KEY: ${{ inputs.gradleCacheKey }}
-        GRADLE_CACHE_PUSH: ${{ inputs.gradleCachePush }}
+    - name: Download ndk windows
+      if: runner.os == 'Windows'
+      shell: bash
+      run: echo "yes" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager.bat --install "ndk;21.3.6528147"
