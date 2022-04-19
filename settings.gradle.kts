@@ -29,12 +29,12 @@ pluginManagement {
         id("org.jlleitschuh.gradle.ktlint") version ktlintVersion
         kotlin("multiplatform") version kotlinVersion
         kotlin("jvm") version kotlinVersion
-        id("androidx.build.gradle.gcpbuildcache") version "a8ca1b978a"
+        id("androidx.build.gradle.gcpbuildcache") version "a3aa1464e0"
     }
     // TODO remove when that plugin is shipped to gradle plugin portal
     this.resolutionStrategy.eachPlugin {
         if (this.requested.id.id == "androidx.build.gradle.gcpbuildcache") {
-            this.useModule("com.github.yigit.gcp-gradle-build-cache:gcpbuildcache:a8ca1b978a")
+            this.useModule("com.github.androidx:gcp-gradle-build-cache:a3aa1464e0")
         }
     }
 }
@@ -54,7 +54,9 @@ if (gcpKey != null) {
         remote(androidx.build.gradle.gcpbuildcache.GcpBuildCache::class) {
             projectId = "kotlin-sqlite-bindings"
             bucketName = "kotlin-sqlite-bindings-cache"
-            credentials = androidx.build.gradle.gcpbuildcache.ExportedKeyGcpCredentialsText(gcpKey)
+            credentials = androidx.build.gradle.gcpbuildcache.ExportedKeyGcpCredentials{
+                gcpKey
+            }
             isPush = cacheIsPush
         }
     }
