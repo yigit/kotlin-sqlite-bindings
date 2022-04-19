@@ -1,0 +1,48 @@
+name: 'common machine setup'
+description: 'Prepares the machine'
+inputs:
+  gradleCacheKey:
+    description: "Service account for gradle cache"
+    required: false
+  gradleCachePush:
+    description: "True if we'll also push to the cache"
+    required: false
+    default: "true"
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Java environment based on setup-java
+      uses: actions/setup-java@v1
+      with:
+        java-version: '11'
+        java-package: jdk
+        architecture: x64
+    - name: Cache konan
+      uses: actions/cache@v1.1.2
+      with:
+        path: ~/.konan
+        key: ${{ runner.os }}-konan-cache-${{ hashFiles('buildSrc/build.gradle.kts') }}
+        # An ordered list of keys to use for restoring the cache if no cache hit occurred for key
+        restore-keys: |
+          ${{ runner.os }}-konan-cache-
+    - name: Own sdk dir
+      if: runner.os == 'Linux'
+      shell: bash
+      run: sudo chown $USER:$USER $ANDROID_HOME -R
+    - name: "Setup Gradle"
+      uses: gradle/gradle-build-action@v2
+      with:
+        # Don't reuse cache entries from any other Job.
+        gradle-home-cache-strict-match: true
+
+        # Limit the size of the cache entry.
+        # These directories contain instrumented/transformed dependency jars which can be reconstructed relatively quickly.
+        gradle-home-cache-excludes: |
+          caches/jars-9
+          caches/transforms-3
+    - name: Download ndk
+      shell: bash
+      run: echo "yes" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --install "ndk;21.3.6528147"
+      env:
+        GRADLE_CACHE_KEY: ${{ inputs.gradleCacheKey }}
+        GRADLE_CACHE_PUSH: ${{ inputs.gradleCachePush }}
