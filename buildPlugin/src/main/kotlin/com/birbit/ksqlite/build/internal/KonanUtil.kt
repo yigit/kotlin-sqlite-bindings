@@ -204,7 +204,6 @@ internal object KonanUtil {
         @get:PathSensitive(PathSensitivity.RELATIVE)
         abstract var input: File
         @get:OutputFile
-        @get:PathSensitive(PathSensitivity.RELATIVE)
         abstract var output: File
         @TaskAction
         fun compile() {
