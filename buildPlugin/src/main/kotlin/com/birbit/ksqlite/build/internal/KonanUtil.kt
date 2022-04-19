@@ -19,13 +19,16 @@ import com.android.build.api.dsl.LibraryExtension
 import com.android.build.api.variant.LibraryAndroidComponentsExtension
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
+import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.CacheableTask
-import org.gradle.api.tasks.Exec
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.OutputFile
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.TaskProvider
-import org.gradle.kotlin.dsl.property
 import org.jetbrains.kotlin.gradle.utils.NativeCompilerDownloader
 import org.jetbrains.kotlin.konan.target.Architecture
 import org.jetbrains.kotlin.konan.target.Family
@@ -54,23 +57,16 @@ internal object KonanUtil {
         konanTarget: KonanTarget,
         input: File,
         output: File,
-        configure: (Exec) -> Unit
-    ): TaskProvider<Exec> {
+        configure: (ArchiveNativeBinaryTask) -> Unit
+    ): TaskProvider<ArchiveNativeBinaryTask> {
         return project.tasks.register(
             "$prefix${konanTarget.presetName.capitalize(Locale.US)}",
-            Exec::class.java
+            ArchiveNativeBinaryTask::class.java
         ) {
             it.onlyIf { konanTarget.isBuiltOnThisMachine() }
-
-            it.inputs.file(input)
-            it.outputs.file(output)
-
-            it.executable(llvmBinFolder.resolve("llvm-ar").absolutePath)
-            it.args(
-                "rc", output.absolutePath,
-                input.absolutePath
-            )
-            it.environment("PATH", "$llvmBinFolder;${System.getenv("PATH")}")
+            it.konanTarget.set(konanTarget)
+            it.input = input
+            it.output = output
             configure(it)
         }
     }
@@ -177,19 +173,11 @@ internal object KonanUtil {
         throw RuntimeException("cannot call xcrun $args", e)
     }
 
-    @CacheableTask
-    abstract class CompilationTask : DefaultTask() {
-        @Input
-        val args = project.objects.listProperty(String::class.java)
+    abstract class LlvmTask : DefaultTask() {
         @Input
         val konanTarget: Property<KonanTarget> = project.objects.property(KonanTarget::class.java)
-        fun args(vararg inputs: String) {
-            args.set(args.get() + inputs)
-        }
-        fun args(inputs: List<String>) {
-            args.set(args.get() + inputs)
-        }
-        private fun downloadNativeCompiler() {
+
+        protected fun downloadNativeCompiler() {
             val nativeCompilerDownloader = NativeCompilerDownloader(
                 project = project
             )
@@ -208,6 +196,38 @@ internal object KonanUtil {
                 it.args("-Xcheck-dependencies", "-target", konanTarget.get().visibleName)
             }
             result.assertNormalExitValue()
+        }
+    }
+    @CacheableTask
+    abstract class ArchiveNativeBinaryTask : LlvmTask() {
+        @get:InputFile
+        @get:PathSensitive(PathSensitivity.RELATIVE)
+        abstract var input: File
+        @get:OutputFile
+        @get:PathSensitive(PathSensitivity.RELATIVE)
+        abstract var output: File
+        @TaskAction
+        fun compile() {
+            downloadNativeCompiler()
+            project.exec {
+                it.executable(llvmBinFolder.resolve("llvm-ar").absolutePath)
+                it.args(
+                    "rc", output.absolutePath,
+                    input.absolutePath
+                )
+                it.environment("PATH", "$llvmBinFolder;${System.getenv("PATH")}")
+            }
+        }
+    }
+    @CacheableTask
+    abstract class CompilationTask : LlvmTask() {
+        @Input
+        val args: ListProperty<String> = project.objects.listProperty(String::class.java)
+        fun args(vararg inputs: String) {
+            args.set(args.get() + inputs)
+        }
+        fun args(inputs: List<String>) {
+            args.set(args.get() + inputs)
         }
         @TaskAction
         fun compile() {
