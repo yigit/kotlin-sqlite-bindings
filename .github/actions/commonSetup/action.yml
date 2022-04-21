@@ -50,6 +50,7 @@ runs:
       run: echo "yes" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager.bat --install "ndk;21.3.6528147"
     - name: list projects to get the scan
       id: gradle-list-projects
+      shell: bash
       run: ./gradlew projects --stacktrace --scan
       env:
         GRADLE_CACHE_KEY: ${{ inputs.gradleCacheKey }}
