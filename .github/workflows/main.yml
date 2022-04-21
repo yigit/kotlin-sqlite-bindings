@@ -32,10 +32,14 @@ jobs:
           gradleCacheKey: ${{ secrets.GCP_ACCOUNT }}
           gradleCachePush: true
       - name: build and test
-        run: ./gradlew allTests --info --stacktrace
+        id: gradle-build-and-test
+        run: ./gradlew allTests --stacktrace --scan
         env:
           GRADLE_CACHE_KEY: ${{ secrets.GCP_ACCOUNT }}
           GRADLE_CACHE_PUSH: true
+      - name: Publish build and test scan
+        # No scans are produced for PRs from forked repos, so omit this notice for forked PRs.
+        run: echo "::notice title=Build and Test scan:: ${{ steps.gradle-build-and-test.outputs.build-scan-url }}"
       - name: run spotless on build plugin
         run: ./gradlew -p buildPlugin spotlessCheck --stacktrace
         env:
