@@ -32,7 +32,7 @@ import java.util.Locale
 internal object SqliteCompilation {
     fun setup(project: Project, config: SqliteCompilationConfig) {
         val buildFolder = project.buildDir.resolve("sqlite-compilation")
-        val generatedDefFileFolder = project.buildDir.resolve("sqlite-def-files")
+        val generatedDefFileFolder = project.layout.buildDirectory.dir("sqlite-def-files")
         // TODO convert these to gradle properties
         val downloadFile = buildFolder.resolve("download/amalgamation.zip")
         val srcDir = buildFolder.resolve("src")
@@ -119,18 +119,20 @@ internal object SqliteCompilation {
                 cInteropTask.dependsOn(archiveSQLite)
                 it.includeDirs(srcDir)
                 val original = it.defFile
-                val newDefFile = generatedDefFileFolder.resolve("${konanTarget.presetName}/sqlite-generated.def")
+                val newDefFile = generatedDefFileFolder.map {
+                    it.dir(konanTarget.presetName).file("sqlite-generated.def")
+                }
                 val createDefFileTask = project.tasks.register(
                     "createDefFileForSqlite${konanTarget.presetName.capitalize(Locale.US)}",
                     CreateDefFileWithLibraryPathTask::class.java
                 ) { task ->
                     task.dependsOn(archiveSQLite)
                     task.original = original
-                    task.target = newDefFile
+                    task.target.set(newDefFile)
                     task.soFilePath = staticLibFile
                 }
                 // create def file w/ library paths. couldn't figure out how else to add it :/ :)
-                it.defFile = newDefFile
+                it.defFile = newDefFile.get().asFile
                 cInteropTask.dependsOn(createDefFileTask)
             }
         }
