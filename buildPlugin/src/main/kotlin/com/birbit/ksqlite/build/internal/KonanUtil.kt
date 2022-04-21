@@ -50,7 +50,11 @@ internal object KonanUtil {
         val targetName: String,
         val sysRoot: (Project) -> File,
         val clangArgs: List<String> = emptyList()
-    )
+    ) {
+        val cacheKey: String by lazy {
+            (clangArgs + targetName).joinToString("-")
+        }
+    }
 
     fun registerArchiveTask(
         project: Project,
@@ -94,11 +98,6 @@ internal object KonanUtil {
             if (konanTarget.family != Family.MINGW) {
                 it.args("-fPIC")
             }
-            val targetInfo = targetInfoFromProps(konanTarget)
-            // TODO these absolute paths in args will break caching in all likelihood
-            it.args("--target=${targetInfo.targetName}")
-            it.args("--sysroot=${targetInfo.sysRoot(project).absolutePath}")
-            it.args(targetInfo.clangArgs)
             configure(it)
         }
     }
@@ -182,7 +181,7 @@ internal object KonanUtil {
 
         @get:Input
         val konanTargetName: String
-            get()= konanTarget.get().name
+            get() = konanTarget.get().name
 
         protected fun downloadNativeCompiler() {
             val nativeCompilerDownloader = NativeCompilerDownloader(
@@ -229,11 +228,26 @@ internal object KonanUtil {
     abstract class CompilationTask : LlvmTask() {
         @Input
         val args: ListProperty<String> = project.objects.listProperty(String::class.java)
+
+        private val cacheIgnoredArgs = mutableListOf<String>()
+
+        private val konanTargetInfo = konanTarget.map {
+            targetInfoFromProps(it)
+        }
+
+        @get:Input
+        val konanTargetKey = konanTargetInfo.map { it.cacheKey }
+
         fun args(vararg inputs: String) {
             args.set(args.get() + inputs)
         }
+
         fun args(inputs: List<String>) {
             args.set(args.get() + inputs)
+        }
+
+        fun argsWithoutCacheImpact(vararg inputs: String) {
+            this.cacheIgnoredArgs.addAll(inputs)
         }
         @TaskAction
         fun compile() {
@@ -241,7 +255,13 @@ internal object KonanUtil {
             project.exec {
                 it.environment("PATH", "$llvmBinFolder;${System.getenv("PATH")}")
                 it.executable(llvmBinFolder.resolve("clang").absolutePath)
+                val targetInfo = konanTargetInfo.get()
+                it.args("--target=${targetInfo.targetName}")
+                it.args("--sysroot=${targetInfo.sysRoot(project).absolutePath}")
+                it.args(targetInfo.clangArgs)
+
                 it.args(args.get())
+                it.args(cacheIgnoredArgs)
             }
         }
     }

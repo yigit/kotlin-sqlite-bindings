@@ -94,7 +94,7 @@ internal object SqliteCompilation {
                     "-DSQLITE_ENABLE_RBU=1"
                 )
                 // TODO these absolute paths in args will break caching in all likelihood
-                it.args(
+                it.argsWithoutCacheImpact(
                     "-I${srcDir.absolutePath}",
                     "-o", objFile.absolutePath,
                     sourceFile.absolutePath
