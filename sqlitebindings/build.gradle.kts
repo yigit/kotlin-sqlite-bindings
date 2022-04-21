@@ -53,7 +53,8 @@ ksqliteBuild {
 }
 
 kotlin {
-    val combinedSharedLibsFolder = project.buildDir.resolve("combinedSharedLibs")
+
+    val combinedSharedLibsFolder = project.layout.buildDirectory.dir("combinedSharedLibs")
     val combineSharedLibsTask =
         com.birbit.ksqlite.build.CollectNativeLibrariesTask
             .create(
@@ -63,7 +64,7 @@ kotlin {
                 forAndroid = false
             )
 
-    val combinedAndroidSharedLibsFolder = project.buildDir.resolve("combinedAndroidSharedLibs")
+    val combinedAndroidSharedLibsFolder = project.layout.buildDirectory.dir("combinedAndroidSharedLibs")
     val combineAndroidSharedLibsTask =
         com.birbit.ksqlite.build.CollectNativeLibrariesTask
             .create(
@@ -73,9 +74,10 @@ kotlin {
                 forAndroid = true
             )
     project.android.sourceSets {
-        this["main"].jniLibs.srcDir(combinedAndroidSharedLibsFolder)
+        this["main"].jniLibs {
+            srcDir(combinedAndroidSharedLibsFolder)
+        }
     }
-
     val androidExt = project.extensions.findByType(com.android.build.gradle.LibraryExtension::class)
     androidExt!!.libraryVariants.all {
         this.javaCompileProvider.dependsOn(combineAndroidSharedLibsTask)

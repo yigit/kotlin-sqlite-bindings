@@ -20,6 +20,10 @@ import com.birbit.ksqlite.build.internal.isBuiltOnThisMachine
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.Project
+import org.gradle.api.file.Directory
+import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.provider.Property
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
@@ -33,12 +37,11 @@ import org.jetbrains.kotlin.konan.target.Architecture
 import org.jetbrains.kotlin.konan.target.Family
 import org.jetbrains.kotlin.konan.target.KonanTarget
 import java.io.File
-import java.io.Serializable
 
 data class SoInput(
     val folderName: String,
     val soFile: File
-) : Serializable {
+) : java.io.Serializable {
     companion object {
         fun folderName(konanTarget: KonanTarget): String {
             // see https://github.com/scijava/native-lib-loader/blob/master/src/main/java/org/scijava/nativelib/NativeLibraryUtil.java
@@ -75,8 +78,8 @@ abstract class CollectNativeLibrariesTask : DefaultTask() {
     @Internal
     lateinit var soInputs: List<SoInput>
 
-    @OutputDirectory
-    lateinit var outputDir: File
+    @get:OutputDirectory
+    val outputDir: DirectoryProperty = project.objects.directoryProperty()
 
     @Input
     fun getFolderNames() = soInputs.map { it.folderName }
@@ -89,6 +92,7 @@ abstract class CollectNativeLibrariesTask : DefaultTask() {
 
     @TaskAction
     fun doIt() {
+        val outputDir = outputDir.get().asFile
         outputDir.deleteRecursively()
         outputDir.mkdirs()
         val nativeDir = if (forAndroid) {
@@ -110,7 +114,7 @@ abstract class CollectNativeLibrariesTask : DefaultTask() {
         fun create(
             project: Project,
             namePrefix: String,
-            outFolder: File,
+            outFolder: Provider<Directory>,
             forAndroid: Boolean
         ): TaskProvider<CollectNativeLibrariesTask> {
             val suffix = if (forAndroid) {
@@ -129,7 +133,7 @@ abstract class CollectNativeLibrariesTask : DefaultTask() {
         fun configure(
             task: CollectNativeLibrariesTask,
             namePrefix: String,
-            outFolder: File,
+            outFolder: Provider<Directory>,
             forAndroid: Boolean
         ) {
             val kotlin =
@@ -189,7 +193,7 @@ abstract class CollectNativeLibrariesTask : DefaultTask() {
             }
             println("found so files:$soFiles, for android $forAndroid")
             task.soInputs = soFiles
-            task.outputDir = outFolder
+            task.outputDir.set(outFolder)
             task.forAndroid = forAndroid
         }
     }

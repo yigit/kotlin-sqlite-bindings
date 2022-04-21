@@ -37,7 +37,7 @@ internal object SqliteCompilation {
         val downloadFile = buildFolder.resolve("download/amalgamation.zip")
         val srcDir = buildFolder.resolve("src")
         val downloadTask = project.tasks.register("downloadSqlite", DownloadTask::class.java) {
-            it.downlodUrl = computeDownloadUrl(config.version)
+            it.downloadUrl = computeDownloadUrl(config.version)
             it.downloadTargetFile = downloadFile
         }
 
