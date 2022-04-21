@@ -93,7 +93,7 @@ internal object SqliteCompilation {
                     "-DSQLITE_OMIT_PROGRESS_CALLBACK=0",
                     "-DSQLITE_ENABLE_RBU=1"
                 )
-
+                // TODO these absolute paths in args will break caching in all likelihood
                 it.args(
                     "-I${srcDir.absolutePath}",
                     "-o", objFile.absolutePath,

@@ -95,6 +95,7 @@ internal object KonanUtil {
                 it.args("-fPIC")
             }
             val targetInfo = targetInfoFromProps(konanTarget)
+            // TODO these absolute paths in args will break caching in all likelihood
             it.args("--target=${targetInfo.targetName}")
             it.args("--sysroot=${targetInfo.sysRoot(project).absolutePath}")
             it.args(targetInfo.clangArgs)
