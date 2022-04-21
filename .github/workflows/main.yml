@@ -54,7 +54,7 @@ jobs:
         run: ./gradlew --stop
       - name: build dist
         id: gradle-build-dist
-        run: ./gradlew buildOnServer --stacktrace
+        run: ./gradlew buildOnServer --stacktrace --scan
         env:
           GRADLE_CACHE_KEY: ${{ secrets.GCP_ACCOUNT }}
           GRADLE_CACHE_PUSH: true
@@ -163,7 +163,7 @@ jobs:
           path: artifacts/windows
       - name: test and publish
         id: gradle-test-and-dist
-        run: DIST_OUTPUTS=artifacts ./gradlew jvmTest createCombinedRepo  --info --stacktrace
+        run: DIST_OUTPUTS=artifacts ./gradlew jvmTest createCombinedRepo  --info --stacktrace --scan
         env:
           GRADLE_CACHE_KEY: ${{ secrets.GCP_ACCOUNT }}
           GRADLE_CACHE_PUSH: true
