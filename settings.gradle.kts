@@ -29,18 +29,26 @@ pluginManagement {
         id("org.jlleitschuh.gradle.ktlint") version ktlintVersion
         kotlin("multiplatform") version kotlinVersion
         kotlin("jvm") version kotlinVersion
-        id("androidx.build.gradle.gcpbuildcache") version "a3aa1464e0"
+        id("androidx.build.gradle.gcpbuildcache") version "e1b210f69afed"
     }
     // TODO remove when that plugin is shipped to gradle plugin portal
     this.resolutionStrategy.eachPlugin {
         if (this.requested.id.id == "androidx.build.gradle.gcpbuildcache") {
-            this.useModule("com.github.androidx:gcp-gradle-build-cache:a3aa1464e0")
+            this.useModule("com.github.androidx:gcp-gradle-build-cache:e1b210f69afed")
         }
     }
 }
 
 plugins {
     id("androidx.build.gradle.gcpbuildcache")
+    id("com.gradle.enterprise") version("3.10")
+}
+
+gradleEnterprise {
+    buildScan {
+        termsOfServiceUrl = "https://gradle.com/terms-of-service"
+        termsOfServiceAgree = "yes"
+    }
 }
 
 val gcpKey = providers.environmentVariable("GRADLE_CACHE_KEY").orNull
