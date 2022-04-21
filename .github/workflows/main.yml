@@ -37,8 +37,8 @@ jobs:
         env:
           GRADLE_CACHE_KEY: ${{ secrets.GCP_ACCOUNT }}
           GRADLE_CACHE_PUSH: true
-      - name: Publish build and test scan
-        # No scans are produced for PRs from forked repos, so omit this notice for forked PRs.
+      - name: Build Scan for Test
+        shell: bash
         run: echo "::notice title=Build and Test scan::${{ steps.gradle-build-and-test.outputs.build-scan-url }}"
       - name: run spotless on build plugin
         run: ./gradlew -p buildPlugin spotlessCheck --stacktrace
@@ -53,10 +53,14 @@ jobs:
       - name: stop daemon
         run: ./gradlew --stop
       - name: build dist
+        id: gradle-build-dist
         run: ./gradlew buildOnServer --stacktrace
         env:
           GRADLE_CACHE_KEY: ${{ secrets.GCP_ACCOUNT }}
           GRADLE_CACHE_PUSH: true
+      - name: Build Scan for Dist
+        shell: bash
+        run: echo "::notice title=Dist Scan::${{ steps.gradle-build-dist.outputs.build-scan-url }}"
       - name: Upload test results for sqlitebindings
         if: always()
         uses: actions/upload-artifact@v2
@@ -158,10 +162,14 @@ jobs:
           name: windows-latest-dist
           path: artifacts/windows
       - name: test and publish
+        id: gradle-test-and-dist
         run: DIST_OUTPUTS=artifacts ./gradlew jvmTest createCombinedRepo  --info --stacktrace
         env:
           GRADLE_CACHE_KEY: ${{ secrets.GCP_ACCOUNT }}
           GRADLE_CACHE_PUSH: true
+      - name: Build Dist And Test Scan
+        shell: bash
+        run: echo "::notice title=Build and Dist Scan::${{ steps.gradle-test-and-dist.outputs.build-scan-url }}"
       - name: Upload Repo
         uses: actions/upload-artifact@v2
         with:

@@ -41,6 +41,14 @@ pluginManagement {
 
 plugins {
     id("androidx.build.gradle.gcpbuildcache")
+    id("com.gradle.enterprise") version("3.10")
+}
+
+gradleEnterprise {
+    buildScan {
+        termsOfServiceUrl = "https://gradle.com/terms-of-service"
+        termsOfServiceAgree = "yes"
+    }
 }
 
 val gcpKey = providers.environmentVariable("GRADLE_CACHE_KEY").orNull
