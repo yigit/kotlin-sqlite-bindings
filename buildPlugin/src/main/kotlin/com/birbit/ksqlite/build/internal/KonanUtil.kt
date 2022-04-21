@@ -24,6 +24,7 @@ import org.gradle.api.provider.Property
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
@@ -173,9 +174,14 @@ internal object KonanUtil {
         throw RuntimeException("cannot call xcrun $args", e)
     }
 
+    @CacheableTask
     abstract class LlvmTask : DefaultTask() {
-        @Input
+        @get:Internal
         val konanTarget: Property<KonanTarget> = project.objects.property(KonanTarget::class.java)
+
+        @get:Input
+        val konanTargetName: String
+            get()= konanTarget.get().name
 
         protected fun downloadNativeCompiler() {
             val nativeCompilerDownloader = NativeCompilerDownloader(
