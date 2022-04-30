@@ -20,6 +20,8 @@ import com.birbit.ksqlite.build.SqliteCompilationConfig
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.internal.TaskInternal
+import org.gradle.api.specs.AndSpec
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.Input
@@ -112,6 +114,10 @@ internal object SqliteCompilation {
                 val cInteropTask = project.tasks[it.interopProcessingTaskName]
                 cInteropTask.dependsOn(unzipTask)
                 cInteropTask.dependsOn(archiveSQLite)
+                // cinteropTask declares up to date check which means it can never be cached
+                // remove it, it already declares inputs outputs.
+                cInteropTask.clearUpToDateChecks()
+
                 it.includeDirs(srcDir)
                 val original = it.defFile
                 val newDefFile = generatedDefFileFolder.map {
@@ -130,6 +136,17 @@ internal object SqliteCompilation {
                 it.defFile = newDefFile.get().asFile
                 cInteropTask.dependsOn(createDefFileTask)
             }
+        }
+    }
+
+    /**
+     * some KMP tasks have unreasonable up to date checks that completely blocks the caching.
+     */
+    private fun Task.clearUpToDateChecks() {
+        val outputClass = outputs::class.java
+        outputClass.getDeclaredField("upToDateSpec").let { field ->
+            check(field.trySetAccessible())
+            field.set(outputs, AndSpec.empty< TaskInternal>())
         }
     }
 
