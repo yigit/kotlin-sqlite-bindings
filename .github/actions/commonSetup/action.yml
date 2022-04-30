@@ -18,7 +18,7 @@ runs:
         java-package: jdk
         architecture: x64
     - name: Cache konan
-      uses: actions/cache@v1.1.2
+      uses: actions/cache@v3
       with:
         path: ~/.konan
         key: ${{ runner.os }}-konan-cache-${{ hashFiles('buildSrc/build.gradle.kts') }}
@@ -40,6 +40,11 @@ runs:
         gradle-home-cache-excludes: |
           caches/jars-9
           caches/transforms-3
+    - name: Cache NDK
+      uses: actions/cache@v3
+      with:
+        path: ${{ env.ANDROID_SDK_ROOT }}/ndk/21.3.6528147
+        key: ${{ runner.os }}-ndk-cache-21.3.6528147
     - name: Download ndk mac/linux
       if: runner.os == 'Linux' || runner.os == 'macOS'
       shell: bash
