@@ -41,14 +41,15 @@ runs:
           caches/jars-9
           caches/transforms-3
     - name: Set android sdk path in env context
+      id: obtainSdkDir
       shell: bash
       run: |
         set -x
-        echo ::set-env name=ANDROID_SDK_ROOT::$ANDROID_SDK_ROOT
+        echo "::set-output name=sdkDir::$ANDROID_SDK_ROOT"
     - name: Cache NDK
       uses: actions/cache@v3
       with:
-        path: ${{ env.ANDROID_SDK_ROOT }}/ndk/21.3.6528147
+        path: ${{ steps.obtainSdkDir.outputs.sdkDir }}/ndk/21.3.6528147
         key: ${{ runner.os }}-android-ndk-cache-21.3.6528147
     - name: Download ndk mac/linux
       if: runner.os == 'Linux' || runner.os == 'macOS'
