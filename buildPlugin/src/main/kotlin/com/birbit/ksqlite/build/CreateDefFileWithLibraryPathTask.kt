@@ -39,18 +39,13 @@ abstract class CreateDefFileWithLibraryPathTask : DefaultTask() {
     @get:OutputFile
     val target = project.objects.fileProperty()
 
-    // include project path as well so that the abs paths we put into the def file
-    // does not make us restore bad cache
-    @get:Input
-    val projectPath: String
-        get() = project.buildDir.canonicalPath
-
     @TaskAction
     fun doIt() {
         println("will copy from $original to $target")
         val target = target.asFile.get()
         target.parentFile.mkdirs()
-        val soLocalPath = Paths.get(soFilePath.parentFile.absolutePath)
+        //use relative path to the owning project so it can be cached.
+        val soLocalPath = soFilePath.parentFile.relativeTo(project.projectDir)
         val content = original.readText(Charsets.UTF_8) + System.lineSeparator() + "libraryPaths = \"$soLocalPath\"" +
             System.lineSeparator()
         println("new content: $content")
