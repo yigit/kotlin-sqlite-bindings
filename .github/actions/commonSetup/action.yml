@@ -48,7 +48,9 @@ runs:
     - name: Download ndk mac/linux
       if: runner.os == 'Linux' || runner.os == 'macOS'
       shell: bash
-      run: echo "yes" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --install "ndk;21.3.6528147"
+      run: |
+        set -x
+        echo "yes" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --install "ndk;21.3.6528147"
     - name: Download ndk windows
       if: runner.os == 'Windows'
       shell: bash
