@@ -19,7 +19,7 @@ import com.diffplug.gradle.spotless.SpotlessExtension
 plugins {
     id("org.jlleitschuh.gradle.ktlint")
     id("com.diffplug.spotless")
-    kotlin("jvm") version "1.6.20"
+    kotlin("jvm") version "1.6.21"
     `java-gradle-plugin`
 }
 // has to be separate while using M2
