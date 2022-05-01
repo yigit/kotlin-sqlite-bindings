@@ -86,7 +86,7 @@ jobs:
           name: ${{ matrix.os }}-dist
           path: build/dist
   androidTests:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     strategy:
       matrix:
         api-level: [21, 24, 27, 29, 31]
