@@ -139,6 +139,12 @@ jobs:
         with:
           name: android test results
           path: ./**/build/reports
+      - name: Upload apks
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v2
+        with:
+          name: test apks of ${{ runner.os }}
+          path: ./**/build/*.apk
   buildFinalArtifacts:
     needs: build
     runs-on: ubuntu-latest
