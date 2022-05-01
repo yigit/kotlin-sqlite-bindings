@@ -90,7 +90,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: test apks of ${{ runner.os }}
-          path: ./**/build/*.apk
+          path: ./**/*.apk
   androidTests:
     runs-on: macos-latest
     steps:
