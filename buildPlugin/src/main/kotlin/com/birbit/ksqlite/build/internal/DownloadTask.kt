@@ -27,7 +27,7 @@ import java.net.URL
 @CacheableTask
 abstract class DownloadTask : DefaultTask() {
     @Input
-    lateinit var downlodUrl: String
+    lateinit var downloadUrl: String
 
     @OutputFile
     lateinit var downloadTargetFile: File
@@ -36,11 +36,11 @@ abstract class DownloadTask : DefaultTask() {
     fun doIt() {
         downloadTargetFile.delete()
         downloadTargetFile.parentFile.mkdirs()
-        URL(downlodUrl).openStream().use { inputStream ->
+        URL(downloadUrl).openStream().use { inputStream ->
             FileOutputStream(downloadTargetFile).use { outputStream ->
                 inputStream.copyTo(outputStream)
             }
         }
-        println("downloaded $downlodUrl to $downloadTargetFile")
+        println("downloaded $downloadUrl to $downloadTargetFile")
     }
 }

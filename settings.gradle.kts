@@ -48,6 +48,9 @@ gradleEnterprise {
     buildScan {
         termsOfServiceUrl = "https://gradle.com/terms-of-service"
         termsOfServiceAgree = "yes"
+        capture {
+            isTaskInputFiles = true
+        }
     }
 }
 
@@ -69,7 +72,7 @@ if (gcpKey != null) {
         }
     }
 } else {
-    println("not using remove build cache")
+    println("not using remote build cache")
 }
 includeBuild("buildPlugin")
 include("sqlitebindings", "sqlitebindings-api", "jnigenerator", "ksqlite3")

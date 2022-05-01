@@ -18,7 +18,7 @@ runs:
         java-package: jdk
         architecture: x64
     - name: Cache konan
-      uses: actions/cache@v1.1.2
+      uses: actions/cache@v3
       with:
         path: ~/.konan
         key: ${{ runner.os }}-konan-cache-${{ hashFiles('buildSrc/build.gradle.kts') }}
@@ -40,10 +40,23 @@ runs:
         gradle-home-cache-excludes: |
           caches/jars-9
           caches/transforms-3
+    - name: Set android sdk path in env context
+      id: obtainSdkDir
+      shell: bash
+      run: |
+        set -x
+        echo "::set-output name=sdkDir::$ANDROID_SDK_ROOT"
+    - name: Cache NDK
+      uses: actions/cache@v3
+      with:
+        path: ${{ steps.obtainSdkDir.outputs.sdkDir }}/ndk/21.3.6528147
+        key: ${{ runner.os }}-android-ndk-cache-21.3.6528147
     - name: Download ndk mac/linux
       if: runner.os == 'Linux' || runner.os == 'macOS'
       shell: bash
-      run: echo "yes" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --install "ndk;21.3.6528147"
+      run: |
+        set -x
+        echo "yes" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --install "ndk;21.3.6528147"
     - name: Download ndk windows
       if: runner.os == 'Windows'
       shell: bash

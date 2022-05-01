@@ -16,27 +16,34 @@
 package com.birbit.ksqlite.build
 
 import org.gradle.api.DefaultTask
+import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputFile
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import java.io.File
-import java.nio.file.Paths
 
+@CacheableTask
 abstract class CreateDefFileWithLibraryPathTask : DefaultTask() {
-    @InputFile
-    lateinit var original: File
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract var original: File
 
-    @InputFile
-    lateinit var soFilePath: File
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract var soFilePath: File
 
-    @OutputFile
-    lateinit var target: File
+    @get:OutputFile
+    val target = project.objects.fileProperty()
 
     @TaskAction
     fun doIt() {
         println("will copy from $original to $target")
+        val target = target.asFile.get()
         target.parentFile.mkdirs()
-        val soLocalPath = Paths.get(soFilePath.parentFile.absolutePath)
+        // use relative path to the owning project so it can be cached.
+        val soLocalPath = soFilePath.parentFile.relativeTo(project.projectDir)
         val content = original.readText(Charsets.UTF_8) + System.lineSeparator() + "libraryPaths = \"$soLocalPath\"" +
             System.lineSeparator()
         println("new content: $content")

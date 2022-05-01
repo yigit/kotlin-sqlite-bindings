@@ -58,7 +58,7 @@ internal object AndroidSetup {
         val buildDir = rootProject.buildDir.resolve("android-cmd-line-tools")
         val toolsZip = buildDir.resolve("tools.zip")
         val downloadTask = rootProject.tasks.register("downloadAndroidCmdLineTools", DownloadTask::class.java) {
-            it.downlodUrl = buildCommandLineToolsUrl()
+            it.downloadUrl = buildCommandLineToolsUrl()
             it.downloadTargetFile = toolsZip
         }
         val cmdLineToolsFolder = buildDir.resolve("tools")
