@@ -48,16 +48,17 @@ runs:
         echo "::set-output name=sdkDir::$ANDROID_SDK_ROOT"
     - name: Cache NDK
       uses: actions/cache@v3
+      id: ndkCache
       with:
         path: ${{ steps.obtainSdkDir.outputs.sdkDir }}/ndk/21.3.6528147
         key: ${{ runner.os }}-android-ndk-cache-21.3.6528147
     - name: Download ndk mac/linux
-      if: runner.os == 'Linux' || runner.os == 'macOS'
+      if: steps.ndkCache.outputs.cache-hit != 'true' && (runner.os == 'Linux' || runner.os == 'macOS')
       shell: bash
       run: |
         set -x
         echo "yes" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --install "ndk;21.3.6528147"
     - name: Download ndk windows
-      if: runner.os == 'Windows'
+      if: steps.ndkCache.outputs.cache-hit != 'true' && runner.os == 'Windows'
       shell: bash
       run: echo "yes" | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager.bat --install "ndk;21.3.6528147"
