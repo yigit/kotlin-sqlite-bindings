@@ -94,41 +94,45 @@ jobs:
         with:
           gradleCacheKey: ${{ secrets.GCP_ACCOUNT }}
           gradleCachePush: true
+      - name: AVD cache
+        uses: actions/cache@v3
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-caches
       # we are not using matrix build here as the overhead of the build is a lot, no reason to spend unnecessary CI
       # resources even though matrix would be faster.
-      - name: Run Integration Tests 21
-        uses: ReactiveCircus/android-emulator-runner@v2.17.0
+      - name: Asemble Android Test
+        id: assemble-android-test
+        run: ./gradlew packageDebugAndroidTest
         env:
-          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+          GRADLE_CACHE_KEY: ${{ secrets.GCP_ACCOUNT }}
+          GRADLE_CACHE_PUSH: true
+      - name: Build Scan for Assemble Android Test
+        shell: bash
+        run: echo "::notice title=Dist Scan::${{ steps.assemble-android-test.outputs.build-scan-url }}"
+      - name: API 21
+        uses: ./.github/actions/androidTest
         with:
-          api-level: 21
-          arch: x86_64
-          script: ./gradlew connectedCheck --stacktrace
-      - name: Run Integration Tests 24
-        uses: ReactiveCircus/android-emulator-runner@v2.17.0
-        env:
-          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+          apiLevel: 21
+      - name: API 24
+        uses: ./.github/actions/androidTest
         with:
-          api-level: 24
-          arch: x86_64
-          script: ./gradlew connectedCheck --stacktrace
-      - name: Run Integration Tests 27
-        uses: ReactiveCircus/android-emulator-runner@v2.17.0
-        env:
-          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+          apiLevel: 24
+      - name: API 27
+        uses: ./.github/actions/androidTest
         with:
-          api-level: 27
-          arch: x86_64
-          script: ./gradlew connectedCheck --stacktrace
-      - name: Run Integration Tests 29
-        uses: ReactiveCircus/android-emulator-runner@v2.17.0
-        env:
-          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+          apiLevel: 27
+      - name: API 29
+        uses: ./.github/actions/androidTest
         with:
-          api-level: 29
-          arch: x86_64
-          script: ./gradlew connectedCheck --stacktrace
-
+          apiLevel: 29
+      - name: API 31
+        uses: ./.github/actions/androidTest
+        with:
+          apiLevel: 31
       - name: Upload build reports
         if: always()
         uses: actions/upload-artifact@v2

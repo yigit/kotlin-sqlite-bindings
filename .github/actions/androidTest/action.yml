@@ -1,0 +1,19 @@
+name: 'AndroidTest action'
+description: 'Runs android test for the given api level'
+inputs:
+  apiLevel:
+    description: "Android API level"
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Run Integration Tests ${{ inputs.apiLevel }}
+      uses: ReactiveCircus/android-emulator-runner@v2.24.0
+      env:
+        ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+      with:
+        api-level: ${{ inputs.apiLevel }}
+        emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+        disable-animations: true
+        arch: x86_64
+        script: ./gradlew connectedCheck --stacktrace
