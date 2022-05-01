@@ -106,7 +106,7 @@ jobs:
       # resources even though matrix would be faster.
       - name: Asemble Android Test
         id: assemble-android-test
-        run: ./gradlew packageDebugAndroidTest
+        run: ./gradlew packageDebugAndroidTest --scan
         env:
           GRADLE_CACHE_KEY: ${{ secrets.GCP_ACCOUNT }}
           GRADLE_CACHE_PUSH: true
