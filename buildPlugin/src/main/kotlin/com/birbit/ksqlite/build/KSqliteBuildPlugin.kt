@@ -18,7 +18,11 @@ package com.birbit.ksqlite.build
 import com.birbit.ksqlite.build.internal.BuildOnServer
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.internal.TaskInternal
+import org.gradle.api.specs.AndSpec
 import org.gradle.kotlin.dsl.create
+import org.gradle.kotlin.dsl.withType
+import org.jetbrains.kotlin.gradle.tasks.CInteropProcess
 
 class KSqliteBuildPlugin : Plugin<Project> {
     override fun apply(target: Project) {
@@ -27,5 +31,24 @@ class KSqliteBuildPlugin : Plugin<Project> {
             "ksqliteBuild",
             target
         )
+        target.disableCinteropUpToDateChecks()
+    }
+
+    private fun Project.disableCinteropUpToDateChecks() {
+        tasks.withType<CInteropProcess>().configureEach {
+            // workaround for https://youtrack.jetbrains.com/issue/KT-52243/
+            it.clearUpToDateChecks()
+        }
+    }
+
+    /**
+     * some KMP tasks have unreasonable up to date checks that completely blocks the caching.
+     */
+    private fun CInteropProcess.clearUpToDateChecks() {
+        val outputClass = outputs::class.java
+        outputClass.getDeclaredField("upToDateSpec").let { field ->
+            check(field.trySetAccessible())
+            field.set(outputs, AndSpec.empty<TaskInternal>())
+        }
     }
 }
