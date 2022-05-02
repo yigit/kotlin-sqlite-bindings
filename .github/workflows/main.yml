@@ -54,7 +54,7 @@ jobs:
         run: ./gradlew --stop
       - name: build dist
         id: gradle-build-dist
-        run: ./gradlew buildOnServer --stacktrace --scan
+        run: ./gradlew buildOnServer packageDebugAndroidTest --stacktrace --scan
         env:
           GRADLE_CACHE_KEY: ${{ secrets.GCP_ACCOUNT }}
           GRADLE_CACHE_PUSH: true
@@ -85,6 +85,12 @@ jobs:
         with:
           name: ${{ matrix.os }}-dist
           path: build/dist
+      - name: Upload apks
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v2
+        with:
+          name: test apks of ${{ runner.os }}
+          path: ./**/*.apk
   androidTests:
     runs-on: macos-latest
     steps:
