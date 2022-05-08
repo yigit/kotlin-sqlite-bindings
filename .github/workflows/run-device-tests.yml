@@ -27,7 +27,7 @@ jobs:
           gcp-token: ${{ secrets.GCP_SA_KEY }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           output-folder: ${{ steps.dirs.outputs.output-dir }}
-          device-specs: "oriole:31, redfin:30, sailfish:25, Nexus10:19, Nexus4:21, Nexus5:23, Nexus6P:27"
+          device-specs: "oriole:31, redfin:30, sailfish:25, Nexus4:21, Nexus5:23, Nexus6P:27"
           log-file: ${{ steps.dirs.outputs.ftl-logs }}
           artifact-name-filter-regex: ".*apk.*"
           gcp-bucket-name: "ftl-test-artifacts"
