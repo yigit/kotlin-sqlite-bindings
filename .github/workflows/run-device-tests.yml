@@ -21,7 +21,7 @@ jobs:
           echo "::set-output name=ftl-logs::$(readlink -f .)/ftl-log.txt"
         id: dirs
       - id: run_tests
-        uses: yigit/androidx-ci-action@v0.08-2
+        uses: yigit/androidx-ci-action@dist-v0.08-2
         with:
           target-run-id: ${{ github.event.workflow_run.id }}
           gcp-token: ${{ secrets.GCP_SA_KEY }}
