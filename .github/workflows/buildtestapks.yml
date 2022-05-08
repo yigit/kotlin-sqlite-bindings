@@ -25,7 +25,7 @@ jobs:
           gradleCachePush: true
       - name: build test artifacts
         id: gradle-build-test-artifacts
-        run: ./gradlew packageDebugAndroidTest --stacktrace --scan
+        run: ./gradlew packageDebugAndroidTest --info --stacktrace --scan
         env:
           GRADLE_CACHE_KEY: ${{ secrets.GCP_ACCOUNT }}
           GRADLE_CACHE_PUSH: true
