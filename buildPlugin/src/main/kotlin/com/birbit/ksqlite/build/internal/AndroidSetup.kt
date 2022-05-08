@@ -20,13 +20,16 @@ import com.android.build.api.variant.LibraryAndroidComponentsExtension
 import org.gradle.api.Project
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.Exec
+import org.gradle.kotlin.dsl.get
 import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
+import java.io.File
 
 internal object AndroidSetup {
     private const val DOWNLOAD_CMD_LINE_TOOLS_TASK = "downloadAndroidCommandLineTools"
     private const val DOWNLOAD_NDK_TASK = "downloadNdk"
     fun configure(project: Project) {
-        val androidLibrary = project.extensions.findByType(LibraryExtension::class.java)
+        val androidLibrary: LibraryExtension = project.extensions
+            .findByType(LibraryExtension::class.java)
             ?: error("cannot find library extension on $project")
         androidLibrary.compileSdk = 29
         androidLibrary.defaultConfig.let {
@@ -40,6 +43,14 @@ internal object AndroidSetup {
                 .srcDir(project.file("src/androidTest/kotlin"))
         }
         androidLibrary.ndkVersion = "21.3.6528147"
+        val debugSigningConfig = androidLibrary.signingConfigs.getByName("debug")
+        // Use a local debug keystore to have reproducible test apks
+        debugSigningConfig.storeFile = project.getDebugKeystore()
+        androidLibrary.buildTypes.all { buildType ->
+            // Sign all the builds (including release) with debug key
+            buildType.signingConfig = debugSigningConfig
+        }
+
         createInstallNdkTask(project)
     }
 
@@ -86,6 +97,14 @@ internal object AndroidSetup {
             // pass y to accept licenses
             it.setStandardInput("y".byteInputStream(Charsets.UTF_8))
             it.dependsOn(unzipCommandLineToolsTask)
+        }
+    }
+
+    private fun Project.getDebugKeystore(): File {
+        return rootProject.rootDir.resolve("keystore/debug.keystore").also {
+            check(it.exists()) {
+                "Cannot find keystore file in path: ${it.absolutePath}"
+            }
         }
     }
 
