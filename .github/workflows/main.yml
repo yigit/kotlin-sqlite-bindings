@@ -91,58 +91,6 @@ jobs:
         with:
           name: test apks of ${{ runner.os }}
           path: ./**/*.apk
-  androidTests:
-    runs-on: macos-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        api-level: [21, 24, 27, 29, 31]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Setup machine
-        uses: ./.github/actions/commonSetup
-        with:
-          gradleCacheKey: ${{ secrets.GCP_ACCOUNT }}
-          gradleCachePush: true
-      - name: AVD cache
-        uses: actions/cache@v3
-        id: avd-cache
-        with:
-          path: |
-            ~/.android/avd/*
-            ~/.android/adb*
-          key: avd-k2-${{ matrix.api-level }}
-      - name: create AVD and generate snapshot for caching
-        if: steps.avd-cache.outputs.cache-hit != 'true'
-        uses: reactivecircus/android-emulator-runner@v2.24.0
-        with:
-          api-level: ${{ matrix.api-level }}
-          force-avd-creation: false
-          arch: x86_64
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: false
-          script: echo "Generated AVD snapshot for caching."
-      - name: Asemble Android Test
-        id: assemble-android-test
-        run: ./gradlew packageDebugAndroidTest --scan
-        env:
-          GRADLE_CACHE_KEY: ${{ secrets.GCP_ACCOUNT }}
-          GRADLE_CACHE_PUSH: true
-      - name: run tests
-        uses: reactivecircus/android-emulator-runner@v2.24.0
-        with:
-          api-level: ${{ matrix.api-level }}
-          arch: x86_64
-          force-avd-creation: false
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: true
-          script: ./gradlew connectedCheck --stacktrace
-      - name: Upload build reports
-        if: always()
-        uses: actions/upload-artifact@v2
-        with:
-          name: android test results ${{ matrix.api-level }}
-          path: ./**/build/reports
   buildFinalArtifacts:
     needs: build
     runs-on: ubuntu-latest
