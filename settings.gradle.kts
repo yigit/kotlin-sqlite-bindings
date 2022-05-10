@@ -13,29 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 pluginManagement {
     repositories {
         mavenCentral()
-        maven("https://plugins.gradle.org/m2/")
+        gradlePluginPortal()
         google()
         maven("https://jitpack.io")
-    }
-    val spotlessVersion: String by settings
-    val ktlintVersion: String by settings
-    val kotlinVersion: String by settings
-    plugins {
-        id("com.diffplug.spotless") version spotlessVersion
-        id("org.jlleitschuh.gradle.ktlint") version ktlintVersion
-        kotlin("multiplatform") version kotlinVersion
-        kotlin("jvm") version kotlinVersion
-        id("androidx.build.gradle.gcpbuildcache") version "e1b210f69afed"
     }
     // TODO remove when that plugin is shipped to gradle plugin portal
     this.resolutionStrategy.eachPlugin {
         if (this.requested.id.id == "androidx.build.gradle.gcpbuildcache") {
             this.useModule("com.github.androidx:gcp-gradle-build-cache:e1b210f69afed")
         }
+    }
+}
+
+dependencyResolutionManagement {
+    repositories {
+        mavenCentral()
+        google()
     }
 }
 

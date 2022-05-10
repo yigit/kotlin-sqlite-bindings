@@ -15,8 +15,8 @@
  */
 
 plugins {
-    id("com.android.library")
-    kotlin("multiplatform")
+    id(libs.plugins.agpLibrary.get().pluginId)
+    alias(libs.plugins.kotlinMp)
     id("maven-publish")
     id("ksqlite-build")
 }
@@ -32,29 +32,22 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation(kotlin("stdlib-common"))
+                implementation(libs.kotlinStdlibCommon)
                 implementation(project(":sqlitebindings"))
-                implementation(kotlin("stdlib"))
                 api(project(":sqlitebindings-api"))
             }
         }
         val commonTest by getting {
             dependencies {
-                implementation(kotlin("test-common"))
-                implementation(kotlin("test-annotations-common"))
+                implementation(libs.kotlinTestCommon)
+                implementation(libs.kotlinTestAnnotationsCommon)
             }
         }
-//        val androidMain by getting {
-//            dependencies {
-//                implementation(kotlin("stdlib-jdk8"))
-//            }
-//        }
+
         val androidTest by getting {
             dependencies {
-                implementation(kotlin("test-junit"))
-                com.birbit.ksqlite.build.Dependencies.ANDROID_TEST.forEach {
-                    implementation(it)
-                }
+                implementation(libs.kotlinTestJunit)
+                implementation(libs.bundles.androidTest)
             }
         }
         // Default source set for JVM-specific sources and dependencies:
@@ -66,7 +59,7 @@ kotlin {
         // JVM-specific tests and their dependencies:
         jvm().compilations["test"].defaultSourceSet {
             dependencies {
-                implementation(kotlin("test-junit"))
+                implementation(libs.kotlinTestJunit)
             }
         }
         val linuxTest by creating

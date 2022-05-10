@@ -17,20 +17,15 @@
 import com.diffplug.gradle.spotless.SpotlessExtension
 
 plugins {
-    id("com.diffplug.spotless")
-    id("org.jlleitschuh.gradle.ktlint")
-    kotlin("multiplatform") apply false
+    alias(libs.plugins.spotless)
+    alias(libs.plugins.ktlint)
+    alias(libs.plugins.kotlinMp) apply false
 }
 
 buildscript {
     dependencies {
         // workaround for KMP plugin to find android classes
-        classpath("com.android.tools.build:gradle:7.1.3")
-    }
-    repositories {
-        google()
-        mavenCentral()
-        gradlePluginPortal()
+        classpath(libs.androidGradlePlugin)
     }
 }
 

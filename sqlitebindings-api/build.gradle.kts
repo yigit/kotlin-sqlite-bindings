@@ -15,7 +15,7 @@
  */
 
 plugins {
-    kotlin("multiplatform")
+    alias(libs.plugins.kotlinMp)
     id("maven-publish")
     id("ksqlite-build")
 }
@@ -30,7 +30,7 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation(kotlin("stdlib"))
+                implementation(libs.kotlinStdlibCommon)
             }
         }
         // studio is looking for it when syncing

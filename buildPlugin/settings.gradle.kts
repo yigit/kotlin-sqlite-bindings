@@ -19,17 +19,19 @@ pluginManagement {
         gradlePluginPortal()
         google()
     }
-    val properties = java.util.Properties()
-    rootDir.resolve("../gradle.properties").inputStream().use {
-        properties.load(it)
+    dependencyResolutionManagement {
+        versionCatalogs {
+            create("libs") {
+                from(files("../gradle/libs.versions.toml"))
+            }
+        }
     }
-    val spotlessVersion: String by properties
-    val ktlintVersion: String by properties
-    val kotlinVersion: String by properties
-    plugins {
-        id("com.diffplug.spotless") version spotlessVersion
-        id("org.jlleitschuh.gradle.ktlint") version ktlintVersion
-        kotlin("multiplatform") version kotlinVersion
+}
+
+dependencyResolutionManagement {
+    repositories {
+        mavenCentral()
+        google()
     }
 }
 include("buildPlugin")

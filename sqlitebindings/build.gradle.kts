@@ -15,15 +15,14 @@
  */
 
 import com.android.build.gradle.internal.tasks.factory.dependsOn
-import com.birbit.ksqlite.build.Dependencies
 import com.birbit.ksqlite.build.SqliteCompilationConfig
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.konan.target.Family
 
 plugins {
-    id("com.android.library")
-    kotlin("multiplatform")
+    id(libs.plugins.agpLibrary.get().pluginId)
+    alias(libs.plugins.kotlinMp)
     id("maven-publish")
     id("ksqlite-build")
 }
@@ -38,7 +37,7 @@ ksqliteBuild {
         compilations["main"].defaultSourceSet {
             dependencies {
                 project(":sqlitebindings-api")
-                implementation(kotlin("stdlib-common"))
+                implementation(libs.kotlinStdlibCommon)
             }
         }
     }
@@ -86,20 +85,20 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation(kotlin("stdlib-common"))
+                implementation(libs.kotlinStdlibCommon)
                 api(project(":sqlitebindings-api"))
             }
         }
         val commonTest by getting {
             dependencies {
-                implementation(kotlin("test-common"))
-                implementation(kotlin("test-annotations-common"))
+                implementation(libs.kotlinTestCommon)
+                implementation(libs.kotlinTestAnnotationsCommon)
             }
         }
         val commonJvmMain = create("commonJvmMain") {
             dependsOn(commonMain)
             dependencies {
-                implementation(kotlin("stdlib-jdk8"))
+                implementation(libs.kotlinStdlibJdk)
             }
         }
         val nativeMain by getting
@@ -119,16 +118,14 @@ kotlin {
         val androidMain by getting {
             dependsOn(commonJvmMain)
             dependencies {
-                implementation(kotlin("stdlib-jdk8"))
+                implementation(libs.kotlinStdlibJdk)
             }
         }
         val androidTest by getting {
             dependsOn(commonTest)
             dependencies {
-                implementation(kotlin("test-junit"))
-                Dependencies.ANDROID_TEST.forEach {
-                    implementation(it)
-                }
+                implementation(libs.kotlinTestJunit)
+                implementation(libs.bundles.androidTest)
             }
         }
 
@@ -136,14 +133,14 @@ kotlin {
         jvm().compilations["main"].defaultSourceSet {
             dependsOn(commonJvmMain)
             dependencies {
-                implementation(Dependencies.NATIVE_LIB_LOADER)
+                implementation(libs.nativeLibLoader)
             }
             resources.srcDir(combinedSharedLibsFolder)
         }
         // JVM-specific tests and their dependencies:
         jvm().compilations["test"].defaultSourceSet {
             dependencies {
-                implementation(kotlin("test-junit"))
+                implementation(libs.kotlinTestJunit)
             }
         }
         targets.forEach { target ->

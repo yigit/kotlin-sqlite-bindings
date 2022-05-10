@@ -17,52 +17,23 @@ import com.diffplug.gradle.spotless.SpotlessExtension
  */
 
 plugins {
-    id("org.jlleitschuh.gradle.ktlint")
-    id("com.diffplug.spotless")
-    kotlin("jvm") version "1.6.21"
+    alias(libs.plugins.ktlint)
+    alias(libs.plugins.spotless)
+    alias(libs.plugins.kotlinJvm)
     `java-gradle-plugin`
 }
-// has to be separate while using M2
-
-buildscript {
-    val properties = java.util.Properties()
-    rootDir.resolve("../gradle.properties").inputStream().use {
-        properties.load(it)
-    }
-    properties.forEach {
-        rootProject.extra.set(it.key as String, it.value)
-    }
-    val kotlinVersion: String by rootProject
-    repositories {
-        gradlePluginPortal()
-        mavenCentral()
-        google()
-    }
-    dependencies {
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
-    }
-}
-
-repositories {
-    mavenCentral()
-    gradlePluginPortal()
-    google()
-}
-
-val kotlinVersion: String by rootProject
-val agpVersion: String by rootProject
 
 dependencies {
     implementation(gradleApi())
     implementation(gradleKotlinDsl())
-    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
-    implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
-    implementation("org.jetbrains.kotlin:kotlin-native-utils:$kotlinVersion")
-    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin-api:$kotlinVersion")
-    implementation(kotlin("stdlib-jdk8"))
+    implementation(libs.kotlinGradlePlugin)
+    implementation(libs.kotlinReflect)
+    implementation(libs.kotlinNativeUtils)
+    implementation(libs.kotlinGradlePluginApi)
+    implementation(libs.kotlinStdlibJdk)
     // workaround for KMP plugin to find android classes
-    implementation("com.android.tools.build:gradle-api:$agpVersion")
-    testImplementation("com.google.truth", "truth", "1.1.3")
+    implementation(libs.agpApi)
+    testImplementation(libs.truth)
 }
 
 configure<GradlePluginDevelopmentExtension> {
@@ -70,10 +41,6 @@ configure<GradlePluginDevelopmentExtension> {
         create("ksqliteBuild") {
             id = "ksqlite-build"
             implementationClass = "com.birbit.ksqlite.build.KSqliteBuildPlugin"
-        }
-        create("ksqliteDependencies") {
-            id = "ksqlite-dependencies"
-            implementationClass = "com.birbit.ksqlite.build.Dependencies"
         }
     }
 }
