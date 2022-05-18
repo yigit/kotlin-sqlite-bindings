@@ -27,10 +27,6 @@ internal fun KotlinMultiplatformExtension.setupNative(
     val os = DefaultNativePlatform.getCurrentOperatingSystem()
     mingwX64(configure = configure)
     mingwX86(configure = configure)
-    if (os.isWindows) {
-        // don't configure others on windows. Hits inconsistent type problems with JNI
-        return
-    }
     if (includeAndroidNative) {
         androidNativeArm32(configure = configure)
         androidNativeArm64(configure = configure)
@@ -41,9 +37,7 @@ internal fun KotlinMultiplatformExtension.setupNative(
     linuxArm64(configure = configure)
     macosX64(configure = configure)
     macosArm64(configure = configure)
-    if (os.isMacOsX) {
-        ios(configure = configure)
-    }
+    ios(configure = configure)
 }
 
 internal fun KotlinMultiplatformExtension.setupCommon(
