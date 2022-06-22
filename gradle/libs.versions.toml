@@ -6,7 +6,7 @@ kotlin="1.7.0"
 
 [libraries]
 androidGradlePlugin = { module = "com.android.tools.build:gradle", version.ref = "androidGradlePlugin"}
-nativeLibLoader = { module = "org.scijava:native-lib-loader", version = "2.3.4" }
+nativeLibLoader = { module = "org.scijava:native-lib-loader", version = "2.4.0" }
 kotlinPoet = { module = "com.squareup:kotlinpoet", version = "1.5.0" }
 androidxTestJunit = { module = "androidx.test.ext:junit", version = "1.1.1" }
 androidxTestRunner = { module = "androidx.test:runner", version = "1.2.0" }
