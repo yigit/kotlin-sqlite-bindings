@@ -227,5 +227,5 @@ internal object SqliteCompilation {
         }
     }
 
-    private const val BASE_URL = "https://www.sqlite.org/2020/sqlite-amalgamation-"
+    private const val BASE_URL = "https://www.sqlite.org/2022/sqlite-amalgamation-"
 }
