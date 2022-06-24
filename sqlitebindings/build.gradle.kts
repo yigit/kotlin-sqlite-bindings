@@ -44,7 +44,7 @@ ksqliteBuild {
     android()
     includeSqlite(
         SqliteCompilationConfig(
-            version = "3.31.1"
+            version = "3.38.5"
         )
     )
     publish()
