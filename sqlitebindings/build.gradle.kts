@@ -72,9 +72,11 @@ kotlin {
             )
     project.android.sourceSets {
         this["main"].jniLibs {
-            srcDir(combineAndroidSharedLibsTask.map {
-                it.outputDir
-            })
+            srcDir(
+                combineAndroidSharedLibsTask.map {
+                    it.outputDir
+                }
+            )
         }
     }
     sourceSets {
@@ -130,9 +132,11 @@ kotlin {
             dependencies {
                 implementation(libs.nativeLibLoader)
             }
-            resources.srcDir(combineSharedLibsTask.map {
-                it.outputDir
-            })
+            resources.srcDir(
+                combineSharedLibsTask.map {
+                    it.outputDir
+                }
+            )
         }
         // JVM-specific tests and their dependencies:
         jvm().compilations["test"].defaultSourceSet {
