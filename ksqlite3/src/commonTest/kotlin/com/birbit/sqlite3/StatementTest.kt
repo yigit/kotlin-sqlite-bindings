@@ -195,9 +195,9 @@ class StatementTest {
     @Test
     fun metadata() {
         val columns = listOf(
-            "colInt" to "Integer",
+            "colInt" to "INTEGER",
             "colString" to "String",
-            "colText" to "Text",
+            "colText" to "TEXT",
             "colNumber" to "NUMBER",
             "colBlob" to "BLOB",
             "colDouble" to "Double"

@@ -44,7 +44,7 @@ ksqliteBuild {
     android()
     includeSqlite(
         SqliteCompilationConfig(
-            version = "3.31.1"
+            version = "3.38.5"
         )
     )
     publish()
@@ -53,35 +53,37 @@ ksqliteBuild {
 
 kotlin {
 
-    val combinedSharedLibsFolder = project.layout.buildDirectory.dir("combinedSharedLibs")
     val combineSharedLibsTask =
         com.birbit.ksqlite.build.CollectNativeLibrariesTask
             .create(
                 project = project,
                 namePrefix = "sqlite3jni",
-                outFolder = combinedSharedLibsFolder,
+                outFolder = project.layout.buildDirectory.dir("combinedSharedLibs"),
                 forAndroid = false
             )
 
-    val combinedAndroidSharedLibsFolder = project.layout.buildDirectory.dir("combinedAndroidSharedLibs")
     val combineAndroidSharedLibsTask =
         com.birbit.ksqlite.build.CollectNativeLibrariesTask
             .create(
                 project = project,
                 namePrefix = "sqlite3jni",
-                outFolder = combinedAndroidSharedLibsFolder,
+                outFolder = project.layout.buildDirectory.dir("combinedAndroidSharedLibs"),
                 forAndroid = true
             )
     project.android.sourceSets {
         this["main"].jniLibs {
-            srcDir(combinedAndroidSharedLibsFolder)
+            srcDir(
+                combineAndroidSharedLibsTask.map {
+                    it.outputDir
+                }
+            )
         }
     }
+    // TODO we shouldn't need this but srcDir thing above doesn't seem to work
     val androidExt = project.extensions.findByType(com.android.build.gradle.LibraryExtension::class)
     androidExt!!.libraryVariants.all {
         this.javaCompileProvider.dependsOn(combineAndroidSharedLibsTask)
     }
-    jvm().compilations["main"].compileKotlinTask.dependsOn(combineSharedLibsTask)
     sourceSets {
         val commonMain by getting {
             dependencies {
@@ -135,7 +137,11 @@ kotlin {
             dependencies {
                 implementation(libs.nativeLibLoader)
             }
-            resources.srcDir(combinedSharedLibsFolder)
+            resources.srcDir(
+                combineSharedLibsTask.map {
+                    it.outputDir
+                }
+            )
         }
         // JVM-specific tests and their dependencies:
         jvm().compilations["test"].defaultSourceSet {

@@ -8,3 +8,6 @@ staticLibraries=libsqlite3.a
 #libraryPaths = /home/yboyar/src/kotlin-jni-test/build/sqlite-compilation/output/linuxX64
 linkerOpts.linux_x64 = -lpthread -ldl
 linkerOpts.macos_x64 = -lpthread -ldl
+# TODO we may want to copy all opts from sqlite compilation to here for consistency.
+#  after all, cintrop looks into this file, not how we compile sqlite.
+compilerOpts = -DSQLITE_ENABLE_NORMALIZE=1

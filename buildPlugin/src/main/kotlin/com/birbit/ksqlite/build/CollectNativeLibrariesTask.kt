@@ -49,12 +49,19 @@ data class SoInput(
                     "linux" + when (konanTarget.architecture) {
                         Architecture.ARM32 -> "_arm"
                         Architecture.ARM64 -> "_arm64"
-                        Architecture.X86, Architecture.X64 -> "_${konanTarget.architecture.bitness}"
+                        Architecture.X86 -> "_32"
+                        Architecture.X64 -> "_64"
                         else -> throw GradleException("unexpected architecture ${konanTarget.architecture}")
                     }
                 }
                 Family.MINGW -> "windows_${konanTarget.architecture.bitness}"
-                Family.OSX -> "osx_${konanTarget.architecture.bitness}"
+                Family.OSX -> {
+                    when (konanTarget.architecture) {
+                        Architecture.ARM64 -> "osx_arm64"
+                        Architecture.X64 -> "osx_64"
+                        else -> error("Unsupported architecture for mac: ${konanTarget.architecture}")
+                    }
+                }
                 Family.ANDROID -> when (konanTarget.architecture) {
                     Architecture.X86 -> "x86"
                     Architecture.X64 -> "x86_64"
