@@ -79,6 +79,11 @@ kotlin {
             )
         }
     }
+    // TODO we shouldn't need this but srcDir thing above doesn't seem to work
+    val androidExt = project.extensions.findByType(com.android.build.gradle.LibraryExtension::class)
+    androidExt!!.libraryVariants.all {
+        this.javaCompileProvider.dependsOn(combineAndroidSharedLibsTask)
+    }
     sourceSets {
         val commonMain by getting {
             dependencies {
