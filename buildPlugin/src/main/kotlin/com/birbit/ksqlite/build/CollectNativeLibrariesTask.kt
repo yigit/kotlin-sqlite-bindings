@@ -54,7 +54,14 @@ data class SoInput(
                     }
                 }
                 Family.MINGW -> "windows_${konanTarget.architecture.bitness}"
-                Family.OSX -> "osx_${konanTarget.architecture.bitness}"
+                Family.OSX -> {
+                    when (konanTarget.architecture){
+                        Architecture.ARM64 ->"osx_arm64"
+                        Architecture.X64 -> "osx_64"
+                        else -> error("Unsupported architecture for mac: ${konanTarget.architecture}")
+                    }
+
+                }
                 Family.ANDROID -> when (konanTarget.architecture) {
                     Architecture.X86 -> "x86"
                     Architecture.X64 -> "x86_64"
