@@ -16,6 +16,7 @@
 package com.birbit.ksqlite.build.internal
 
 import com.android.build.api.dsl.LibraryExtension
+import com.android.build.api.variant.AndroidComponentsExtension
 import com.android.build.api.variant.LibraryAndroidComponentsExtension
 import org.gradle.api.Project
 import org.gradle.api.tasks.Copy
@@ -31,6 +32,12 @@ internal object AndroidSetup {
         val androidLibrary: LibraryExtension = project.extensions
             .findByType(LibraryExtension::class.java)
             ?: error("cannot find library extension on $project")
+        val androidComponents = project.extensions
+            .findByType(AndroidComponentsExtension::class.java)
+            ?: error("cannot find android components extension")
+        androidComponents.beforeVariants {
+            it.enableUnitTest = false
+        }
         androidLibrary.compileSdk = 29
         androidLibrary.defaultConfig.let {
             it.minSdk = 21
