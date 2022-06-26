@@ -50,12 +50,6 @@ kotlin {
                 implementation(libs.bundles.androidTest)
             }
         }
-        // Default source set for JVM-specific sources and dependencies:
-//        jvm().compilations["main"].defaultSourceSet {
-//            dependencies {
-//                implementation(kotlin("stdlib-jdk8"))
-//            }
-//        }
         // JVM-specific tests and their dependencies:
         jvm().compilations["test"].defaultSourceSet {
             dependencies {
