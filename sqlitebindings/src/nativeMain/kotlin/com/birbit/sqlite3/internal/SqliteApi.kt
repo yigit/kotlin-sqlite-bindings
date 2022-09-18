@@ -80,7 +80,6 @@ import sqlite3.sqlite3_set_authorizer
 import sqlite3.sqlite3_sql
 import sqlite3.sqlite3_step
 import kotlin.native.concurrent.AtomicReference
-import kotlin.native.concurrent.freeze
 
 internal class NativeRef<T : Any>(target: T) : ObjRef {
     private val _stableRef: AtomicReference<StableRef<T>?> = AtomicReference(StableRef.create(target))
@@ -99,10 +98,6 @@ internal class NativeRef<T : Any>(target: T) : ObjRef {
 
 actual class StmtRef(@Suppress("unused") actual val dbRef: DbRef, val rawPtr: CPointer<sqlite3_stmt>) : ObjRef {
     internal val nativeRef = NativeRef(this)
-    init {
-        freeze()
-    }
-
     override fun dispose() {
         nativeRef.dispose()
     }
@@ -114,10 +109,6 @@ actual class StmtRef(@Suppress("unused") actual val dbRef: DbRef, val rawPtr: CP
 actual class DbRef(val rawPtr: CPointer<sqlite3>) : ObjRef {
     internal val nativeRef = NativeRef(this)
     internal val authorizer = AtomicReference<NativeRef<Authorizer>?>(null)
-    init {
-        freeze()
-    }
-
     override fun dispose() {
         nativeRef.dispose()
     }
@@ -255,7 +246,6 @@ actual object SqliteApi {
     ): ResultCode {
         val (authRef, resultCode) = if (authorizer != null) {
             val authRef = NativeRef(authorizer)
-            authRef.freeze()
             val resultCode = sqlite3_set_authorizer(
                 dbRef.rawPtr,
                 staticCFunction(::callAuthCallback),
