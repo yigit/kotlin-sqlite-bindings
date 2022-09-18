@@ -164,9 +164,14 @@ internal object KonanUtil {
                     it.args("-fPIC")
                 }
                 it.args("--target=${targetInfo.targetName}")
-                it.args("--sysroot=${targetInfo.sysRoot(project).absolutePath}")
+                val sysRoot = targetInfo.sysRoot(project)
+                it.args("--sysroot=${sysRoot.absolutePath}")
                 it.args(targetInfo.clangArgs)
                 it.args(args)
+                println("KONAN_COMPILE: ${it.args.joinToString("\n")}")
+                sysRoot.walkTopDown().forEach {
+                    println("file: ${it.relativeTo(sysRoot).path}")
+                }
             }
         }
         fun archiveNativeBinary(
