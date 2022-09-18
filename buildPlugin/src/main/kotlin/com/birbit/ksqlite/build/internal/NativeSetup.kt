@@ -42,7 +42,9 @@ internal fun KotlinMultiplatformExtension.setupNative(
     macosX64(configure = configure)
     macosArm64(configure = configure)
     if (os.isMacOsX) {
-        ios(configure = configure)
+        iosX64(configure = configure)
+        iosArm64(configure = configure)
+        iosSimulatorArm64(configure = configure)
     }
 }
 
