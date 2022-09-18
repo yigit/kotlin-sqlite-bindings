@@ -37,7 +37,6 @@ import org.jetbrains.kotlin.konan.target.Architecture
 import org.jetbrains.kotlin.konan.target.Family
 import org.jetbrains.kotlin.konan.target.KonanTarget
 import java.io.File
-import java.util.Locale
 
 data class SoInput(
     val folderName: String,

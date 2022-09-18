@@ -168,10 +168,6 @@ internal object KonanUtil {
                 it.args("--sysroot=${sysRoot.absolutePath}")
                 it.args(targetInfo.clangArgs)
                 it.args(args)
-                println("KONAN_COMPILE: ${it.args.joinToString("\n")}")
-                sysRoot.walkTopDown().forEach {
-                    println("file: ${it.relativeTo(sysRoot).path}")
-                }
             }
         }
         fun archiveNativeBinary(
@@ -190,7 +186,11 @@ internal object KonanUtil {
         }
         companion object {
             private val downloadNativeCompilerLock = ReentrantLock()
-            private fun obtainNativeCompiler(project: Project, execOperations: ExecOperations, konanTarget: KonanTarget) {
+            private fun obtainNativeCompiler(
+                project: Project,
+                execOperations: ExecOperations,
+                konanTarget: KonanTarget
+            ) {
                 downloadNativeCompilerLock.withLock {
                     val nativeCompilerDownloader = NativeCompilerDownloader(
                         project = project

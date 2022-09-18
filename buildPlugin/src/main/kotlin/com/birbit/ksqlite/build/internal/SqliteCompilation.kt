@@ -38,7 +38,6 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.konan.target.presetName
 import java.io.File
-import java.util.Locale
 
 @OptIn(ExperimentalStdlibApi::class)
 internal object SqliteCompilation {

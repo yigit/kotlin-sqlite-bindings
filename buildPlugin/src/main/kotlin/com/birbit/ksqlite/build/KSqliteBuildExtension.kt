@@ -28,7 +28,7 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import javax.inject.Inject
 
 open class KSqliteBuildExtension
-    @Inject constructor(
+@Inject constructor(
     private val project: Project,
     private val execOperations: ExecOperations
 ) {
