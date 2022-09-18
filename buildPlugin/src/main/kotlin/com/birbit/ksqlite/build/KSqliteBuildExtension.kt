@@ -22,11 +22,15 @@ import com.birbit.ksqlite.build.internal.Publishing
 import com.birbit.ksqlite.build.internal.SqliteCompilation
 import com.birbit.ksqlite.build.internal.setupCommon
 import org.gradle.api.Project
+import org.gradle.process.ExecOperations
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+import javax.inject.Inject
 
-open class KSqliteBuildExtension(
-    private val project: Project
+open class KSqliteBuildExtension
+    @Inject constructor(
+    private val project: Project,
+    private val execOperations: ExecOperations
 ) {
     fun android() {
         AndroidSetup.configure(project)
@@ -55,7 +59,7 @@ open class KSqliteBuildExtension(
     }
 
     fun includeSqlite(config: SqliteCompilationConfig) {
-        SqliteCompilation.setup(project, config)
+        SqliteCompilation.setup(project, execOperations, config)
     }
 
     fun buildOnServer() {

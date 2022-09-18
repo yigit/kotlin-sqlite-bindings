@@ -17,6 +17,7 @@ package com.birbit.ksqlite.build
 
 import com.birbit.ksqlite.build.internal.Publishing
 import com.birbit.ksqlite.build.internal.isBuiltOnThisMachine
+import com.birbit.ksqlite.build.internal.titleCase
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.Project
@@ -36,6 +37,7 @@ import org.jetbrains.kotlin.konan.target.Architecture
 import org.jetbrains.kotlin.konan.target.Family
 import org.jetbrains.kotlin.konan.target.KonanTarget
 import java.io.File
+import java.util.Locale
 
 data class SoInput(
     val folderName: String,
@@ -129,7 +131,7 @@ abstract class CollectNativeLibrariesTask : DefaultTask() {
                 "ForJvm"
             }
             return project.tasks.register(
-                "collectSharedLibsFor${namePrefix.capitalize()}$suffix",
+                "collectSharedLibsFor${namePrefix.titleCase()}}$suffix",
                 CollectNativeLibrariesTask::class.java
             ) {
                 configure(it, namePrefix, outFolder, forAndroid)

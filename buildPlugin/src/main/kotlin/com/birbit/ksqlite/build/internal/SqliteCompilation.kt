@@ -33,15 +33,16 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.configurationcache.extensions.capitalized
 import org.gradle.kotlin.dsl.get
+import org.gradle.process.ExecOperations
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.konan.target.presetName
 import java.io.File
 import java.util.Locale
 
-@OptIn(kotlin.ExperimentalStdlibApi::class)
+@OptIn(ExperimentalStdlibApi::class)
 internal object SqliteCompilation {
-    fun setup(project: Project, config: SqliteCompilationConfig) {
+    fun setup(project: Project, execOperations: ExecOperations, config: SqliteCompilationConfig) {
         val buildFolder = project.buildDir.resolve("sqlite-compilation")
         val generatedDefFileFolder = project.layout.buildDirectory.dir("sqlite-def-files")
         // TODO convert these to gradle properties
@@ -77,6 +78,7 @@ internal object SqliteCompilation {
             val staticLibFile = targetDir.resolve("libsqlite3.a")
             val konanWrapper = KonanUtil.obtainWrapper(
                 project = project,
+                execOperations = execOperations,
                 konanTarget = konanTarget
             )
             val compileSQLite = project.tasks.register(
@@ -119,7 +121,7 @@ internal object SqliteCompilation {
                     it.dir(konanTarget.presetName).file("sqlite-generated.def")
                 }
                 val createDefFileTask = project.tasks.register(
-                    "createDefFileForSqlite${konanTarget.presetName.capitalize(Locale.US)}",
+                    "createDefFileForSqlite${konanTarget.presetName.titleCase()}}",
                     CreateDefFileWithLibraryPathTask::class.java
                 ) { task ->
                     task.dependsOn(archiveSQLite)
