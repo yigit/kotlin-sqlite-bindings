@@ -53,7 +53,7 @@ fun main() {
     }
     val externalMethods = methods[true] ?: error("no external method?")
     val actualMethods = methods[false]?.associateBy {
-        "native${it.name.capitalize()}"
+        "native${it.name.titleCase()}}"
     } ?: error("no actual methods?")
     val pairs = externalMethods.map { native ->
         val actualMethod = checkNotNull(actualMethods[native.name]) {

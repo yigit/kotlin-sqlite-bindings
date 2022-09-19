@@ -182,7 +182,7 @@ class FunctionDeclaration(
         }
     }
     val returnType by lazy {
-        val typeTree = parseTree.children.firstOrNull() {
+        val typeTree = parseTree.children.firstOrNull {
             it.name() == Declarations.TYPE
         }
         checkNotNull(typeTree) {

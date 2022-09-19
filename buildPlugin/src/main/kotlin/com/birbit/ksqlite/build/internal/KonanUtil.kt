@@ -18,6 +18,7 @@ package com.birbit.ksqlite.build.internal
 import com.android.build.api.dsl.LibraryExtension
 import com.android.build.api.variant.LibraryAndroidComponentsExtension
 import org.gradle.api.Project
+import org.gradle.process.ExecOperations
 import org.jetbrains.kotlin.gradle.utils.NativeCompilerDownloader
 import org.jetbrains.kotlin.konan.target.Architecture
 import org.jetbrains.kotlin.konan.target.Family
@@ -46,9 +47,11 @@ internal object KonanUtil {
 
     fun obtainWrapper(
         project: Project,
+        execOperations: ExecOperations,
         konanTarget: KonanTarget
     ) = KonanCompilerWrapper(
         project = project,
+        execOperations = execOperations,
         konanTarget = konanTarget
     )
 
@@ -126,6 +129,7 @@ internal object KonanUtil {
 
     class KonanCompilerWrapper(
         val project: Project,
+        val execOperations: ExecOperations,
         val konanTarget: KonanTarget
     ) {
         private val konanTargetInfo by lazy {
@@ -143,9 +147,9 @@ internal object KonanUtil {
         fun compile(
             args: List<String>
         ) {
-            obtainNativeCompiler(project, konanTarget)
+            obtainNativeCompiler(project, execOperations, konanTarget)
             val konanTargetInfo = targetInfoFromProps(konanTarget)
-            project.exec {
+            execOperations.exec {
                 it.environment("PATH", "$llvmBinFolder;${System.getenv("PATH")}")
                 it.executable(llvmBinFolder.resolve("clang").absolutePath)
                 val targetInfo = konanTargetInfo
@@ -160,7 +164,8 @@ internal object KonanUtil {
                     it.args("-fPIC")
                 }
                 it.args("--target=${targetInfo.targetName}")
-                it.args("--sysroot=${targetInfo.sysRoot(project).absolutePath}")
+                val sysRoot = targetInfo.sysRoot(project)
+                it.args("--sysroot=${sysRoot.absolutePath}")
                 it.args(targetInfo.clangArgs)
                 it.args(args)
             }
@@ -169,8 +174,8 @@ internal object KonanUtil {
             input: File,
             output: File,
         ) {
-            obtainNativeCompiler(project, konanTarget)
-            project.exec {
+            obtainNativeCompiler(project, execOperations, konanTarget)
+            execOperations.exec {
                 it.executable(llvmBinFolder.resolve("llvm-ar").absolutePath)
                 it.args(
                     "rc", output.absolutePath,
@@ -181,13 +186,17 @@ internal object KonanUtil {
         }
         companion object {
             private val downloadNativeCompilerLock = ReentrantLock()
-            private fun obtainNativeCompiler(project: Project, konanTarget: KonanTarget) {
+            private fun obtainNativeCompiler(
+                project: Project,
+                execOperations: ExecOperations,
+                konanTarget: KonanTarget
+            ) {
                 downloadNativeCompilerLock.withLock {
                     val nativeCompilerDownloader = NativeCompilerDownloader(
                         project = project
                     )
                     nativeCompilerDownloader.downloadIfNeeded()
-                    val result = project.exec {
+                    val result = execOperations.exec {
                         val konancName = if (HostManager.hostIsMingw) {
                             "konanc.bat"
                         } else {

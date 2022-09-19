@@ -102,7 +102,7 @@ internal object AndroidSetup {
             it.args("--install", "ndk;${androidLibraryExt.ndkVersion}", "--verbose")
             it.args("--sdk_root=$sdkPath")
             // pass y to accept licenses
-            it.setStandardInput("y".byteInputStream(Charsets.UTF_8))
+            it.standardInput = "y".byteInputStream(Charsets.UTF_8)
             it.dependsOn(unzipCommandLineToolsTask)
         }
     }

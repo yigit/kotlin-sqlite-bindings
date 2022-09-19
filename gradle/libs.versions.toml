@@ -2,7 +2,7 @@
 androidGradlePlugin="7.2.0"
 spotless="6.0.5"
 ktlint="10.2.0"
-kotlin="1.7.0"
+kotlin="1.7.20-RC"
 
 [libraries]
 androidGradlePlugin = { module = "com.android.tools.build:gradle", version.ref = "androidGradlePlugin"}

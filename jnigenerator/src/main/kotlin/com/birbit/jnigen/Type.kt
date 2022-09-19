@@ -21,7 +21,6 @@ import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.buildCodeBlock
-import java.util.Locale
 
 typealias ToJniFun = (type: Type, envParam: ParameterSpec, inVar: String, outVar: String) -> (CodeBlock)
 typealias FronJniFun = (type: Type, envParam: ParameterSpec, inParam: ParameterSpec, outVar: String) -> (CodeBlock)
@@ -77,7 +76,7 @@ open class Type(
         nativeClass = ClassNames.JLONG,
         convertFromJni = { type, envParam, inParam, outVar ->
             CodeBlock.builder().apply {
-                addStatement("val %L = ${kotlinClass.simpleName.decapitalize(Locale.US)}FromJni(%N)", outVar, inParam)
+                addStatement("val %L = ${kotlinClass.simpleName.titleCase()}FromJni(%N)", outVar, inParam)
             }.build()
         },
         convertToJni = { type, envParam, inVar, outVar ->

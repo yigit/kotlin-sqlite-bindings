@@ -22,7 +22,10 @@ import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import java.io.File
 import java.lang.StringBuilder
+import java.util.Locale
 
+internal fun String.titleCase() =
+    this.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.US) else it.toString() }
 class JniWriter(
     val copyright: String,
     val pairs: List<FunctionPair>
@@ -96,7 +99,7 @@ class JniWriter(
         )
         val argumentNames = params.map {
             if (it.first.hasConvertFromJni()) {
-                val localVarName = "local${it.second.name.capitalize()}"
+                val localVarName = "local${it.second.name.titleCase()}}"
                 val convert = it.first.convertFromJni(envParam, it.second, localVarName)
                 addCode(convert)
                 localVarName
@@ -114,7 +117,7 @@ class JniWriter(
         // now convert back if necessary
         //  addComment("return type: %L , %L", pair.actualFun.returnType, convertToJni == null)
         if (pair.actualFun.returnType.hasConvertToJni()) {
-            val localResultName = "local${RETURN_VALUE_NAME.capitalize()}"
+            val localResultName = "local${RETURN_VALUE_NAME.titleCase()}}"
             addCode(
                 pair.actualFun.returnType.convertToJni(
                     envParam,

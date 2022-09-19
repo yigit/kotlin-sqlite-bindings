@@ -19,8 +19,6 @@ import com.birbit.sqlite3.AuthResult
 import com.birbit.sqlite3.AuthorizationParams
 import com.birbit.sqlite3.Authorizer
 import com.birbit.sqlite3.SqliteException
-import kotlin.native.concurrent.AtomicReference
-import kotlin.native.concurrent.freeze
 import kotlinx.cinterop.CFunction
 import kotlinx.cinterop.COpaquePointerVar
 import kotlinx.cinterop.CPointer
@@ -44,6 +42,7 @@ import platform.android.jint
 import platform.android.jmethodID
 import platform.android.jobject
 import platform.android.jstring
+import kotlin.native.concurrent.AtomicReference
 
 typealias AuthParamsConstructor = CFunction<(
     CPointer<JNIEnvVar>,
@@ -159,7 +158,6 @@ internal class JvmAuthorizerCallback private constructor(
                         "()V"
                     )
                 )
-                jvmAuthCallback.freeze()
                 _instance.set(env, jvmAuthCallback)
             }
         }
@@ -233,7 +231,6 @@ internal class JvmAuthorizerParams private constructor(
                         "(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V"
                     )
                 )
-                jvmAuthorizerParams.freeze()
                 _instance.set(env, jvmAuthorizerParams)
             }
         }
@@ -271,7 +268,6 @@ internal class JvmSqliteException private constructor(
                     initMethodId = getMethodId(env, classRef.jobject, "<init>", "(ILjava/lang/String;)V")
                 )
             }
-            jvmSqliteException.freeze()
             _instance.set(env, jvmSqliteException)
         }
 
