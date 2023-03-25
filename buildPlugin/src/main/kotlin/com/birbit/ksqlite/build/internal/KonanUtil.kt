@@ -62,10 +62,6 @@ internal object KonanUtil {
                 val appleSdkRoot = getAppleSdkRoot(target)
                 if (appleSdkRoot != null) {
                     File(appleSdkRoot)
-                } else if (target.family == Family.ANDROID) {
-                    // TODO we should be able to use the standard sysroot from props, figure out
-                    //  why the actual sysroot is only available in dependencies
-                    project.ndkSysrootDir()
                 } else {
                     konanDeps.resolve(
                         konanProps.sysroot(target)

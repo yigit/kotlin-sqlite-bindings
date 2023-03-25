@@ -49,7 +49,7 @@ internal object AndroidSetup {
             getByName("androidTest").java
                 .srcDir(project.file("src/androidTest/kotlin"))
         }
-        androidLibrary.ndkVersion = "21.3.6528147"
+        androidLibrary.ndkVersion = "23.1.7779620"
         val debugSigningConfig = androidLibrary.signingConfigs.getByName("debug")
         // Use a local debug keystore to have reproducible test apks
         debugSigningConfig.storeFile = project.getDebugKeystore()
