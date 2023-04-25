@@ -185,8 +185,8 @@ internal class JvmAuthorizerCallback private constructor(
             env: CPointer<JNIEnvVar> = obtainEnv(),
             target: jobject
         ) {
-            val disposeMethod = env.nativeInterface().CallVoidMethod!!.reinterpret<DisposeMethod>()
-            disposeMethod.invoke(env, target, _instance.value().disposeMethodId)
+            val disposeMethod = env.nativeInterface().CallVoidMethodA!!
+            disposeMethod.invoke(env, target, _instance.value().disposeMethodId, null)
         }
 
         private class JvmAuthCallbackWrapper(
@@ -274,13 +274,14 @@ internal class JvmSqliteException private constructor(
 
         fun doThrow(env: CPointer<JNIEnvVar>, exception: SqliteException) {
             val instance = _instance.value()
-            val jvmObject = env.nativeInterface().NewObject!!.reinterpret<SqliteExceptionConstructor>().invoke(
-                env,
-                instance.classRef.jobject,
-                instance.initMethodId,
-                exception.resultCode.value,
-                exception.msg.toJString(env)
-            )
+            val initMethod = env.nativeInterface().NewObjectA ?: error("cannot get new object method")
+            val jvmObject = memScoped {
+                val jValues = allocArray<jvalue>(2)
+                jValues[0].i = exception.resultCode.value
+                jValues[1].l = exception.msg.toJString(env)
+                initMethod(env, instance.classRef.jobject, instance.initMethodId,
+                    jValues)
+            }
             env.nativeInterface().Throw!!(env, jvmObject)
         }
     }
