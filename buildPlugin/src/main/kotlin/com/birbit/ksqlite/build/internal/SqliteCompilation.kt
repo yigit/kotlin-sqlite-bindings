@@ -120,7 +120,7 @@ internal object SqliteCompilation {
                     it.dir(konanTarget.presetName).file("sqlite-generated.def")
                 }
                 val createDefFileTask = project.tasks.register(
-                    "createDefFileForSqlite${konanTarget.presetName.titleCase()}}",
+                    "createDefFileForSqlite${konanTarget.presetName.titleCase()}",
                     CreateDefFileWithLibraryPathTask::class.java
                 ) { task ->
                     task.dependsOn(archiveSQLite)

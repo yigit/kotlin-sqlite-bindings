@@ -73,16 +73,23 @@ kotlin {
     project.android.sourceSets {
         this["main"].jniLibs {
             srcDir(
-                combineAndroidSharedLibsTask.map {
+                combineAndroidSharedLibsTask.flatMap {
                     it.outputDir
                 }
             )
         }
     }
     // TODO we shouldn't need this but srcDir thing above doesn't seem to work
+
     val androidExt = project.extensions.findByType(com.android.build.gradle.LibraryExtension::class)
-    androidExt!!.libraryVariants.all {
-        this.javaCompileProvider.dependsOn(combineAndroidSharedLibsTask)
+    androidExt!!.libraryVariants.configureEach {
+        // this is very ugly but seems like we don't have access to a provider that would give us this task.
+        tasks.named("mergeDebugJniLibFolders").configure {
+            dependsOn(combineAndroidSharedLibsTask)
+        }
+        tasks.named("mergeReleaseJniLibFolders").configure {
+            dependsOn(combineAndroidSharedLibsTask)
+        }
     }
     sourceSets {
         val commonMain by getting {
@@ -166,4 +173,8 @@ kotlin {
             }
         }
     }
+}
+
+android {
+    namespace = "com.birbit.sqlite3.internal"
 }
