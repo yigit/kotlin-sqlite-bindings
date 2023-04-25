@@ -26,7 +26,10 @@ import kotlinx.cinterop.CPointerVar
 import kotlinx.cinterop.CValuesRef
 import kotlinx.cinterop.MemScope
 import kotlinx.cinterop.alloc
+import kotlinx.cinterop.allocArray
+import kotlinx.cinterop.createValues
 import kotlinx.cinterop.cstr
+import kotlinx.cinterop.get
 import kotlinx.cinterop.invoke
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.pointed
@@ -42,20 +45,9 @@ import platform.android.jint
 import platform.android.jmethodID
 import platform.android.jobject
 import platform.android.jstring
+import platform.android.jvalue
 import kotlin.native.concurrent.AtomicReference
 
-typealias AuthParamsConstructor = CFunction<(
-    CPointer<JNIEnvVar>,
-    jclass,
-    jmethodID,
-    jint,
-    jstring?,
-    jstring?,
-    jstring?,
-    jstring?
-) -> jobject>
-
-typealias AuthCallbackMethod = CFunction<(CPointer<JNIEnvVar>, jclass, jmethodID, jobject) -> jint>
 typealias DisposeMethod = CFunction<(CPointer<JNIEnvVar>, jclass, jmethodID) -> Unit>
 typealias SqliteExceptionConstructor = CFunction<(CPointer<JNIEnvVar>, jclass, jmethodID, jint, jstring?) -> jobject>
 typealias NewGlobalRefMethod = CFunction<(CPointer<JNIEnvVar>, jobject) -> jobject>
@@ -178,10 +170,14 @@ internal class JvmAuthorizerCallback private constructor(
             target: jobject,
             params: AuthorizationParams
         ): AuthResult {
-            val callIntMethod = env.nativeInterface().CallIntMethod?.reinterpret<AuthCallbackMethod>()
-                ?: error("cannot get call int method")
+            val callIntMethod = env.nativeInterface().CallIntMethodA ?: error("cannot get call int method")
             val jvmParams = JvmAuthorizerParams.createJvmInstance(env, params)
-            val authCode = callIntMethod.invoke(env, target, _instance.value().invokeMethodId, jvmParams)
+            val authCode = memScoped {
+                val jValues = createValues<jvalue>(1) {
+                    this.l = jvmParams
+                }
+                callIntMethod.invoke(env, target, _instance.value().invokeMethodId, jValues.ptr)
+            }
             return AuthResult(authCode)
         }
 
@@ -240,16 +236,17 @@ internal class JvmAuthorizerParams private constructor(
         }
 
         fun createJvmInstance(env: CPointer<JNIEnvVar>, authorizationParams: AuthorizationParams): jobject {
-            val init = env.nativeInterface().NewObject!!.reinterpret<AuthParamsConstructor>()
+            val init = env.nativeInterface().NewObjectA ?: error("Cannot find init method")
             val instance = _instance.value()
-            return init.invoke(
-                env, instance.classRef.jobject, instance.initMethodId,
-                authorizationParams.actionCode,
-                authorizationParams.param1?.toJString(env),
-                authorizationParams.param2?.toJString(env),
-                authorizationParams.param3?.toJString(env),
-                authorizationParams.param4?.toJString(env)
-            )
+            return memScoped {
+                val jValues = allocArray<jvalue>(5)
+                jValues[0].i = authorizationParams.actionCode
+                jValues[1].l = authorizationParams.param1?.toJString(env)
+                jValues[2].l = authorizationParams.param2?.toJString(env)
+                jValues[3].l = authorizationParams.param3?.toJString(env)
+                jValues[4].l = authorizationParams.param4?.toJString(env)
+                init.invoke(env, instance.classRef.jobject, instance.initMethodId, jValues)
+            } ?: error("init failed to return an object")
         }
     }
 }
