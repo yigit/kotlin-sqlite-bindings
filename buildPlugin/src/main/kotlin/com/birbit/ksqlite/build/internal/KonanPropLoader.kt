@@ -15,7 +15,10 @@
  */
 package com.birbit.ksqlite.build.internal
 
+import org.jetbrains.kotlin.konan.target.Family
+import org.jetbrains.kotlin.konan.target.HostManager
 import org.jetbrains.kotlin.konan.target.KonanTarget
+import java.util.Locale
 import java.util.Properties
 
 internal object KonanPropLoader {
@@ -53,6 +56,11 @@ internal object KonanPropLoader {
     }
 
     fun sysroot(target: KonanTarget): String {
+        if (target.family == Family.ANDROID) {
+            // android sysroot with sources lives in another property, not sure why but this seems to work
+            val keyName = (HostManager.host.name.lowercase(Locale.US) + "-" + target.name)
+            return loadPropertyWithKeySubstitution("targetToolchain.$keyName") + "/sysroot"
+        }
         return loadPropertyWithKeySubstitution("targetSysRoot.${target.name}")
     }
 

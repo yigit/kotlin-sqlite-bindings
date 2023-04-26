@@ -77,3 +77,7 @@ kotlin {
         }
     }
 }
+
+android {
+    namespace = "com.birbit.sqlite3"
+}

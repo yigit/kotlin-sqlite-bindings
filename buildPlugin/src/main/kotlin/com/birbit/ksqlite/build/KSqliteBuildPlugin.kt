@@ -31,6 +31,9 @@ class KSqliteBuildPlugin : Plugin<Project> {
             "ksqliteBuild"
         )
         target.disableCinteropUpToDateChecks()
+        target.tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+            it.kotlinOptions.jvmTarget = "1.8"
+        }
     }
 
     private fun Project.disableCinteropUpToDateChecks() {

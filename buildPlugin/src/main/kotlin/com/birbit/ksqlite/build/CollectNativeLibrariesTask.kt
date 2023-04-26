@@ -130,7 +130,7 @@ abstract class CollectNativeLibrariesTask : DefaultTask() {
                 "ForJvm"
             }
             return project.tasks.register(
-                "collectSharedLibsFor${namePrefix.titleCase()}}$suffix",
+                "collectSharedLibsFor${namePrefix.titleCase()}$suffix",
                 CollectNativeLibrariesTask::class.java
             ) {
                 configure(it, namePrefix, outFolder, forAndroid)
