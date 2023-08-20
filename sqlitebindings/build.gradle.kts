@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import com.android.build.gradle.internal.tasks.factory.dependsOn
 import com.birbit.ksqlite.build.SqliteCompilationConfig
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
@@ -130,11 +129,18 @@ kotlin {
                 implementation(libs.kotlinStdlibJdk)
             }
         }
-        val androidTest by getting {
+        val androidInstrumentedTest by getting {
             dependsOn(commonTest)
             dependencies {
                 implementation(libs.kotlinTestJunit)
-                implementation(libs.bundles.androidTest)
+                implementation(libs.bundles.androidInstrumentedTest)
+            }
+        }
+        val androidUnitTest by getting {
+            dependsOn(commonTest)
+            dependencies {
+                implementation(libs.kotlinTestJunit)
+                implementation(libs.bundles.androidInstrumentedTest)
             }
         }
 

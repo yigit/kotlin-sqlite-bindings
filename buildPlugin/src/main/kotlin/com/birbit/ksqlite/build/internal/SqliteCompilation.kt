@@ -39,7 +39,6 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.konan.target.presetName
 import java.io.File
 
-@OptIn(ExperimentalStdlibApi::class)
 internal object SqliteCompilation {
     fun setup(project: Project, execOperations: ExecOperations, config: SqliteCompilationConfig) {
         val buildFolder = project.buildDir.resolve("sqlite-compilation")

@@ -21,7 +21,6 @@ import com.android.build.api.variant.LibraryAndroidComponentsExtension
 import org.gradle.api.Project
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.Exec
-import org.gradle.kotlin.dsl.get
 import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
 import java.io.File
 
@@ -44,10 +43,6 @@ internal object AndroidSetup {
             it.targetSdk = 29
             it.testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
             it.ndk.abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64"))
-        }
-        androidLibrary.sourceSets {
-            getByName("androidTest").java
-                .srcDir(project.file("src/androidTest/kotlin"))
         }
         androidLibrary.ndkVersion = "23.1.7779620"
         val debugSigningConfig = androidLibrary.signingConfigs.getByName("debug")

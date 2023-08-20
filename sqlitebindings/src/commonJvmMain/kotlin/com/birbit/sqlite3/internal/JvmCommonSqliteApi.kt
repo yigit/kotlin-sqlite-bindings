@@ -18,7 +18,6 @@ package com.birbit.sqlite3.internal
 import com.birbit.sqlite3.Authorizer
 import com.birbit.sqlite3.ColumnType
 import com.birbit.sqlite3.ResultCode
-import kotlin.jvm.JvmName
 
 open class JvmObjRef(
     ptr: Long

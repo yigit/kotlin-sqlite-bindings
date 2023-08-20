@@ -23,6 +23,7 @@ import org.gradle.api.specs.AndSpec
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.tasks.CInteropProcess
+import org.jetbrains.kotlin.gradle.tasks.KotlinNativeCompile
 
 class KSqliteBuildPlugin : Plugin<Project> {
     override fun apply(target: Project) {
@@ -33,6 +34,9 @@ class KSqliteBuildPlugin : Plugin<Project> {
         target.disableCinteropUpToDateChecks()
         target.tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
             it.kotlinOptions.jvmTarget = "1.8"
+        }
+        target.tasks.withType<KotlinNativeCompile>().configureEach {
+            it.compilerOptions.freeCompilerArgs.add("-opt-in=kotlinx.cinterop.ExperimentalForeignApi")
         }
     }
 

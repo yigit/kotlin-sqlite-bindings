@@ -29,6 +29,7 @@ import java.io.File
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
+
 internal object KonanUtil {
     private val konanDeps = DependencyDirectories.defaultDependenciesRoot
     private val konanProps = KonanPropLoader
@@ -180,6 +181,7 @@ internal object KonanUtil {
                 it.environment("PATH", "$llvmBinFolder;${System.getenv("PATH")}")
             }
         }
+
         companion object {
             private val downloadNativeCompilerLock = ReentrantLock()
             private fun obtainNativeCompiler(

@@ -44,10 +44,16 @@ kotlin {
             }
         }
 
-        val androidTest by getting {
+        val androidInstrumentedTest by getting {
             dependencies {
                 implementation(libs.kotlinTestJunit)
-                implementation(libs.bundles.androidTest)
+                implementation(libs.bundles.androidInstrumentedTest)
+            }
+        }
+        val androidUnitTest by getting {
+            dependencies {
+                implementation(libs.kotlinTestJunit)
+                implementation(libs.bundles.androidInstrumentedTest)
             }
         }
         // JVM-specific tests and their dependencies:
