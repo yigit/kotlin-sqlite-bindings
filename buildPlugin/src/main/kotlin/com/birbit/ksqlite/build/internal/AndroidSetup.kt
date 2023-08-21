@@ -44,6 +44,10 @@ internal object AndroidSetup {
             it.testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
             it.ndk.abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64"))
         }
+        androidLibrary.sourceSets {
+            getByName("androidTest").java
+                .srcDir(project.file("src/androidInstrumented/kotlin"))
+        }
         androidLibrary.ndkVersion = "23.1.7779620"
         val debugSigningConfig = androidLibrary.signingConfigs.getByName("debug")
         // Use a local debug keystore to have reproducible test apks

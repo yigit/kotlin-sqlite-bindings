@@ -59,7 +59,7 @@ open class KSqliteBuildExtension
     }
 
     fun includeSqlite(config: SqliteCompilationConfig) {
-        SqliteCompilation.setup(project, execOperations, config)
+        SqliteCompilation.setup(project, config)
     }
 
     fun buildOnServer() {

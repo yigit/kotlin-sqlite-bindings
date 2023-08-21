@@ -20,12 +20,13 @@ import com.birbit.ksqlite.build.SqliteCompilationConfig
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.provider.Property
+import org.gradle.api.services.ServiceReference
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFile
-import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
@@ -34,13 +35,17 @@ import org.gradle.api.tasks.TaskProvider
 import org.gradle.configurationcache.extensions.capitalized
 import org.gradle.kotlin.dsl.get
 import org.gradle.process.ExecOperations
+import org.gradle.workers.WorkerExecutor
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+import org.jetbrains.kotlin.konan.target.KonanTarget
 import org.jetbrains.kotlin.konan.target.presetName
 import java.io.File
+import javax.inject.Inject
+
 
 internal object SqliteCompilation {
-    fun setup(project: Project, execOperations: ExecOperations, config: SqliteCompilationConfig) {
+    fun setup(project: Project, config: SqliteCompilationConfig) {
         val buildFolder = project.buildDir.resolve("sqlite-compilation")
         val generatedDefFileFolder = project.layout.buildDirectory.dir("sqlite-def-files")
         // TODO convert these to gradle properties
@@ -74,20 +79,19 @@ internal object SqliteCompilation {
             val sourceFile = srcDir.resolve("sqlite3.c")
             val objFile = targetDir.resolve("sqlite3.o")
             val staticLibFile = targetDir.resolve("libsqlite3.a")
-            val konanWrapper = KonanUtil.obtainWrapper(
-                project = project,
-                execOperations = execOperations,
-                konanTarget = konanTarget
-            )
             val compileSQLite = project.tasks.register(
                 "compileSQLite${konanTarget.presetName.capitalized()}",
                 CompileSqliteTask::class.java
             ) { compileTask ->
+                val konanBuildServiceProvider = KonanBuildService.register(
+                    project
+                )
+                compileTask.usesService(konanBuildServiceProvider)
                 compileTask.dependsOn(unzipTask)
+                compileTask.konanTarget.set(konanTarget)
                 compileTask.onlyIf {
-                    konanWrapper.canCompile()
+                    konanTarget.isBuiltOnThisMachine()
                 }
-                compileTask.konanWrapper = konanWrapper
                 compileTask.input = sourceFile
                 compileTask.output = objFile
                 compileTask.sourceDir = srcDir
@@ -97,10 +101,11 @@ internal object SqliteCompilation {
                 ArchiveSqliteTask::class.java
             ) { archiveTask ->
                 archiveTask.dependsOn(compileSQLite)
+                archiveTask.konanTarget.set(konanTarget)
                 archiveTask.onlyIf {
-                    konanWrapper.canCompile()
+                    konanTarget.isBuiltOnThisMachine()
                 }
-                archiveTask.konanWrapper = konanWrapper
+                archiveTask.usesService(KonanBuildService.register(project))
                 archiveTask.objectFile = objFile
                 archiveTask.staticLibFile = staticLibFile
             }
@@ -154,52 +159,76 @@ internal object SqliteCompilation {
     }
 
     @CacheableTask
-    abstract class ArchiveSqliteTask : DefaultTask() {
-        @get:Internal
-        abstract var konanWrapper: KonanUtil.KonanCompilerWrapper
-        @Input
-        fun getKonanWrapperKey() = konanWrapper.cacheKey
+    abstract class ArchiveSqliteTask @Inject constructor(
+        private val workerExecutor: WorkerExecutor
+    ): DefaultTask() {
+        @Suppress("UnstableApiUsage")
+        @get:ServiceReference(KonanBuildService.KEY)
+        abstract val konanBuildService: Property<KonanBuildService>
+
+        @get:Input
+        abstract val konanTarget: Property<KonanTarget>
+
         @get:InputFile
         @get:PathSensitive(PathSensitivity.RELATIVE)
         abstract var objectFile: File
+
         @get:OutputFile
         abstract var staticLibFile: File
 
         @TaskAction
         fun archive() {
-            konanWrapper.archiveNativeBinary(
-                input = objectFile,
-                output = staticLibFile
-            )
+            workerExecutor.noIsolation().submit(
+                KonanUtil.KonanArchiveNativeBinaryWorker::class.java
+            ) {
+                it.buildService.set(konanBuildService)
+                it.target.set(konanTarget)
+                it.input.set(objectFile)
+                it.output.set(staticLibFile)
+            }
         }
     }
 
     @CacheableTask
-    abstract class CompileSqliteTask : DefaultTask() {
-        @get:Internal
-        abstract var konanWrapper: KonanUtil.KonanCompilerWrapper
-        @Input
-        fun getKonanWrapperKey() = konanWrapper.cacheKey
+    abstract class CompileSqliteTask @Inject constructor(
+        private val workerExecutor: WorkerExecutor
+    ) : DefaultTask() {
+        @Suppress("UnstableApiUsage")
+        @get:ServiceReference(KonanBuildService.KEY)
+        abstract val konanBuildService: Property<KonanBuildService>
+
+        @get:Input
+        abstract val konanTarget: Property<KonanTarget>
+
         @get:InputFile
         @get:PathSensitive(PathSensitivity.RELATIVE)
         abstract var input: File
+
         @get:OutputFile
         abstract var output: File
+
         @get:InputDirectory
         @get:PathSensitive(PathSensitivity.RELATIVE)
         abstract var sourceDir: File
+
         @Input
         fun getSqliteArgs() = SQLITE_ARGS.joinToString(",")
 
         @TaskAction
         fun compile() {
-            konanWrapper.compile(
-                SQLITE_ARGS + listOf(
-                    "-I${sourceDir.absolutePath}",
-                    "-o", output.absolutePath,
-                    input.absolutePath
+            workerExecutor.noIsolation().submit(
+                KonanUtil.KonanCompilerWorker::class.java
+            ) {
+                it.buildService.set(konanBuildService)
+                it.target.set(konanTarget)
+                it.args.set(
+                    SQLITE_ARGS + listOf(
+                        "-I${sourceDir.absolutePath}",
+                        "-o", output.absolutePath,
+                        input.absolutePath
+                    )
                 )
-            )
+            }
         }
 
         companion object {

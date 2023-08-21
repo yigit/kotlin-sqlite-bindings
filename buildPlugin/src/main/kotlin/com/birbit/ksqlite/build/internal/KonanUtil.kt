@@ -18,7 +18,15 @@ package com.birbit.ksqlite.build.internal
 import com.android.build.api.dsl.LibraryExtension
 import com.android.build.api.variant.LibraryAndroidComponentsExtension
 import org.gradle.api.Project
+import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.Property
+import org.gradle.api.services.ServiceReference
 import org.gradle.process.ExecOperations
+import org.gradle.process.ExecResult
+import org.gradle.process.internal.worker.request.WorkerAction
+import org.gradle.workers.WorkAction
+import org.gradle.workers.WorkParameters
 import org.jetbrains.kotlin.gradle.utils.NativeCompilerDownloader
 import org.jetbrains.kotlin.konan.target.Architecture
 import org.jetbrains.kotlin.konan.target.Family
@@ -27,6 +35,7 @@ import org.jetbrains.kotlin.konan.target.KonanTarget
 import org.jetbrains.kotlin.konan.util.DependencyDirectories
 import java.io.File
 import java.util.concurrent.locks.ReentrantLock
+import javax.inject.Inject
 import kotlin.concurrent.withLock
 
 
@@ -38,7 +47,7 @@ internal object KonanUtil {
 
     internal class TargetInfo(
         val targetName: String,
-        val sysRoot: (Project) -> File,
+        val sysRoot: () -> File,
         val clangArgs: List<String> = emptyList()
     ) {
         val cacheKey: String by lazy {
@@ -47,11 +56,9 @@ internal object KonanUtil {
     }
 
     fun obtainWrapper(
-        project: Project,
         execOperations: ExecOperations,
         konanTarget: KonanTarget
     ) = KonanCompilerWrapper(
-        project = project,
         execOperations = execOperations,
         konanTarget = konanTarget
     )
@@ -59,7 +66,7 @@ internal object KonanUtil {
     private fun targetInfoFromProps(target: KonanTarget): TargetInfo {
         return TargetInfo(
             targetName = konanProps.targetTriple(target),
-            sysRoot = { project ->
+            sysRoot = {
                 val appleSdkRoot = getAppleSdkRoot(target)
                 if (appleSdkRoot != null) {
                     File(appleSdkRoot)
@@ -98,17 +105,20 @@ internal object KonanUtil {
                     else -> "unexpected sdk param: $target"
                 }
             }
+
             Family.OSX -> "macosx"
             Family.WATCHOS -> when (target.architecture) {
                 Architecture.ARM64, Architecture.ARM32 -> "watchos"
                 Architecture.X86, Architecture.X64 -> "watchsimulator"
                 else -> "unexpected sdk param: $target"
             }
+
             Family.TVOS -> when (target.architecture) {
                 Architecture.ARM64, Architecture.ARM32 -> "appletvos"
                 Architecture.X86, Architecture.X64 -> "appletvsimulator"
                 else -> "unexpected sdk param: $target"
             }
+
             else -> null
         }
         return sdkName?.let {
@@ -124,27 +134,44 @@ internal object KonanUtil {
         throw RuntimeException("cannot call xcrun $args", e)
     }
 
+    @Suppress("UnstableApiUsage")
+    abstract class KonanCompilerWorker : WorkAction<KonanCompilerWorker.Params> {
+        interface Params : WorkParameters {
+            val args: ListProperty<String>
+            val target: Property<KonanTarget>
+            val buildService: Property<KonanBuildService>
+        }
+
+        override fun execute() {
+            parameters.buildService.get().obtainWrapper(
+                parameters.target.get()
+            ).compile(parameters.args.get())
+        }
+    }
+
+    @Suppress("UnstableApiUsage")
+    abstract class KonanArchiveNativeBinaryWorker : WorkAction<KonanArchiveNativeBinaryWorker.Params> {
+        interface Params : WorkParameters {
+            val buildService: Property<KonanBuildService>
+            val target: Property<KonanTarget>
+            val input: RegularFileProperty
+            val output: RegularFileProperty
+        }
+
+        override fun execute() {
+            parameters.buildService.get().obtainWrapper(
+                parameters.target.get()
+            ).archiveNativeBinary(parameters.input.get().asFile, parameters.output.get().asFile)
+        }
+    }
+
     class KonanCompilerWrapper(
-        val project: Project,
         val execOperations: ExecOperations,
         val konanTarget: KonanTarget
     ) {
-        private val konanTargetInfo by lazy {
-            targetInfoFromProps(konanTarget)
-        }
-        fun canCompile() = konanTarget.isBuiltOnThisMachine()
-
-        private fun cacheKeyInputs() = listOf(
-            konanTarget.name, project.path, konanTargetInfo.cacheKey
-        )
-        val cacheKey by lazy {
-            cacheKeyInputs().joinToString(", ")
-        }
-
         fun compile(
             args: List<String>
         ) {
-            obtainNativeCompiler(project, execOperations, konanTarget)
             val konanTargetInfo = targetInfoFromProps(konanTarget)
             execOperations.exec {
                 it.environment("PATH", "$llvmBinFolder;${System.getenv("PATH")}")
@@ -161,17 +188,17 @@ internal object KonanUtil {
                     it.args("-fPIC")
                 }
                 it.args("--target=${targetInfo.targetName}")
-                val sysRoot = targetInfo.sysRoot(project)
+                val sysRoot = targetInfo.sysRoot()
                 it.args("--sysroot=${sysRoot.absolutePath}")
                 it.args(targetInfo.clangArgs)
                 it.args(args)
             }
         }
+
         fun archiveNativeBinary(
             input: File,
             output: File,
         ) {
-            obtainNativeCompiler(project, execOperations, konanTarget)
             execOperations.exec {
                 it.executable(llvmBinFolder.resolve("llvm-ar").absolutePath)
                 it.args(
@@ -184,31 +211,40 @@ internal object KonanUtil {
 
         companion object {
             private val downloadNativeCompilerLock = ReentrantLock()
-            private fun obtainNativeCompiler(
+
+            fun obtainNativeCompiler(
                 project: Project,
-                execOperations: ExecOperations,
-                konanTarget: KonanTarget
-            ) {
-                downloadNativeCompilerLock.withLock {
+            ): File {
+                return downloadNativeCompilerLock.withLock {
                     val nativeCompilerDownloader = NativeCompilerDownloader(
                         project = project
                     )
                     nativeCompilerDownloader.downloadIfNeeded()
+                    val konancName = if (HostManager.hostIsMingw) {
+                        "konanc.bat"
+                    } else {
+                        "konanc"
+                    }
+                    nativeCompilerDownloader.compilerDirectory
+                        .resolve("bin/$konancName")
+                }
+            }
+
+            fun ensureSupportForTarget(
+                konanc: File,
+                execOperations: ExecOperations,
+                konanTarget: KonanTarget
+            ): ExecResult? {
+                downloadNativeCompilerLock.withLock {
                     val result = execOperations.exec {
-                        val konancName = if (HostManager.hostIsMingw) {
-                            "konanc.bat"
-                        } else {
-                            "konanc"
-                        }
-                        val konanc = nativeCompilerDownloader.compilerDirectory
-                            .resolve("bin/$konancName")
+
                         check(konanc.exists()) {
                             "Cannot find konan compiler at $konanc"
                         }
                         it.executable = konanc.absolutePath
                         it.args("-Xcheck-dependencies", "-target", konanTarget.visibleName)
                     }
-                    result.assertNormalExitValue()
+                    return result.assertNormalExitValue()
                 }
             }
         }
