@@ -54,7 +54,7 @@ jobs:
         run: ./gradlew --stop
       - name: build dist
         id: gradle-build-dist
-        run: ./gradlew buildOnServer packageDebugAndroidTest --stacktrace --scan
+        run: ./gradlew buildOnServer packageDebugAndroidTest --stacktrace --scan --no-configuration-cache
         env:
           GRADLE_CACHE_KEY: ${{ secrets.GCP_ACCOUNT }}
           GRADLE_CACHE_PUSH: true
