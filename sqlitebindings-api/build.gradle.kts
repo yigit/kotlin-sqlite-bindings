@@ -37,9 +37,5 @@ kotlin {
         val main by creating {
             dependsOn(commonMain)
         }
-
-        all {
-            languageSettings.enableLanguageFeature("InlineClasses")
-        }
     }
 }

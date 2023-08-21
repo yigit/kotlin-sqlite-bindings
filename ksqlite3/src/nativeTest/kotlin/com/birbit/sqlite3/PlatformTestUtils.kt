@@ -27,10 +27,12 @@ import platform.posix.F_OK
 import platform.posix.access
 import platform.posix.nftw
 import platform.posix.remove
+import kotlin.experimental.ExperimentalNativeApi
 import kotlin.native.concurrent.TransferMode
 import kotlin.native.concurrent.Worker
 import kotlin.random.Random
 
+@OptIn(ExperimentalNativeApi::class)
 actual object PlatformTestUtils {
     private fun randomFolderName(): String {
         return (0..20).map {
