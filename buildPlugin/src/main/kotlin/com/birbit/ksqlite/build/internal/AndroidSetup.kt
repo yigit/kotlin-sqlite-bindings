@@ -72,13 +72,13 @@ internal object AndroidSetup {
             ?: return
 
         val rootProject = project.rootProject
-        val buildDir = rootProject.buildDir.resolve("android-cmd-line-tools")
-        val toolsZip = buildDir.resolve("tools.zip")
+        val buildDir = rootProject.layout.buildDirectory.dir("android-cmd-line-tools")
+        val toolsZip = buildDir.map { it.file("tools.zip") }
         val downloadTask = rootProject.tasks.register("downloadAndroidCmdLineTools", DownloadTask::class.java) {
-            it.downloadUrl = buildCommandLineToolsUrl()
-            it.downloadTargetFile = toolsZip
+            it.downloadUrl.set(buildCommandLineToolsUrl())
+            it.downloadTargetFile.set(toolsZip)
         }
-        val cmdLineToolsFolder = buildDir.resolve("tools")
+        val cmdLineToolsFolder = buildDir.map { it.dir("tools") }
         val unzipCommandLineToolsTask = rootProject.tasks.register("unzipCommandLineTools", Copy::class.java) {
             it.from(project.zipTree(toolsZip))
             it.into(cmdLineToolsFolder)
@@ -97,7 +97,7 @@ internal object AndroidSetup {
                     Runtime.getRuntime().exec("sudo chown \$USER:\$USER $sdkPath -R")
                 }
             }
-            it.executable(cmdLineToolsFolder.resolve("tools/bin/sdkmanager$ext"))
+            it.executable(cmdLineToolsFolder.map { it.file("tools/bin/sdkmanager$ext") })
             it.args("--install", "ndk;${androidLibraryExt.ndkVersion}", "--verbose")
             it.args("--sdk_root=$sdkPath")
             // pass y to accept licenses

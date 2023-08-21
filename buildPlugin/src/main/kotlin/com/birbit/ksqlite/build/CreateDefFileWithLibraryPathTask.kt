@@ -16,8 +16,13 @@
 package com.birbit.ksqlite.build
 
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.CacheableTask
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
@@ -28,14 +33,17 @@ import java.io.File
 abstract class CreateDefFileWithLibraryPathTask : DefaultTask() {
     @get:InputFile
     @get:PathSensitive(PathSensitivity.RELATIVE)
-    abstract var original: File
+    abstract val original: RegularFileProperty
 
     @get:InputFile
     @get:PathSensitive(PathSensitivity.RELATIVE)
-    abstract var soFilePath: File
+    abstract val soFile: RegularFileProperty
 
     @get:OutputFile
-    val target = project.objects.fileProperty()
+    abstract val target: RegularFileProperty
+
+    @get:Internal
+    abstract val projectDir: DirectoryProperty
 
     @TaskAction
     fun doIt() {
@@ -43,8 +51,8 @@ abstract class CreateDefFileWithLibraryPathTask : DefaultTask() {
         val target = target.asFile.get()
         target.parentFile.mkdirs()
         // use relative path to the owning project so it can be cached.
-        val soLocalPath = soFilePath.parentFile.relativeTo(project.projectDir)
-        val content = original.readText(Charsets.UTF_8) + System.lineSeparator() + "libraryPaths = \"$soLocalPath\"" +
+        val soLocalPath = soFile.asFile.get().parentFile.relativeTo(projectDir.get().asFile)
+        val content = original.asFile.get().readText(Charsets.UTF_8) + System.lineSeparator() + "libraryPaths = \"$soLocalPath\"" +
             System.lineSeparator()
         println("new content: $content")
         target.writeText(content, Charsets.UTF_8)

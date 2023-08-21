@@ -85,6 +85,12 @@ jobs:
         with:
           name: ${{ matrix.os }}-dist
           path: build/dist
+      - name: Upload Build Reports
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.os }}-build-reports
+          path: build/reports
       - name: Upload apks
         if: runner.os == 'Linux'
         uses: actions/upload-artifact@v2

@@ -20,6 +20,8 @@ import com.birbit.ksqlite.build.SqliteCompilationConfig
 import org.gradle.api.DefaultTask
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.services.ServiceReference
 import org.gradle.api.tasks.CacheableTask
@@ -34,91 +36,85 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.configurationcache.extensions.capitalized
 import org.gradle.kotlin.dsl.get
-import org.gradle.process.ExecOperations
 import org.gradle.workers.WorkerExecutor
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.konan.target.KonanTarget
 import org.jetbrains.kotlin.konan.target.presetName
-import java.io.File
 import javax.inject.Inject
 
 
 internal object SqliteCompilation {
     fun setup(project: Project, config: SqliteCompilationConfig) {
-        val buildFolder = project.buildDir.resolve("sqlite-compilation")
-        val generatedDefFileFolder = project.layout.buildDirectory.dir("sqlite-def-files")
         // TODO convert these to gradle properties
-        val downloadFile = buildFolder.resolve("download/amalgamation.zip")
-        val srcDir = buildFolder.resolve("src")
         val downloadTask = project.tasks.register("downloadSqlite", DownloadTask::class.java) {
-            it.downloadUrl = computeDownloadUrl(config.version)
-            it.downloadTargetFile = downloadFile
+            it.downloadUrl.set(computeDownloadUrl(config.version))
+            it.downloadTargetFile.set(
+                project.layout.buildDirectory.dir("sqlite-download").map {
+                    it.file("download/amalgamation.zip")
+                }
+            )
         }
 
         val unzipTask = project.tasks.register("unzipSqlite", Copy::class.java) {
-            it.from(project.zipTree(downloadFile))
-            it.into(srcDir)
+            it.from(project.zipTree(downloadTask.map { it.downloadTargetFile }))
+            it.into(
+                project.layout.buildDirectory.dir("sqlite-src")
+            )
             it.eachFile {
                 // get rid of the amalgamation folder in output dir
                 it.path = it.path.replaceFirst("sqlite-amalgamation-[\\d]+/".toRegex(), "")
             }
             it.dependsOn(downloadTask)
         }
-
         val kotlinExt = project.extensions.getByType(KotlinMultiplatformExtension::class.java)
-        val compiledOutputDir = buildFolder.resolve("output")
         val compileTasks = mutableListOf<TaskProvider<out Task>>()
-        val soFiles = mutableListOf<File>()
+        val soFiles = project.objects.fileCollection()
         kotlinExt.targets.withType(KotlinNativeTarget::class.java).filter { nativeTarget ->
             nativeTarget.konanTarget.isBuiltOnThisMachine()
         }.forEach {
             val konanTarget = it.konanTarget
-            val targetDir = compiledOutputDir.resolve(konanTarget.presetName)
-
-            val sourceFile = srcDir.resolve("sqlite3.c")
-            val objFile = targetDir.resolve("sqlite3.o")
-            val staticLibFile = targetDir.resolve("libsqlite3.a")
-            val compileSQLite = project.tasks.register(
+            val compileSQLiteTask = project.tasks.register(
                 "compileSQLite${konanTarget.presetName.capitalized()}",
                 CompileSqliteTask::class.java
             ) { compileTask ->
                 val konanBuildServiceProvider = KonanBuildService.register(
                     project
                 )
+                val srcDir = project.objects.directoryProperty().fileProvider(
+                    unzipTask.map { it.destinationDir }
+                )
+                val sourceFile = unzipTask.map { it.destinationDir.resolve("sqlite3.c") }
+                val objFile = project.layout.buildDirectory.file("sqlite-compilation-output/${konanTarget.name}/sqlite3.o")
                 compileTask.usesService(konanBuildServiceProvider)
                 compileTask.dependsOn(unzipTask)
                 compileTask.konanTarget.set(konanTarget)
-                compileTask.onlyIf {
-                    konanTarget.isBuiltOnThisMachine()
-                }
-                compileTask.input = sourceFile
-                compileTask.output = objFile
-                compileTask.sourceDir = srcDir
+                compileTask.input.set(project.objects.fileProperty().fileProvider(sourceFile))
+                compileTask.output.set(objFile)
+                compileTask.sourceDir.set(srcDir)
             }
-            val archiveSQLite = project.tasks.register(
+            val archiveSQLiteTask = project.tasks.register(
                 "archiveSQLite${konanTarget.presetName.capitalized()}",
                 ArchiveSqliteTask::class.java
             ) { archiveTask ->
-                archiveTask.dependsOn(compileSQLite)
+                archiveTask.dependsOn(compileSQLiteTask)
                 archiveTask.konanTarget.set(konanTarget)
-                archiveTask.onlyIf {
-                    konanTarget.isBuiltOnThisMachine()
-                }
                 archiveTask.usesService(KonanBuildService.register(project))
-                archiveTask.objectFile = objFile
-                archiveTask.staticLibFile = staticLibFile
+                archiveTask.objectFile.set(compileSQLiteTask.flatMap { it.output })
+                archiveTask.staticLibFile.set(
+                    project.layout.buildDirectory.file("static-lib-files/${konanTarget.name}/libsqlite3.a")
+                )
             }
-            compileTasks.add(archiveSQLite)
-            soFiles.add(staticLibFile)
+            compileTasks.add(archiveSQLiteTask)
+            soFiles.from(archiveSQLiteTask.map { it.staticLibFile })
             it.compilations["main"].cinterops.create("sqlite") {
                 // JDK is required here, JRE is not enough
+                val generatedDefFileFolder = project.layout.buildDirectory.dir("sqlite-def-files")
                 it.packageName = "sqlite3"
                 val cInteropTask = project.tasks[it.interopProcessingTaskName]
-                cInteropTask.dependsOn(unzipTask)
-                cInteropTask.dependsOn(archiveSQLite)
+                cInteropTask.dependsOn(archiveSQLiteTask)
 
-                it.includeDirs(srcDir)
+                it.includeDirs(unzipTask.map { it.destinationDir })
                 val original = it.defFile
                 val newDefFile = generatedDefFileFolder.map {
                     it.dir(konanTarget.presetName).file("sqlite-generated.def")
@@ -127,10 +123,10 @@ internal object SqliteCompilation {
                     "createDefFileForSqlite${konanTarget.presetName.titleCase()}",
                     CreateDefFileWithLibraryPathTask::class.java
                 ) { task ->
-                    task.dependsOn(archiveSQLite)
-                    task.original = original
+                    task.original.set(original)
                     task.target.set(newDefFile)
-                    task.soFilePath = staticLibFile
+                    task.soFile.set(archiveSQLiteTask.flatMap { it.staticLibFile })
+                    task.projectDir.set(project.layout.projectDirectory)
                 }
                 // create def file w/ library paths. couldn't figure out how else to add it :/ :)
                 it.defFile = newDefFile.get().asFile
@@ -161,7 +157,7 @@ internal object SqliteCompilation {
     @CacheableTask
     abstract class ArchiveSqliteTask @Inject constructor(
         private val workerExecutor: WorkerExecutor
-    ): DefaultTask() {
+    ) : DefaultTask() {
         @Suppress("UnstableApiUsage")
         @get:ServiceReference(KonanBuildService.KEY)
         abstract val konanBuildService: Property<KonanBuildService>
@@ -171,13 +167,14 @@ internal object SqliteCompilation {
 
         @get:InputFile
         @get:PathSensitive(PathSensitivity.RELATIVE)
-        abstract var objectFile: File
+        abstract val objectFile: RegularFileProperty
 
         @get:OutputFile
-        abstract var staticLibFile: File
+        abstract val staticLibFile: RegularFileProperty
 
         @TaskAction
         fun archive() {
+            println("archiving into  ${staticLibFile.get().asFile}")
             workerExecutor.noIsolation().submit(
                 KonanUtil.KonanArchiveNativeBinaryWorker::class.java
             ) {
@@ -202,14 +199,14 @@ internal object SqliteCompilation {
 
         @get:InputFile
         @get:PathSensitive(PathSensitivity.RELATIVE)
-        abstract var input: File
+        abstract val input: RegularFileProperty
 
         @get:OutputFile
-        abstract var output: File
+        abstract val output: RegularFileProperty
 
         @get:InputDirectory
         @get:PathSensitive(PathSensitivity.RELATIVE)
-        abstract var sourceDir: File
+        abstract val sourceDir: DirectoryProperty
 
         @Input
         fun getSqliteArgs() = SQLITE_ARGS.joinToString(",")
@@ -223,9 +220,9 @@ internal object SqliteCompilation {
                 it.target.set(konanTarget)
                 it.args.set(
                     SQLITE_ARGS + listOf(
-                        "-I${sourceDir.absolutePath}",
-                        "-o", output.absolutePath,
-                        input.absolutePath
+                        "-I${sourceDir.asFile.get().absolutePath}",
+                        "-o", output.asFile.get().absolutePath,
+                        input.asFile.get().absolutePath
                     )
                 )
             }

@@ -16,27 +16,29 @@
 package com.birbit.ksqlite.build.internal
 
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
-import java.io.File
 import java.io.FileOutputStream
 import java.net.URL
 
 @CacheableTask
 abstract class DownloadTask : DefaultTask() {
-    @Input
-    lateinit var downloadUrl: String
+    @get:Input
+    abstract val downloadUrl: Property<String>
 
-    @OutputFile
-    lateinit var downloadTargetFile: File
+    @get:OutputFile
+    abstract val downloadTargetFile: RegularFileProperty
 
     @TaskAction
     fun doIt() {
+        val downloadTargetFile = downloadTargetFile.asFile.get()
         downloadTargetFile.delete()
         downloadTargetFile.parentFile.mkdirs()
-        URL(downloadUrl).openStream().use { inputStream ->
+        URL(downloadUrl.get()).openStream().use { inputStream ->
             FileOutputStream(downloadTargetFile).use { outputStream ->
                 inputStream.copyTo(outputStream)
             }
