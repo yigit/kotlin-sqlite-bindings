@@ -45,12 +45,14 @@ kotlin {
         }
 
         val androidInstrumentedTest by getting {
+            dependsOn(commonTest)
             dependencies {
                 implementation(libs.kotlinTestJunit)
                 implementation(libs.bundles.androidInstrumentedTest)
             }
         }
         val androidUnitTest by getting {
+            dependsOn(commonTest)
             dependencies {
                 implementation(libs.kotlinTestJunit)
                 implementation(libs.bundles.androidInstrumentedTest)
