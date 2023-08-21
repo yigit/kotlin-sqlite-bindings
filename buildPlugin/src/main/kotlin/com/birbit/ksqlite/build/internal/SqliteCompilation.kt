@@ -43,7 +43,6 @@ import org.jetbrains.kotlin.konan.target.KonanTarget
 import org.jetbrains.kotlin.konan.target.presetName
 import javax.inject.Inject
 
-
 internal object SqliteCompilation {
     fun setup(project: Project, config: SqliteCompilationConfig) {
         // TODO convert these to gradle properties
@@ -84,7 +83,8 @@ internal object SqliteCompilation {
                     unzipTask.map { it.destinationDir }
                 )
                 val sourceFile = unzipTask.map { it.destinationDir.resolve("sqlite3.c") }
-                val objFile = project.layout.buildDirectory.file("sqlite-compilation-output/${konanTarget.name}/sqlite3.o")
+                val objFile =
+                    project.layout.buildDirectory.file("sqlite-compilation-output/${konanTarget.name}/sqlite3.o")
                 compileTask.usesService(konanBuildServiceProvider)
                 compileTask.dependsOn(unzipTask)
                 compileTask.konanTarget.set(konanTarget)

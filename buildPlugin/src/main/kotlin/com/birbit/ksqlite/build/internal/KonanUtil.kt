@@ -21,10 +21,8 @@ import org.gradle.api.Project
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
-import org.gradle.api.services.ServiceReference
 import org.gradle.process.ExecOperations
 import org.gradle.process.ExecResult
-import org.gradle.process.internal.worker.request.WorkerAction
 import org.gradle.workers.WorkAction
 import org.gradle.workers.WorkParameters
 import org.jetbrains.kotlin.gradle.utils.NativeCompilerDownloader
@@ -35,9 +33,7 @@ import org.jetbrains.kotlin.konan.target.KonanTarget
 import org.jetbrains.kotlin.konan.util.DependencyDirectories
 import java.io.File
 import java.util.concurrent.locks.ReentrantLock
-import javax.inject.Inject
 import kotlin.concurrent.withLock
-
 
 internal object KonanUtil {
     private val konanDeps = DependencyDirectories.defaultDependenciesRoot
