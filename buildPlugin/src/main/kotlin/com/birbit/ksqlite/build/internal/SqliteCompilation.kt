@@ -69,7 +69,6 @@ internal object SqliteCompilation {
         }
         val kotlinExt = project.extensions.getByType(KotlinMultiplatformExtension::class.java)
         val compileTasks = mutableListOf<TaskProvider<out Task>>()
-        val soFiles = project.objects.fileCollection()
         kotlinExt.targets.withType(KotlinNativeTarget::class.java).filter { nativeTarget ->
             nativeTarget.konanTarget.isBuiltOnThisMachine()
         }.forEach {
@@ -106,7 +105,6 @@ internal object SqliteCompilation {
                 )
             }
             compileTasks.add(archiveSQLiteTask)
-            soFiles.from(archiveSQLiteTask.map { it.staticLibFile })
             it.compilations["main"].cinterops.create("sqlite") {
                 // JDK is required here, JRE is not enough
                 val generatedDefFileFolder = project.layout.buildDirectory.dir("sqlite-def-files")
