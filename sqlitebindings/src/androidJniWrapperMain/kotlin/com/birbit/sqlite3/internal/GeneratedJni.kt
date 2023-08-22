@@ -29,8 +29,6 @@ import platform.android.jint
 import platform.android.jlong
 import platform.android.jobject
 import platform.android.jstring
-import kotlin.Suppress
-import kotlin.native.CName
 
 @CName("Java_com_birbit_sqlite3_internal_SqliteApi_nativeOpenConnection")
 fun openConnection(

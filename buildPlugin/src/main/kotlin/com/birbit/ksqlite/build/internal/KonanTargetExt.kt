@@ -15,13 +15,8 @@
  */
 package com.birbit.ksqlite.build.internal
 
-import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
-import org.jetbrains.kotlin.konan.target.Family
 import org.jetbrains.kotlin.konan.target.HostManager
 import org.jetbrains.kotlin.konan.target.KonanTarget
 
 // check if the target can be built on this machine
-internal fun KonanTarget.isBuiltOnThisMachine() = HostManager().isEnabled(this) &&
-    DefaultNativePlatform.getCurrentOperatingSystem().let { os ->
-        !os.isWindows || this@isBuiltOnThisMachine.family == Family.MINGW
-    }
+internal fun KonanTarget.isBuiltOnThisMachine() = HostManager().isEnabled(this)

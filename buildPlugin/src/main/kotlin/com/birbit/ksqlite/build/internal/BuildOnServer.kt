@@ -31,7 +31,6 @@ object BuildOnServer {
             distDir = rootProject.buildDir.resolve("dist")
             rootProject.tasks.register(TASK_NAME)
             configureCopyNativeLibraries(rootProject)
-            Publishing.createCombinedRepoTaskIfPossible(rootProject)
         }
         return rootProject.tasks.named(TASK_NAME)
     }

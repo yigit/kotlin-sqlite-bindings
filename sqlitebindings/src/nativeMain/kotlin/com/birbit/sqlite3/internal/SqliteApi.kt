@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:OptIn(ExperimentalForeignApi::class)
+
 package com.birbit.sqlite3.internal
 
 import cnames.structs.sqlite3
@@ -25,6 +27,7 @@ import com.birbit.sqlite3.SqliteException
 import kotlinx.cinterop.ByteVar
 import kotlinx.cinterop.COpaquePointer
 import kotlinx.cinterop.CPointer
+import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.StableRef
 import kotlinx.cinterop.UByteVar
 import kotlinx.cinterop.addressOf
@@ -79,7 +82,7 @@ import sqlite3.sqlite3_reset
 import sqlite3.sqlite3_set_authorizer
 import sqlite3.sqlite3_sql
 import sqlite3.sqlite3_step
-import kotlin.native.concurrent.AtomicReference
+import kotlin.concurrent.AtomicReference
 
 internal class NativeRef<T : Any>(target: T) : ObjRef {
     private val _stableRef: AtomicReference<StableRef<T>?> = AtomicReference(StableRef.create(target))

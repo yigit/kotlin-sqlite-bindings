@@ -26,7 +26,6 @@ internal fun KotlinMultiplatformExtension.setupNative(
 ) {
     val os = DefaultNativePlatform.getCurrentOperatingSystem()
     mingwX64(configure = configure)
-    mingwX86(configure = configure)
     if (os.isWindows) {
         // don't configure others on windows. Hits inconsistent type problems with JNI
         return

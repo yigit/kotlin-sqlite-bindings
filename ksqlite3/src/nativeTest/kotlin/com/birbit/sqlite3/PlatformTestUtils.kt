@@ -13,8 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:OptIn(ExperimentalForeignApi::class)
+
 package com.birbit.sqlite3
 
+import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.memScoped
 import kotlinx.cinterop.staticCFunction
 import kotlinx.cinterop.toKStringFromUtf8
@@ -24,10 +27,12 @@ import platform.posix.F_OK
 import platform.posix.access
 import platform.posix.nftw
 import platform.posix.remove
+import kotlin.experimental.ExperimentalNativeApi
 import kotlin.native.concurrent.TransferMode
 import kotlin.native.concurrent.Worker
 import kotlin.random.Random
 
+@OptIn(ExperimentalNativeApi::class)
 actual object PlatformTestUtils {
     private fun randomFolderName(): String {
         return (0..20).map {

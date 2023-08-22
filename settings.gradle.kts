@@ -18,13 +18,6 @@ pluginManagement {
         mavenCentral()
         gradlePluginPortal()
         google()
-        maven("https://jitpack.io")
-    }
-    // TODO remove when that plugin is shipped to gradle plugin portal
-    this.resolutionStrategy.eachPlugin {
-        if (this.requested.id.id == "androidx.build.gradle.gcpbuildcache") {
-            this.useModule("com.github.androidx:gcp-gradle-build-cache:e1b210f69afed")
-        }
     }
 }
 
@@ -36,7 +29,7 @@ dependencyResolutionManagement {
 }
 
 plugins {
-    id("androidx.build.gradle.gcpbuildcache")
+    id("androidx.build.gradle.gcpbuildcache") version("1.0.0-beta01")
     id("com.gradle.enterprise") version("3.10")
 }
 

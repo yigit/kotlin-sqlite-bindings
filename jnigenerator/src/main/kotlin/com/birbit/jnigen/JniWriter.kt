@@ -21,7 +21,6 @@ import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import java.io.File
-import java.lang.StringBuilder
 import java.util.Locale
 
 internal fun String.titleCase() =

@@ -21,7 +21,6 @@ import com.android.build.api.variant.LibraryAndroidComponentsExtension
 import org.gradle.api.Project
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.Exec
-import org.gradle.kotlin.dsl.get
 import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
 import java.io.File
 
@@ -47,7 +46,7 @@ internal object AndroidSetup {
         }
         androidLibrary.sourceSets {
             getByName("androidTest").java
-                .srcDir(project.file("src/androidTest/kotlin"))
+                .srcDir(project.file("src/androidInstrumented/kotlin"))
         }
         androidLibrary.ndkVersion = "23.1.7779620"
         val debugSigningConfig = androidLibrary.signingConfigs.getByName("debug")
@@ -73,13 +72,13 @@ internal object AndroidSetup {
             ?: return
 
         val rootProject = project.rootProject
-        val buildDir = rootProject.buildDir.resolve("android-cmd-line-tools")
-        val toolsZip = buildDir.resolve("tools.zip")
+        val buildDir = rootProject.layout.buildDirectory.dir("android-cmd-line-tools")
+        val toolsZip = buildDir.map { it.file("tools.zip") }
         val downloadTask = rootProject.tasks.register("downloadAndroidCmdLineTools", DownloadTask::class.java) {
-            it.downloadUrl = buildCommandLineToolsUrl()
-            it.downloadTargetFile = toolsZip
+            it.downloadUrl.set(buildCommandLineToolsUrl())
+            it.downloadTargetFile.set(toolsZip)
         }
-        val cmdLineToolsFolder = buildDir.resolve("tools")
+        val cmdLineToolsFolder = buildDir.map { it.dir("tools") }
         val unzipCommandLineToolsTask = rootProject.tasks.register("unzipCommandLineTools", Copy::class.java) {
             it.from(project.zipTree(toolsZip))
             it.into(cmdLineToolsFolder)
@@ -98,7 +97,7 @@ internal object AndroidSetup {
                     Runtime.getRuntime().exec("sudo chown \$USER:\$USER $sdkPath -R")
                 }
             }
-            it.executable(cmdLineToolsFolder.resolve("tools/bin/sdkmanager$ext"))
+            it.executable(cmdLineToolsFolder.map { it.file("tools/bin/sdkmanager$ext") })
             it.args("--install", "ndk;${androidLibraryExt.ndkVersion}", "--verbose")
             it.args("--sdk_root=$sdkPath")
             // pass y to accept licenses
