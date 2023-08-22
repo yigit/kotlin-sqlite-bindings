@@ -17,36 +17,13 @@ package com.birbit.ksqlite.build.internal
 
 import com.android.build.api.dsl.LibraryExtension
 import org.gradle.api.Project
-import org.gradle.api.file.DuplicatesStrategy
 import org.gradle.api.publish.PublishingExtension
-import org.gradle.api.tasks.Copy
 import org.gradle.kotlin.dsl.findByType
 import org.gradle.kotlin.dsl.maven
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import java.io.File
 
 internal object Publishing {
-    fun createCombinedRepoTaskIfPossible(
-        rootProject: Project
-    ) {
-        val distOutputsFolder = getDistOutputs() ?: return
-        val repoFolders = distOutputsFolder.walkTopDown().filter {
-            it.name == "repo" && it.isDirectory
-        }
-        rootProject.tasks.register(BUILD_COMBINED_REPO_TASK_NAME, Copy::class.java) { copyTask ->
-            repoFolders.forEach {
-                copyTask.from(it)
-            }
-            copyTask.duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-            copyTask.from(BuildOnServer.getOutRepo())
-            copyTask.destinationDir = rootProject.buildDir.resolve("dist/combinedRepo")
-            rootProject.subprojects { subProject ->
-                if (subProject.pluginManager.hasPlugin("maven-publish")) {
-                    copyTask.dependsOn(subProject.tasks.named("publish"))
-                }
-            }
-        }
-    }
 
     fun setup(project: Project) {
         val publishing = project.extensions.findByType<PublishingExtension>()
@@ -66,7 +43,7 @@ internal object Publishing {
         if (android != null) {
             val kotlin = project.extensions.findByType<KotlinMultiplatformExtension>()
                 ?: error("must apply KMP extension")
-            kotlin.android {
+            kotlin.androidTarget {
                 publishLibraryVariants("debug", "release")
             }
         }
@@ -87,5 +64,4 @@ internal object Publishing {
     }
 
     private const val DIST_OUTPUTS_ENV_VAR = "DIST_OUTPUTS"
-    private const val BUILD_COMBINED_REPO_TASK_NAME = "createCombinedRepo"
 }
