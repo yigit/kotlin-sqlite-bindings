@@ -1,8 +1,8 @@
 [versions]
-androidGradlePlugin="8.1.0-beta01"
+androidGradlePlugin="8.1.1"
 spotless="6.0.5"
 ktlint="10.2.0"
-kotlin="1.9.0"
+kotlin="1.9.10"
 
 [libraries]
 androidGradlePlugin = { module = "com.android.tools.build:gradle", version.ref = "androidGradlePlugin"}
