@@ -34,14 +34,12 @@ abstract class KonanBuildService @Inject constructor(
     private val dist = Distribution(
         konanHome = parameters.konanHome.get().asFile.absolutePath,
         onlyDefaultProfiles = false,
-        propertyOverrides = mapOf(
-//            "dependenciesUrl" to "file://${parameters.prebuilts.get().asFile}"
-        )
     )
 
     private val platformManager = PlatformManager(
         distribution = dist
     )
+
     fun compile(clangCompileParameters: ClangCompileParameters) {
         val platform = resolveKonanTarget(clangCompileParameters.konanTarget.get())
         val outputDir = clangCompileParameters.output.get().asFile
@@ -56,7 +54,6 @@ abstract class KonanBuildService @Inject constructor(
             it.args(
                 "-I${clangCompileParameters.includes.get().asFile.absolutePath}",
                 "--compile",
-//                "-Wall",
                 "-v",
             )
             it.args(clangCompileParameters.sources.files.map { it.absolutePath })

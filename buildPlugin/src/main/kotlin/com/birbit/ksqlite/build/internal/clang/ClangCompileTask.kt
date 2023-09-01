@@ -57,14 +57,14 @@ abstract class ClangCompileParameters {
 
 abstract class CompileWorker : WorkAction<CompileWorker.Params> {
     interface Params : WorkParameters {
-        val clangCompileParameters: Property<ClangCompileParameters>
+        val clangParameters: Property<ClangCompileParameters>
         val buildService: Property<KonanBuildService>
     }
 
     override fun execute() {
         val buildService = parameters.buildService.get()
         buildService.compile(
-            parameters.clangCompileParameters.get()
+            parameters.clangParameters.get()
         )
     }
 }
@@ -78,7 +78,7 @@ abstract class ClangCompileTask @Inject constructor(
     abstract val konanBuildService: Property<KonanBuildService>
 
     @get:Nested
-    abstract val clangCompileParameters: ClangCompileParameters
+    abstract val clangParameters: ClangCompileParameters
 
     @TaskAction
     fun compile() {
@@ -86,7 +86,7 @@ abstract class ClangCompileTask @Inject constructor(
             CompileWorker::class.java
         ) {
             it.buildService.set(konanBuildService)
-            it.clangCompileParameters.set(clangCompileParameters)
+            it.clangParameters.set(clangParameters)
         }
     }
 }

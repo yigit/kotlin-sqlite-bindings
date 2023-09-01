@@ -32,7 +32,6 @@ import org.jetbrains.kotlin.konan.target.presetName
 
 internal object SqliteCompilation {
     fun setup(project: Project, config: SqliteCompilationConfig) {
-        // TODO convert these to gradle properties
         val downloadTask = project.tasks.register("downloadSqlite", DownloadTask::class.java) {
             it.downloadUrl.set(computeDownloadUrl(config.version))
             it.downloadTargetFile.set(
@@ -51,7 +50,6 @@ internal object SqliteCompilation {
                 // get rid of the amalgamation folder in output dir
                 it.path = it.path.replaceFirst("sqlite-amalgamation-[\\d]+/".toRegex(), "")
             }
-            it.dependsOn(downloadTask)
         }
         val kotlinExt = project.extensions.getByType(KotlinMultiplatformExtension::class.java)
         val compileTasks = mutableListOf<TaskProvider<out Task>>()
@@ -73,8 +71,7 @@ internal object SqliteCompilation {
                 val objFileDir = project.layout.buildDirectory.dir(
                     "sqlite-compilation-output/${konanTarget.name}"
                 )
-                compileTask.dependsOn(unzipTask)
-                compileTask.clangCompileParameters.let {
+                compileTask.clangParameters.let {
                     it.konanTarget.set(konanTarget)
                     it.sources.from(
                         sourceFile
@@ -88,11 +85,10 @@ internal object SqliteCompilation {
                 "archiveSQLite${konanTarget.presetName.capitalized()}",
                 LlvmArchiveTask::class.java
             ) { archiveTask ->
-                // archiveTask.dependsOn(compileSQLiteTask)
-                archiveTask.parameters.let {
+                archiveTask.llvmArParameters.let {
                     it.konanTarget.set(konanTarget)
                     it.objectFiles.from(
-                        compileSQLiteTask.flatMap { it.clangCompileParameters.output }
+                        compileSQLiteTask.flatMap { it.clangParameters.output }
                     )
                     it.outputFile.set(
                         project.layout.buildDirectory.file("static-lib-files/${konanTarget.name}/libsqlite3.a")
@@ -106,8 +102,6 @@ internal object SqliteCompilation {
                 val generatedDefFileFolder = project.layout.buildDirectory.dir("sqlite-def-files")
                 it.packageName = "sqlite3"
                 val cInteropTask = project.tasks[it.interopProcessingTaskName]
-                cInteropTask.dependsOn(archiveSQLiteTask)
-
                 it.includeDirs(unzipTask.map { it.destinationDir })
                 val original = it.defFile
                 val newDefFile = generatedDefFileFolder.map {
@@ -119,7 +113,7 @@ internal object SqliteCompilation {
                 ) { task ->
                     task.original.set(original)
                     task.target.set(newDefFile)
-                    task.soFile.set(archiveSQLiteTask.flatMap { it.parameters.outputFile })
+                    task.soFile.set(archiveSQLiteTask.flatMap { it.llvmArParameters.outputFile })
                     task.projectDir.set(project.layout.projectDirectory)
                 }
                 // create def file w/ library paths. couldn't figure out how else to add it :/ :)

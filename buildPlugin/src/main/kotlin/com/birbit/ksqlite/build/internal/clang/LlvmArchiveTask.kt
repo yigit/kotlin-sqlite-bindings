@@ -46,14 +46,14 @@ abstract class LlvmArchiveParameters {
 
 private abstract class LlvmArchiveWorker : WorkAction<LlvmArchiveWorker.Params> {
     interface Params : WorkParameters {
-        val clangParameters: Property<LlvmArchiveParameters>
+        val llvmArParameters: Property<LlvmArchiveParameters>
         val buildService: Property<KonanBuildService>
     }
 
     override fun execute() {
         val buildService = parameters.buildService.get()
         buildService.archive(
-            parameters.clangParameters.get()
+            parameters.llvmArParameters.get()
         )
     }
 }
@@ -66,14 +66,14 @@ abstract class LlvmArchiveTask @Inject constructor(
     abstract val konanBuildService: Property<KonanBuildService>
 
     @get:Nested
-    abstract val parameters: LlvmArchiveParameters
+    abstract val llvmArParameters: LlvmArchiveParameters
 
     @TaskAction
     fun archive() {
         workerExecutor.noIsolation().submit(
             LlvmArchiveWorker::class.java
         ) {
-            it.clangParameters.set(parameters)
+            it.llvmArParameters.set(llvmArParameters)
             it.buildService.set(konanBuildService)
         }
     }
